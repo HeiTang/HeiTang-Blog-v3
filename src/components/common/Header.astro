@@ -1,0 +1,95 @@
+---
+/**
+ * Header Navigation Component
+ * Following SOLID principles: Single Responsibility
+ */
+import { siteConfig } from '../../config/site';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+export interface Props {
+  currentPath?: string;
+  lang?: 'zh' | 'en';
+}
+
+const { currentPath = '/', lang = 'zh' } = Astro.props;
+const navItems = siteConfig.nav[lang];
+---
+
+<header class="fixed top-0 left-0 right-0 z-40 border-b border-white/10" style="background: rgba(15,15,15,0.8); backdrop-filter: blur(12px);">
+  <nav class="container mx-auto px-6 py-4">
+    <div class="flex items-center justify-between">
+      <!-- Logo -->
+      <a href={lang === 'en' ? '/en' : '/'} class="flex items-center gap-3 group">
+        <div class="w-9 h-9 flex items-center justify-center text-xl rounded-lg border border-white/20 transition-all group-hover:border-white/40" style="background: rgba(255,255,255,0.05);">
+          🐱
+        </div>
+        <span class="font-semibold text-base text-white/90 group-hover:text-white transition-colors">
+          {lang === 'zh' ? siteConfig.title : siteConfig.titleEn}
+        </span>
+      </a>
+
+      <!-- Navigation Links -->
+      <ul class="hidden md:flex items-center gap-8">
+        {navItems.map(item => (
+          <li>
+            <a 
+              href={item.href}
+              class:list={[
+                "text-sm font-medium transition-colors",
+                currentPath === item.href 
+                  ? "text-white" 
+                  : "text-white/60 hover:text-white"
+              ]}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <!-- Language Switch + Mobile Button -->
+      <div class="flex items-center gap-3">
+        <LanguageSwitcher />
+
+        <button 
+          id="mobile-menu-btn"
+          class="md:hidden text-white"
+          aria-label="Toggle menu"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pt-4 border-t border-white/10">
+      <ul class="flex flex-col gap-3">
+        {navItems.map(item => (
+          <li>
+            <a 
+              href={item.href}
+              class:list={[
+                "text-sm font-medium transition-colors",
+                currentPath === item.href 
+                  ? "text-white" 
+                  : "text-white/60 hover:text-white"
+              ]}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  mobileMenuBtn?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+</script>

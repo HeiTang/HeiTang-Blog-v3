@@ -1,0 +1,133 @@
+---
+/**
+ * Base Layout Component
+ * Following SOLID principles
+ */
+import { siteConfig } from '../config/site';
+import Header from '../components/common/Header.astro';
+import Footer from '../components/common/Footer.astro';
+import '../styles/global.css';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  lang?: 'zh' | 'en';
+  currentPath?: string;
+}
+
+const { 
+  title = siteConfig.title, 
+  description = siteConfig.description,
+  lang = 'zh',
+  currentPath = '/'
+} = Astro.props;
+
+const fullTitle = title === siteConfig.title ? title : `${title} | ${siteConfig.title}`;
+---
+
+<!doctype html>
+<html lang={lang} data-theme="elegant-cyber">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={siteConfig.url} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={siteConfig.url} />
+    <meta property="twitter:title" content={fullTitle} />
+    <meta property="twitter:description" content={description} />
+    
+    <title>{fullTitle}</title>
+    
+    <!-- Theme Switcher Script (runs before page load to prevent flash) -->
+    <script is:inline>
+      const savedTheme = localStorage.getItem('theme') || 'elegant-cyber';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+  </head>
+  <body class="flex flex-col min-h-screen bg-[rgb(var(--color-bg-dark))]">
+    <!-- Aurora animated background -->
+    <div class="aurora-bg" aria-hidden="true">
+      <div class="aurora-orb"></div>
+      <div class="aurora-orb"></div>
+      <div class="aurora-orb"></div>
+    </div>
+    
+    <Header currentPath={currentPath} lang={lang} />
+    
+    <main class="flex-1 relative z-10">
+      <slot />
+    </main>
+    
+    <Footer />
+
+    <!-- Card interactive effects: spotlight + 3D tilt -->
+    <script is:inline>
+      (function () {
+        // Only on non-touch devices
+        if (window.matchMedia('(hover: none)').matches) return;
+
+        const TILT_MAX = 6; // degrees
+
+        function initCard(el) {
+          el.addEventListener('mousemove', onMove);
+          el.addEventListener('mouseleave', onLeave);
+        }
+
+        function onMove(e) {
+          const card = e.currentTarget;
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+
+          const rotY = ((x - cx) / cx) * TILT_MAX;
+          const rotX = -((y - cy) / cy) * TILT_MAX;
+
+          card.style.transform =
+            `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(4px)`;
+        }
+
+        function onLeave(e) {
+          const card = e.currentTarget;
+          card.style.transform =
+            'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0)';
+        }
+
+        // Attach to existing cards
+        function attach() {
+          document.querySelectorAll('.card-interactive').forEach(initCard);
+        }
+
+        // Also watch for dynamically added cards (tag filter show/hide)
+        const observer = new MutationObserver(() => {
+          document.querySelectorAll('.card-interactive:not([data-tilt-init])').forEach(el => {
+            el.setAttribute('data-tilt-init', '');
+            initCard(el);
+          });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+          attach();
+          observer.observe(document.body, { childList: true, subtree: true });
+        });
+
+        // If DOM already ready
+        if (document.readyState !== 'loading') {
+          attach();
+          observer.observe(document.body, { childList: true, subtree: true });
+        }
+      })();
+    </script>
+  </body>
+</html>

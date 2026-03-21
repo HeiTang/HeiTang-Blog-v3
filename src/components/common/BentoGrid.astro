@@ -1,0 +1,12 @@
+---
+/**
+ * BentoGrid — 12-column grid container using Tailwind utilities
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+<div class={`grid grid-cols-12 gap-4 ${className}`}>
+  <slot />
+</div>

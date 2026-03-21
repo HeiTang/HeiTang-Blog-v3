@@ -1,0 +1,62 @@
+---
+/**
+ * PostCard — Blog post card component (Glassmorphism + Bento style)
+ * Single Responsibility: renders a single blog post preview card
+ */
+import { formatDate } from '../../utils/date';
+import type { SupportedLang } from '../../config/site';
+
+export interface Props {
+  slug: string;
+  title: string;
+  description: string;
+  pubDate: Date;
+  tags: string[];
+  readingTime: number;
+  lang?: SupportedLang;
+}
+
+const {
+  slug,
+  title,
+  description,
+  pubDate,
+  tags,
+  readingTime,
+  lang = 'zh',
+} = Astro.props;
+
+const href = `${lang === 'en' ? '/en' : ''}/blog/${slug}`;
+---
+
+<a href={href} class="group flex flex-col gap-3 p-6 h-full">
+  <!-- Tags -->
+  {tags.length > 0 && (
+    <div class="flex flex-wrap gap-1.5 mb-3">
+      {tags.slice(0, 3).map(tag => (
+        <span class="tag-badge text-xs">{tag}</span>
+      ))}
+    </div>
+  )}
+
+  <!-- Title -->
+  <h2 class="font-display text-lg font-bold text-[rgb(var(--color-text-primary))] mb-2
+    group-hover:text-[rgb(var(--color-primary))] transition-colors leading-snug line-clamp-2">
+    {title}
+  </h2>
+
+  <!-- Description -->
+  <p class="text-sm text-[rgb(var(--color-text-secondary))] line-clamp-3 mb-4 leading-relaxed">
+    {description}
+  </p>
+
+  <!-- Footer meta -->
+  <div class="flex items-center justify-between mt-auto pt-4 border-t border-[var(--glass-border)]">
+    <time class="text-xs text-[rgb(var(--color-text-secondary))]">
+      {formatDate(pubDate, lang)}
+    </time>
+    <span class="text-xs text-[rgb(var(--color-text-secondary))]">
+      {readingTime} {lang === 'zh' ? 'min' : 'min read'}
+    </span>
+  </div>
+</a>

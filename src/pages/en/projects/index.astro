@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProjectCard from '../../../components/projects/ProjectCard.astro';
+import { fetchPinnedRepos, fetchPublicRepos } from '../../../services/github';
+
+const lang = 'en';
+const [pinnedRepos, publicRepos] = await Promise.all([fetchPinnedRepos(), fetchPublicRepos()]);
+const pinnedNames = new Set(pinnedRepos.map(r => r.name));
+const otherRepos = publicRepos.filter(r => !pinnedNames.has(r.name));
+---
+
+<BaseLayout title="Projects" lang={lang} currentPath="/en/projects">
+  <div class="container mx-auto px-6 py-24">
+    <div class="mb-10">
+      <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
+        🚀 GitHub Projects
+      </h1>
+    </div>
+
+    {pinnedRepos.length > 0 && (
+      <section class="mb-12">
+        <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))]">⭐ Pinned</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {pinnedRepos.map(repo => (
+            <div class="rounded-3xl border border-white/[0.08] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 ring-1 ring-[rgba(var(--color-primary),0.2)]"
+              style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
+              <ProjectCard
+                name={repo.name} description={repo.description} url={repo.url}
+                homepageUrl={repo.homepageUrl}
+                language={repo.primaryLanguage?.name ?? null}
+                languageColor={repo.primaryLanguage?.color ?? null}
+                stars={repo.stargazerCount} forks={repo.forkCount}
+                topics={repo.repositoryTopics.nodes.map(n => n.topic.name)}
+                pinned={true}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {otherRepos.length > 0 && (
+      <section>
+        <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))]">📦 All Repositories</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {otherRepos.map(repo => (
+            <div class="rounded-3xl border border-white/[0.08] overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
+              style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
+              <ProjectCard
+                name={repo.name} description={repo.description} url={repo.html_url}
+                homepageUrl={repo.homepage} language={repo.language}
+                stars={repo.stargazers_count} forks={repo.forks_count} topics={repo.topics}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+</BaseLayout>

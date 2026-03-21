@@ -1,35 +1,30 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { siteConfig } from '../config/site';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig } from '../../config/site';
 ---
 
-<BaseLayout title={siteConfig.title} currentPath="/" lang="zh">
+<BaseLayout title={siteConfig.titleEn} lang="en" currentPath="/en">
   <div class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-6">
     <div class="text-center max-w-sm w-full">
 
-      <!-- Avatar -->
       <div class="mx-auto w-28 h-28 rounded-full mb-6 overflow-hidden
         ring-2 ring-[rgba(var(--color-primary),0.4)] ring-offset-4 ring-offset-transparent"
         style="box-shadow: 0 0 40px rgba(var(--color-primary), 0.15);">
-        <img src="/images/profile.jpeg" alt="黑糖不是炭" class="w-full h-full object-cover" />
+        <img src="/images/profile.jpeg" alt="HeiTang" class="w-full h-full object-cover" />
       </div>
 
-      <!-- Name -->
       <h1 class="font-display text-3xl font-bold text-[rgb(var(--color-text-primary))] mb-1">
-        黑糖不是炭
+        HeiTang
       </h1>
 
-      <!-- Handle -->
       <p class="text-sm text-[rgb(var(--color-primary))] font-medium mb-4 tracking-wide">
         @HeiTang
       </p>
 
-      <!-- Bio -->
       <p class="text-[rgb(var(--color-text-secondary))] mb-8 leading-relaxed">
-        橘貓不胖，只是蓬鬆了點！ヽ(=^･ω･^=)丿
+        Orange cats aren't fat — they're just fluffy! ヽ(=^･ω･^=)丿
       </p>
 
-      <!-- Social icons -->
       <div class="flex justify-center items-center gap-5">
         <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer"
           aria-label="GitHub"
@@ -42,7 +37,6 @@ import { siteConfig } from '../config/site';
             <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
           </svg>
         </a>
-
         <a href={`mailto:${siteConfig.social.email}`}
           aria-label="Email"
           class="w-10 h-10 rounded-xl flex items-center justify-center
@@ -54,7 +48,6 @@ import { siteConfig } from '../config/site';
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
           </svg>
         </a>
-
         <a href="/rss.xml" target="_blank" rel="noopener noreferrer"
           aria-label="RSS"
           class="w-10 h-10 rounded-xl flex items-center justify-center

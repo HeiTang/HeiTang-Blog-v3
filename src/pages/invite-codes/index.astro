@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import InviteCodeCard from '../../components/invite-codes/InviteCodeCard.astro';
+import { fetchInviteCodes } from '../../services/inviteCodes';
+import { useTranslations } from '../../i18n';
+import { formatDate } from '../../utils/date';
+
+const lang = 'zh';
+const t = useTranslations(lang);
+
+const { codes, updatedAt } = await fetchInviteCodes();
+---
+
+<BaseLayout title={t.inviteCodes.title} currentPath="/invite-codes" lang={lang}>
+  <div class="container mx-auto px-6 py-24">
+    <!-- Page header -->
+    <div class="mb-10">
+      <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
+        🎫 {t.inviteCodes.title}
+      </h1>
+      <p class="text-[rgb(var(--color-text-secondary))] mb-2">
+        {t.inviteCodes.description}
+      </p>
+      <p class="text-xs text-[rgb(var(--color-text-secondary))]">
+        {t.inviteCodes.lastUpdated}：{formatDate(updatedAt, lang)}
+      </p>
+    </div>
+
+    {codes.length === 0 ? (
+      <div class="glass p-12 rounded-2xl text-center">
+        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{t.inviteCodes.noData}</p>
+        <p class="text-[rgb(var(--color-text-secondary))] text-sm mt-3">
+          {import.meta.env.INVITE_CODES_API_URL
+            ? '無法載入邀請碼，請稍後再試。'
+            : '尚未設定 INVITE_CODES_API_URL 環境變數。'}
+        </p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {codes.map(code => (
+          <InviteCodeCard code={code} lang={lang} />
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>

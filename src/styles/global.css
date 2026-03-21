@@ -1,0 +1,238 @@
+/**
+ * Global Styles and CSS Variables
+ * Theme system using CSS custom properties
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Default theme: Elegant Cyber */
+    --color-primary: 255 140 97; /* #FF8C61 */
+    --color-secondary: 255 180 162; /* #FFB4A2 */
+    --color-accent: 157 127 232; /* #9D7FE8 */
+    
+    --color-bg-dark: 15 20 25; /* #0F1419 */
+    --color-bg-medium: 26 31 46; /* #1A1F2E */
+    --color-bg-light: 37 43 59; /* #252B3B */
+    
+    --color-text-primary: 255 255 255;
+    --color-text-secondary: 209 213 219;
+    --color-text-accent: 255 140 97;
+    
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 140, 97, 0.15);
+    --glass-blur: 24px;
+    
+    --glow-intensity: 0.3;
+    --border-radius: 1.5rem;
+
+    /* Bento Grid */
+    --bento-gap: 1rem;
+    --bento-radius: 1.5rem;
+    --bento-card-bg: rgba(255, 255, 255, 0.05);
+    --bento-card-border: rgba(255, 255, 255, 0.08);
+    --bento-card-hover-bg: rgba(255, 255, 255, 0.09);
+    --bento-card-hover-border: rgba(255, 140, 97, 0.25);
+  }
+  
+  /* Theme: Pure Glass */
+  [data-theme="pure-glass"] {
+    --color-primary: 255 180 162;
+    --color-secondary: 255 201 189;
+    --color-accent: 196 181 253;
+    
+    --color-bg-dark: 26 31 46;
+    --color-bg-medium: 37 43 59;
+    --color-bg-light: 47 53 72;
+    
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 180, 162, 0.12);
+    --glass-blur: 32px;
+    
+    --glow-intensity: 0.2;
+
+    --bento-card-hover-border: rgba(255, 180, 162, 0.25);
+  }
+  
+  /* Theme: Neon Cyber */
+  [data-theme="neon-cyber"] {
+    --color-primary: 255 107 53;
+    --color-secondary: 255 143 107;
+    --color-accent: 0 245 255;
+    
+    --color-bg-dark: 10 14 39;
+    --color-bg-medium: 20 24 41;
+    --color-bg-light: 30 36 51;
+    
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 107, 53, 0.3);
+    --glass-blur: 20px;
+    
+    --glow-intensity: 0.6;
+
+    --bento-card-hover-border: rgba(255, 107, 53, 0.4);
+  }
+  
+  /* Theme: Minimalist */
+  [data-theme="minimalist"] {
+    --color-primary: 255 155 106;
+    --color-secondary: 255 184 146;
+    --color-accent: 167 139 250;
+    
+    --color-bg-dark: 255 255 255;
+    --color-bg-medium: 249 250 251;
+    --color-bg-light: 243 244 246;
+    
+    --color-text-primary: 17 24 39;
+    --color-text-secondary: 107 114 128;
+    --color-text-accent: 255 155 106;
+    
+    --glass-bg: rgba(0, 0, 0, 0.02);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-blur: 0px;
+    
+    --glow-intensity: 0;
+    --border-radius: 0.75rem;
+
+    --bento-card-bg: rgba(0, 0, 0, 0.03);
+    --bento-card-border: rgba(0, 0, 0, 0.08);
+    --bento-card-hover-bg: rgba(0, 0, 0, 0.05);
+    --bento-card-hover-border: rgba(255, 155, 106, 0.3);
+    --bento-radius: 0.75rem;
+  }
+  
+  html {
+    @apply scroll-smooth;
+  }
+  
+  html, body {
+    @apply overflow-x-hidden;
+    max-width: 100vw;
+  }
+  
+  body {
+    @apply bg-[rgb(var(--color-bg-dark))] text-[rgb(var(--color-text-primary))];
+    @apply font-sans antialiased;
+    @apply transition-colors duration-300;
+  }
+  
+  /* Glass morphism utility */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+  }
+  
+  /* Glow effect */
+  .glow {
+    box-shadow: 
+      0 0 calc(20px * var(--glow-intensity)) rgba(var(--color-primary), var(--glow-intensity)),
+      0 0 calc(40px * var(--glow-intensity)) rgba(var(--color-primary), calc(var(--glow-intensity) * 0.5));
+  }
+  
+  .glow-accent {
+    box-shadow: 
+      0 0 calc(20px * var(--glow-intensity)) rgba(var(--color-accent), var(--glow-intensity)),
+      0 0 calc(40px * var(--glow-intensity)) rgba(var(--color-accent), calc(var(--glow-intensity) * 0.5));
+  }
+}
+
+@layer components {
+  /* Aurora animated background */
+  .aurora-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .aurora-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    will-change: transform;
+    animation: aurora-drift 20s ease-in-out infinite alternate;
+  }
+
+  .aurora-orb:nth-child(1) {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(255,140,97,0.6), transparent 70%);
+    top: -15%; left: -10%;
+    animation-duration: 22s;
+  }
+
+  .aurora-orb:nth-child(2) {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(157,127,232,0.5), transparent 70%);
+    bottom: -10%; right: -5%;
+    animation-duration: 28s;
+    animation-delay: -8s;
+  }
+
+  .aurora-orb:nth-child(3) {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0,200,255,0.3), transparent 70%);
+    top: 40%; left: 50%;
+    animation-duration: 18s;
+    animation-delay: -14s;
+  }
+
+  @keyframes aurora-drift {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(60px, -40px) scale(1.08); }
+    66%  { transform: translate(-40px, 60px) scale(0.96); }
+    100% { transform: translate(30px, 20px) scale(1.04); }
+  }
+
+  /* ─── Interactive Card Effects ─── */
+
+  .card-interactive {
+    transform-style: preserve-3d;
+    transform: perspective(800px) rotateX(0deg) rotateY(0deg);
+    transition: transform 0.08s ease-out, box-shadow 0.4s ease, border-color 0.4s ease;
+    will-change: transform;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Hover: cyan glow + lift */
+  .card-interactive:hover {
+    border-color: rgba(0, 220, 255, 0.6) !important;
+    box-shadow:
+      0 0 8px   rgba(0, 220, 255, 0.5),
+      0 0 24px  rgba(0, 220, 255, 0.30),
+      0 0 60px  rgba(0, 220, 255, 0.15),
+      0 16px 40px rgba(0, 0, 0, 0.35);
+  }
+
+
+
+  .tag-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    @apply bg-[rgba(var(--color-primary),0.12)] text-[rgb(var(--color-primary))];
+    @apply border border-[rgba(var(--color-primary),0.2)];
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .tag-badge:hover {
+    @apply bg-[rgba(var(--color-primary),0.22)] border-[rgba(var(--color-primary),0.4)];
+  }
+
+  /* Language badge */
+  .lang-dot {
+    @apply inline-block w-2.5 h-2.5 rounded-full mr-1.5 flex-shrink-0;
+  }
+
+  /* Cat loading animation placeholder */
+  .loading-cat {
+    @apply inline-block animate-bounce;
+  }
+}

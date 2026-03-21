@@ -1,0 +1,52 @@
+---
+/**
+ * BentoCell — grid span wrapper with glass card styling (Tailwind-only classes)
+ * No custom CSS classes — all Tailwind utilities to avoid JIT purge.
+ */
+interface Props {
+  span?: 2 | 3 | 4 | 6 | 8 | 12;
+  variant?: 'default' | 'featured' | 'accent';
+  href?: string;
+  class?: string;
+}
+
+const { span = 6, variant = 'default', href, class: className = '' } = Astro.props;
+
+// Use safelist-protected col-span-* classes
+const spanClass = `col-span-12 md:col-span-${span}`;
+
+const variantClass = variant === 'featured'
+  ? 'ring-1 ring-[rgba(var(--color-primary),0.3)]'
+  : variant === 'accent'
+  ? 'ring-1 ring-[rgba(var(--color-accent),0.3)]'
+  : '';
+
+// Glass card base styles (all Tailwind or inline CSS vars)
+const cardBase = [
+  'rounded-[1.5rem]',
+  'border',
+  'border-white/[0.08]',
+  'overflow-hidden',
+  'transition-all',
+  'duration-300',
+  'hover:-translate-y-0.5',
+  'hover:border-[rgba(var(--color-primary),0.25)]',
+].join(' ');
+---
+
+{href ? (
+  <a
+    href={href}
+    style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));"
+    class={`${spanClass} ${cardBase} ${variantClass} ${className} cursor-pointer`}
+  >
+    <slot />
+  </a>
+) : (
+  <div
+    style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));"
+    class={`${spanClass} ${cardBase} ${variantClass} ${className}`}
+  >
+    <slot />
+  </div>
+)}

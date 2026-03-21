@@ -1,0 +1,210 @@
+---
+/**
+ * ProjectCard — GitHub repository card (Glassmorphism style)
+ * Single Responsibility: renders a single GitHub repo card
+ */
+import PinnedBadge from './PinnedBadge.astro';
+
+const GITHUB_USERNAME = 'HeiTang';
+
+export interface Props {
+  name: string;
+  description: string | null;
+  url: string;
+  homepageUrl?: string | null;
+  language: string | null;
+  languageColor?: string | null;
+  stars: number;
+  forks: number;
+  topics?: string[];
+  pinned?: boolean;
+  /** Custom cover image path. Falls back to GitHub Social Preview if omitted. */
+  coverImage?: string;
+}
+
+const {
+  name,
+  description,
+  url,
+  homepageUrl,
+  language,
+  languageColor,
+  stars,
+  forks,
+  topics = [],
+  pinned = false,
+  coverImage,
+} = Astro.props;
+
+// Cover image: custom > GitHub Social Preview (opengraph)
+const cover = coverImage ?? `https://opengraph.githubassets.com/1/${GITHUB_USERNAME}/${name}`;
+
+// GitHub language color fallback map
+const langColorFallback: Record<string, string> = {
+  TypeScript: '#3178c6', JavaScript: '#f1e05a', Python: '#3572A5',
+  Go: '#00ADD8', Rust: '#dea584', Vue: '#41b883', React: '#61dafb',
+  CSS: '#563d7c', HTML: '#e34c26', Shell: '#89e051', Astro: '#ff5a03',
+};
+const color = languageColor ?? (language ? langColorFallback[language] : null) ?? '#888';
+---
+
+<a
+  href={url}
+  target="_blank"
+  rel="noopener noreferrer"
+  class="group flex flex-col h-full"
+>
+  <!-- Cover image -->
+  <div class="relative overflow-hidden rounded-t-3xl aspect-[16/9] bg-black/20">
+    <img
+      src={cover}
+      alt={`${name} preview`}
+      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+      loading="lazy"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+    />
+    <!-- Fallback placeholder (shown if image fails) -->
+    <div class="hidden absolute inset-0 items-center justify-center bg-gradient-to-br from-[rgba(var(--color-primary),0.15)] to-[rgba(var(--color-accent),0.10)]">
+      <svg class="w-12 h-12 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+      </svg>
+    </div>
+    <!-- Pinned badge overlay -->
+    {pinned && (
+      <div class="absolute top-2 left-2">
+        <PinnedBadge />
+      </div>
+    )}
+    <!-- Gradient fade into card body -->
+    <div class="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+  </div>
+
+  <!-- Card body -->
+  <div class="flex flex-col gap-2 p-5 flex-1">
+    <!-- Title row -->
+    <div class="flex items-start justify-between gap-2">
+      <h3 class="font-display font-bold text-sm text-[rgb(var(--color-text-primary))]
+        group-hover:text-[rgb(var(--color-primary))] transition-colors leading-snug">
+        {name}
+      </h3>
+      <svg class="w-4 h-4 flex-shrink-0 text-[rgb(var(--color-text-secondary))] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+      </svg>
+    </div>
+
+    <!-- Description -->
+    <p class="text-xs text-[rgb(var(--color-text-secondary))] line-clamp-2 leading-relaxed flex-1">
+      {description ?? '暫無描述'}
+    </p>
+
+    <!-- Topics -->
+    {topics.length > 0 && (
+      <div class="flex flex-wrap gap-1.5">
+        {topics.slice(0, 4).map(t => (
+          <span class="tag-badge" style="font-size:0.65rem; padding: 0.1rem 0.5rem;">{t}</span>
+        ))}
+      </div>
+    )}
+
+    <!-- Footer: language + stats -->
+    <div class="flex items-center gap-4 pt-2 border-t border-[var(--glass-border)] text-xs text-[rgb(var(--color-text-secondary))]">
+      {language && (
+        <span class="flex items-center gap-1.5">
+          <span class="lang-dot" style={`background-color: ${color};`}></span>
+          {language}
+        </span>
+      )}
+      <span class="flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        {stars}
+      </span>
+      <span class="flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+        </svg>
+        {forks}
+      </span>
+      {homepageUrl && (
+        <a
+          href={homepageUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="ml-auto text-[rgb(var(--color-primary))] hover:underline"
+        >
+          Demo →
+        </a>
+      )}
+    </div>
+  </div>
+</a>
+
+  rel="noopener noreferrer"
+  class="group flex flex-col gap-3 p-5 h-full"
+>
+  <!-- Header row -->
+  <div class="flex items-start justify-between gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
+      {pinned && <PinnedBadge />}
+      <h3 class="font-display font-bold text-sm text-[rgb(var(--color-text-primary))]
+        group-hover:text-[rgb(var(--color-primary))] transition-colors">
+        {name}
+      </h3>
+    </div>
+    <!-- External link icon -->
+    <svg class="w-4 h-4 flex-shrink-0 text-[rgb(var(--color-text-secondary))] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+    </svg>
+  </div>
+
+  <!-- Description -->
+  <p class="text-xs text-[rgb(var(--color-text-secondary))] line-clamp-2 leading-relaxed flex-1">
+    {description ?? '暫無描述'}
+  </p>
+
+  <!-- Topics -->
+  {topics.length > 0 && (
+    <div class="flex flex-wrap gap-1.5">
+      {topics.slice(0, 4).map(t => (
+        <span class="tag-badge" style="font-size:0.65rem; padding: 0.1rem 0.5rem;">{t}</span>
+      ))}
+    </div>
+  )}
+
+  <!-- Footer: language + stats -->
+  <div class="flex items-center gap-4 pt-2 border-t border-[var(--glass-border)] text-xs text-[rgb(var(--color-text-secondary))]">
+    {language && (
+      <span class="flex items-center gap-1.5">
+        <span class="lang-dot" style={`background-color: ${color};`}></span>
+        {language}
+      </span>
+    )}
+    <span class="flex items-center gap-1">
+      <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+      {stars}
+    </span>
+    <span class="flex items-center gap-1">
+      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+      </svg>
+      {forks}
+    </span>
+    {homepageUrl && (
+      <a
+        href={homepageUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ml-auto text-[rgb(var(--color-primary))] hover:underline"
+        onClick:preventDefault
+      >
+        Demo →
+      </a>
+    )}
+  </div>
+</a>

@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/projects/ProjectCard.astro';
+import { fetchPinnedRepos, fetchPublicRepos } from '../../services/github';
+import { useTranslations } from '../../i18n';
+import { siteConfig } from '../../config/site';
+
+const lang = 'zh';
+const t = useTranslations(lang);
+
+const [pinnedRepos, publicRepos] = await Promise.all([
+  fetchPinnedRepos(),
+  fetchPublicRepos(),
+]);
+
+// Whitelist: show these repos even if not pinned
+const whitelistMap = new Map(siteConfig.projectsWhitelist.map(e => [e.name, e.image]));
+const pinnedNames = new Set(pinnedRepos.map(r => r.name));
+
+// Extra repos from whitelist that are not already pinned
+const whitelistRepos = publicRepos
+  .filter(r => whitelistMap.has(r.name) && !pinnedNames.has(r.name))
+  .map(r => ({ ...r, coverImage: whitelistMap.get(r.name) }));
+---
+
+<BaseLayout title={t.projects.title} currentPath="/projects" lang={lang}>
+  <div class="container mx-auto px-6 py-24">
+    <!-- Page header -->
+    <div class="mb-10">
+      <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
+        🚀 {t.projects.title}
+      </h1>
+      <p class="text-[rgb(var(--color-text-secondary))]">
+        <a href="https://github.com/HeiTang" target="_blank" rel="noopener noreferrer"
+          class="hover:text-[rgb(var(--color-primary))] transition-colors">
+          @HeiTang
+        </a> 的 GitHub 專案
+      </p>
+    </div>
+
+    <!-- Pinned repos -->
+    {pinnedRepos.length > 0 && (
+      <section class="mb-12">
+        <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))] flex items-center gap-2">
+          ⭐ {t.projects.pinned}
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {pinnedRepos.map(repo => (
+            <div class="card-interactive rounded-3xl border border-white/[0.08] overflow-hidden ring-1 ring-[rgba(var(--color-primary),0.2)]"
+              style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
+              <ProjectCard
+                name={repo.name}
+                description={repo.description}
+                url={repo.url}
+                homepageUrl={repo.homepageUrl}
+                language={repo.primaryLanguage?.name ?? null}
+                languageColor={repo.primaryLanguage?.color ?? null}
+                stars={repo.stargazerCount}
+                forks={repo.forkCount}
+                topics={repo.repositoryTopics.nodes.map(n => n.topic.name)}
+                pinned={true}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- Whitelist repos (not pinned) -->
+    {whitelistRepos.length > 0 && (
+      <section>
+        <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))]">
+          📦 {t.projects.all}
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {whitelistRepos.map(repo => (
+            <div class="card-interactive rounded-3xl border border-white/[0.08] overflow-hidden"
+              style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
+              <ProjectCard
+                name={repo.name}
+                description={repo.description}
+                url={repo.html_url}
+                homepageUrl={repo.homepage}
+                language={repo.language}
+                stars={repo.stargazers_count}
+                forks={repo.forks_count}
+                topics={repo.topics}
+                coverImage={repo.coverImage}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {pinnedRepos.length === 0 && whitelistRepos.length === 0 && (
+      <div class="glass p-12 rounded-2xl text-center">
+        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{t.projects.noRepos}</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>
