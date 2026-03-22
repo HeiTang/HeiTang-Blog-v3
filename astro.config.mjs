@@ -7,7 +7,7 @@ import autoprefixer from 'autoprefixer';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://purr.tw',
+  site: 'https://beta.purr.tw',
   integrations: [
     react(),
     sitemap(),
