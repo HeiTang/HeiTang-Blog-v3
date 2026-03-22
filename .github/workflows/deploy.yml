@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
   schedule:
     # 每天 UTC 02:00（台灣時間 10:00）自動 rebuild，確保 GitHub 專案資料保持最新
