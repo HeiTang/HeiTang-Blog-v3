@@ -20,8 +20,9 @@ const navItems = siteConfig.nav[lang];
     <div class="flex items-center justify-between">
       <!-- Logo -->
       <a href={lang === 'en' ? '/en' : '/'} class="flex items-center gap-3 group">
-        <div class="w-9 h-9 flex items-center justify-center text-xl rounded-lg border border-white/20 transition-all group-hover:border-white/40" style="background: rgba(255,255,255,0.05);">
-          🐱
+        <div class="w-9 h-9 flex items-center justify-center rounded-xl overflow-hidden transition-all
+          group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(255,140,97,0.6)]">
+          <img src="/images/icon.png" alt="Logo" class="w-full h-full object-contain" />
         </div>
         <span class="font-semibold text-base text-white/90 group-hover:text-white transition-colors">
           {lang === 'zh' ? siteConfig.title : siteConfig.titleEn}

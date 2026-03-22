@@ -4,10 +4,10 @@
  */
 
 export const siteConfig = {
-  title: '黑糖ㄉ窩',
+  title: '黑糖ㄉ貓窩',
   titleEn: "HeiTang's Den",
-  description: '橘貓工程師的技術日誌',
-  descriptionEn: 'Orange Cat Engineer Tech Blog',
+  description: '你好！我是黑糖，是一位軟體工程師，出沒於資訊社群，歡迎捕捉！喜愛寫程式來解決生活中繁瑣的事。',
+  descriptionEn: 'Hello! I am HeiTang, a software engineer who loves to write code to solve everyday problems. You can often find me in tech communities, so feel free to catch me there!',
   author: 'HeiTang',
   url: 'https://purr.tw',
   domain: 'purr.tw',
@@ -15,7 +15,7 @@ export const siteConfig = {
   // Social links
   social: {
     github: 'https://github.com/HeiTang',
-    email: 'contact@purr.tw',
+    email: 'heitang@purr.tw',
   },
   
   // Features

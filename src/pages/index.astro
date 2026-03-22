@@ -15,18 +15,17 @@ import { siteConfig } from '../config/site';
       </div>
 
       <!-- Name -->
-      <h1 class="font-display text-3xl font-bold text-[rgb(var(--color-text-primary))] mb-1">
+      <h1 class="font-display text-3xl font-bold text-[rgb(var(--color-text-primary))] mb-4
+        [text-shadow:0_0_30px_rgba(var(--color-primary),0.3)]">
         黑糖不是炭
       </h1>
 
-      <!-- Handle -->
-      <p class="text-sm text-[rgb(var(--color-primary))] font-medium mb-4 tracking-wide">
-        @HeiTang
-      </p>
-
-      <!-- Bio -->
-      <p class="text-[rgb(var(--color-text-secondary))] mb-8 leading-relaxed">
-        橘貓不胖，只是蓬鬆了點！ヽ(=^･ω･^=)丿
+      <!-- Bio: rotating typewriter -->
+      <p class="text-[rgb(var(--color-text-secondary))] mb-8 leading-relaxed min-h-[1.6em]">
+        <span class="txt-rotate"
+          data-period="2000"
+          data-rotate='["橘貓不胖，只是蓬鬆了點！ ₍˄•༝•˄₎◞✩︎", "一隻在橘線迷路的橘貓 /ᐠ-˕-マⳊ", "今天的你記得放飯了嗎 ₍^..^₎ 𐒡"]'
+        ><span class="wrap"></span></span><span class="tw-cursor">▍</span>
       </p>
 
       <!-- Social icons -->
@@ -71,3 +70,67 @@ import { siteConfig } from '../config/site';
     </div>
   </div>
 </BaseLayout>
+
+<style>
+  .tw-cursor {
+    display: inline-block;
+    color: rgb(var(--color-primary));
+    animation: tw-blink 0.8s step-end infinite;
+    font-weight: 300;
+    margin-left: 1px;
+  }
+  @keyframes tw-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+</style>
+
+<script>
+  class TxtRotate {
+    private el: HTMLElement;
+    private toRotate: string[];
+    private period: number;
+    private loopNum = 0;
+    private txt = '';
+    private isDeleting = false;
+
+    constructor(el: HTMLElement, toRotate: string[], period: number) {
+      this.el = el;
+      this.toRotate = toRotate;
+      this.period = period;
+      setTimeout(() => this.tick(), 400);
+    }
+
+    tick() {
+      const i = this.loopNum % this.toRotate.length;
+      const fullTxt = this.toRotate[i];
+
+      this.txt = this.isDeleting
+        ? fullTxt.substring(0, this.txt.length - 1)
+        : fullTxt.substring(0, this.txt.length + 1);
+
+      this.el.querySelector<HTMLElement>('.wrap')!.textContent = this.txt;
+
+      let delta = 100 - Math.round(Math.random() * 40);
+      if (this.isDeleting) delta /= 2.5;
+
+      if (!this.isDeleting && this.txt === fullTxt) {
+        delta = this.period;
+        this.isDeleting = true;
+      } else if (this.isDeleting && this.txt === '') {
+        this.isDeleting = false;
+        this.loopNum++;
+        delta = 500;
+      }
+
+      setTimeout(() => this.tick(), delta);
+    }
+  }
+
+  document.querySelectorAll<HTMLElement>('.txt-rotate').forEach(el => {
+    const raw = el.getAttribute('data-rotate');
+    const period = parseInt(el.getAttribute('data-period') || '2000', 10);
+    if (raw) new TxtRotate(el, JSON.parse(raw), period);
+  });
+</script>
+
