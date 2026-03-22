@@ -1,84 +1,66 @@
 ---
 /**
- * InviteCodeCard — Displays a single invite code with copy functionality
- * Single Responsibility: one card, one code
+ * InviteCodeCard — Minimal card; details open in Modal (desktop) or Bottom Sheet (mobile)
+ * Single Responsibility: preview only, no inline actions
  */
 import type { InviteCode } from '../../types/invite';
 
 export interface Props {
   code: InviteCode;
-  lang?: 'zh' | 'en';
 }
 
-const { code, lang = 'zh' } = Astro.props;
+const { code } = Astro.props;
 
-const statusLabel: Record<InviteCode['status'], { zh: string; en: string; color: string }> = {
-  active:  { zh: '有效',   en: 'Active',  color: 'text-green-400 border-green-500/30 bg-green-500/10' },
-  expired: { zh: '已到期', en: 'Expired', color: 'text-red-400 border-red-500/30 bg-red-500/10' },
-  limited: { zh: '名額有限', en: 'Limited', color: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10' },
+const statusConfig = {
+  active:   { label: '有效',   color: 'text-green-400 border-green-500/30 bg-green-500/10' },
+  expired:  { label: '已到期', color: 'text-red-400 border-red-500/30 bg-red-500/10' },
+  disabled: { label: '已停用', color: 'text-zinc-400 border-zinc-500/30 bg-zinc-500/10' },
 };
-const status = statusLabel[code.status];
+const s = statusConfig[code.status];
 ---
 
-<div class="bento-cell p-5 flex flex-col gap-3">
-  <!-- Header -->
-  <div class="flex items-center justify-between gap-3">
-    <div>
-      <h3 class="font-display font-bold text-sm text-[rgb(var(--color-text-primary))]">
-        {code.service}
-      </h3>
-      {code.url && (
-        <a href={code.url} target="_blank" rel="noopener noreferrer"
-          class="text-xs text-[rgb(var(--color-primary))] hover:underline">{code.url.replace(/^https?:\/\//, '')}</a>
-      )}
-    </div>
-    <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${status.color}`}>
-      {lang === 'zh' ? status.zh : status.en}
+<div class:list={[
+  "liquid-glass-card card-interactive ic-card cursor-pointer p-5 flex flex-col gap-3 select-none",
+  code.status === 'disabled' && "opacity-55",
+]}
+  data-status={code.status}
+  data-invite={JSON.stringify(code)}
+  role="button"
+  tabindex="0"
+  aria-label={`查看 ${code.title} 邀請碼詳情`}
+>
+  <!-- Title -->
+  <h3 class="font-display font-bold text-sm text-[rgb(var(--color-text-primary))] leading-snug">
+    {code.title}
+  </h3>
+
+  <!-- Status badge + tags: same row -->
+  <div class="flex flex-wrap items-center gap-1.5">
+    <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${s.color}`}>
+      {s.label}
     </span>
+    {code.tags && code.tags.map(tag => (
+      <span class="text-xs px-2 py-0.5 rounded-full
+        bg-[rgba(var(--color-accent),0.12)] text-[rgb(var(--color-accent))]
+        border border-[rgba(var(--color-accent),0.2)]">
+        {tag}
+      </span>
+    ))}
   </div>
 
-  <!-- Description -->
-  <p class="text-xs text-[rgb(var(--color-text-secondary))] leading-relaxed">
-    {lang === 'en' && code.descriptionEn ? code.descriptionEn : code.description}
+  <!-- Description (2 lines max) -->
+  <p class="text-xs text-[rgb(var(--color-text-secondary))] leading-relaxed line-clamp-2 flex-1">
+    {code.description}
   </p>
 
-  <!-- Code copy row -->
-  <div class="flex items-center gap-2 mt-auto">
-    <code class="flex-1 font-mono text-sm bg-[rgba(var(--color-accent),0.1)] text-[rgb(var(--color-accent))]
-      px-3 py-1.5 rounded-lg border border-[rgba(var(--color-accent),0.2)] truncate">
-      {code.code}
-    </code>
-    <button
-      class="copy-btn flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium
-        glass border border-[var(--glass-border)]
-        text-[rgb(var(--color-text-secondary))] hover:text-[rgb(var(--color-primary))]
-        hover:border-[rgba(var(--color-primary),0.4)] transition-all duration-200"
-      data-code={code.code}
-    >
-      {lang === 'zh' ? '複製' : 'Copy'}
-    </button>
+  <!-- Footer hint -->
+  <div class="flex items-center justify-end pt-1.5 border-t border-[rgba(255,255,255,0.06)]">
+    <span class="text-xs text-[rgb(var(--color-primary))] font-medium opacity-80 flex items-center gap-1">
+      查看詳情
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M4.5 2.5L7.5 6l-3 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
   </div>
-
-  <!-- Expiry -->
-  {code.expiry && (
-    <p class="text-xs text-[rgb(var(--color-text-secondary))]">
-      {lang === 'zh' ? '到期：' : 'Expires: '}{code.expiry}
-    </p>
-  )}
 </div>
 
-<script>
-  document.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const code = btn.dataset.code ?? '';
-      await navigator.clipboard.writeText(code);
-      const orig = btn.textContent;
-      btn.textContent = '✓ 已複製';
-      btn.classList.add('text-green-400');
-      setTimeout(() => {
-        btn.textContent = orig;
-        btn.classList.remove('text-green-400');
-      }, 1800);
-    });
-  });
-</script>

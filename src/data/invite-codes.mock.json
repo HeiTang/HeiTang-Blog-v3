@@ -1,0 +1,77 @@
+{
+  "codes": [
+    {
+      "title": "Claude Pro",
+      "description": "Anthropic 的 AI 助理，Pro 方案解鎖更長對話與優先使用權。",
+      "tags": ["AI 工具"],
+      "status": "active",
+      "invite_code": "PURR-CLAUDE",
+      "invite_link": "https://claude.ai/referral/PURR-CLAUDE",
+      "official_link": "https://claude.ai",
+      "user_benefit": "首月 Pro 免費",
+      "my_benefit": "帳號點數 $10"
+    },
+    {
+      "title": "Cursor",
+      "description": "AI 程式碼編輯器，內建 GPT-4 與 Claude，大幅提升開發效率。",
+      "tags": ["AI 工具"],
+      "status": "active",
+      "invite_link": "https://cursor.sh/referral?ref=purr",
+      "official_link": "https://cursor.sh",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "user_benefit": "Pro 試用 60 天",
+      "my_benefit": "Pro 延長 1 個月"
+    },
+    {
+      "title": "Notion",
+      "description": "All-in-one 筆記與專案管理工具，個人版永久免費。",
+      "tags": ["AI 工具", "生產力"],
+      "status": "active",
+      "invite_code": "NOTIONPURR",
+      "official_link": "https://notion.so",
+      "user_benefit": "Plus 方案試用 30 天"
+    },
+    {
+      "title": "第一銀行 iLEO",
+      "description": "12 萬最高 2% 高利活存！",
+      "tags": ["金融"],
+      "status": "expired",
+      "invite_code": "CBSbOt",
+      "invite_link": "https://ibank.firstbank.com.tw/?em=CBSbOt",
+      "official_link": "https://webar.firstbank.com.tw/ileo",
+      "start_date": "2024-01-01",
+      "end_date": "2024-06-30",
+      "user_benefit": "NT$100 + NT$50（開戶禮）",
+      "my_benefit": "NT$100"
+    },
+    {
+      "title": "玉山 Wallet",
+      "description": "數位帳戶，消費回饋最高 3%。",
+      "tags": ["金融"],
+      "status": "active",
+      "invite_code": "PURRWLT",
+      "official_link": "https://wallet.esunbank.com.tw",
+      "start_date": "2026-01-01",
+      "end_date": "2026-06-30",
+      "user_benefit": "NT$200 現金回饋"
+    },
+    {
+      "title": "某停用服務",
+      "description": "這個邀請碼已被手動停用，測試 disabled 狀態顯示。",
+      "tags": ["生產力"],
+      "status": "disabled",
+      "invite_code": "DISABLED123",
+      "official_link": "https://example.com"
+    },
+    {
+      "title": "無標籤測試",
+      "description": "這張卡片沒有任何 tag，應該出現在「其他」section。",
+      "tags": [],
+      "status": "active",
+      "invite_link": "https://example.com/ref/purr",
+      "user_benefit": "免費試用 7 天"
+    }
+  ],
+  "updatedAt": "2026-03-22T00:00:00.000Z"
+}

@@ -215,6 +215,74 @@
 
 
 
+  /* ─── Liquid Glass Card ─── */
+
+  .liquid-glass-card {
+    --mx: 50%;
+    --my: 25%;
+
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+
+    /* 半透明底色讓 backdrop 透出 */
+    background: linear-gradient(
+      160deg,
+      rgba(255,255,255,0.10) 0%,
+      rgba(255,255,255,0.03) 50%,
+      rgba(255,255,255,0.07) 100%
+    );
+
+    /* 核心：SVG feDisplacementMap 真實折射 + blur + saturate */
+    backdrop-filter: url(#lg-refract) blur(28px) saturate(160%) brightness(1.06);
+    -webkit-backdrop-filter: url(#lg-refract) blur(28px) saturate(160%) brightness(1.06);
+
+    /* 漸層邊框 */
+    border: 1px solid rgba(255, 255, 255, 0.20);
+
+    /* 多層 inset：玻璃切面厚度感 */
+    box-shadow:
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.60),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+      inset 1px 0 0 rgba(255, 255, 255, 0.14),
+      inset -1px 0 0 rgba(255, 255, 255, 0.05),
+      0 20px 60px rgba(0, 0, 0, 0.36),
+      0 4px 16px rgba(0, 0, 0, 0.22);
+
+    transition:
+      transform 0.08s ease-out,
+      box-shadow 0.35s ease,
+      border-color 0.35s ease;
+  }
+
+  /* 色散邊緣：Chromatic aberration 模擬 */
+  .liquid-glass-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      linear-gradient(to bottom right,
+        rgba(255, 80, 80, 0.04) 0%,
+        transparent 40%,
+        rgba(80, 80, 255, 0.04) 100%
+      );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .liquid-glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.32);
+    box-shadow:
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.70),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+      inset 1px 0 0 rgba(255, 255, 255, 0.20),
+      inset -1px 0 0 rgba(255, 255, 255, 0.08),
+      0 28px 80px rgba(0, 0, 0, 0.42),
+      0 6px 24px rgba(0, 0, 0, 0.26),
+      0 0 0 0.5px rgba(255, 255, 255, 0.12);
+  }
+
   .tag-badge {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
     @apply bg-[rgba(var(--color-primary),0.12)] text-[rgb(var(--color-primary))];
