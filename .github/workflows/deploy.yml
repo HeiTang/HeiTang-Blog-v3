@@ -38,7 +38,7 @@ jobs:
         run: npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INVITE_CODES_API_URL: ${{ secrets.INVITE_CODES_API_URL }}
+          INVITE_CODES_API_URL: ${{ vars.INVITE_CODES_API_URL }}
 
       - name: Run Pagefind
         run: npx pagefind --site dist
