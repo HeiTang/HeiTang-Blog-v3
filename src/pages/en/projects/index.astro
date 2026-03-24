@@ -1,12 +1,18 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import ProjectCard from '../../../components/projects/ProjectCard.astro';
+import ProjectModal from '../../../components/projects/ProjectModal.astro';
 import { fetchPinnedRepos, fetchPublicRepos } from '../../../services/github';
+import { siteConfig } from '../../../config/site';
 
 const lang = 'en';
 const [pinnedRepos, publicRepos] = await Promise.all([fetchPinnedRepos(), fetchPublicRepos()]);
+
+const metaMap = new Map(siteConfig.projectsWhitelist.map(m => [m.name, m]));
 const pinnedNames = new Set(pinnedRepos.map(r => r.name));
-const otherRepos = publicRepos.filter(r => !pinnedNames.has(r.name));
+const whitelistRepos = publicRepos
+  .filter(r => metaMap.has(r.name) && !pinnedNames.has(r.name))
+  .map(r => ({ ...r, meta: metaMap.get(r.name) }));
 ---
 
 <BaseLayout title="Projects" lang={lang} currentPath="/en/projects">
@@ -15,14 +21,15 @@ const otherRepos = publicRepos.filter(r => !pinnedNames.has(r.name));
       <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
         🚀 GitHub Projects
       </h1>
+      <p class="text-[rgb(var(--color-text-secondary))]">Click a card to view project details</p>
     </div>
 
     {pinnedRepos.length > 0 && (
       <section class="mb-12">
         <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))]">⭐ Pinned</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {pinnedRepos.map(repo => (
-            <div class="rounded-3xl border border-white/[0.08] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 ring-1 ring-[rgba(var(--color-primary),0.2)]"
+            <div class="card-interactive rounded-3xl border border-white/[0.08] overflow-hidden ring-1 ring-[rgba(var(--color-primary),0.2)]"
               style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
               <ProjectCard
                 name={repo.name} description={repo.description} url={repo.url}
@@ -32,6 +39,7 @@ const otherRepos = publicRepos.filter(r => !pinnedNames.has(r.name));
                 stars={repo.stargazerCount} forks={repo.forkCount}
                 topics={repo.repositoryTopics.nodes.map(n => n.topic.name)}
                 pinned={true}
+                meta={metaMap.get(repo.name)}
               />
             </div>
           ))}
@@ -39,17 +47,18 @@ const otherRepos = publicRepos.filter(r => !pinnedNames.has(r.name));
       </section>
     )}
 
-    {otherRepos.length > 0 && (
+    {whitelistRepos.length > 0 && (
       <section>
-        <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))]">📦 All Repositories</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {otherRepos.map(repo => (
-            <div class="rounded-3xl border border-white/[0.08] overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
+        <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))]">📦 More Projects</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {whitelistRepos.map(repo => (
+            <div class="card-interactive rounded-3xl border border-white/[0.08] overflow-hidden"
               style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
               <ProjectCard
                 name={repo.name} description={repo.description} url={repo.html_url}
                 homepageUrl={repo.homepage} language={repo.language}
                 stars={repo.stargazers_count} forks={repo.forks_count} topics={repo.topics}
+                meta={repo.meta}
               />
             </div>
           ))}
@@ -57,4 +66,6 @@ const otherRepos = publicRepos.filter(r => !pinnedNames.has(r.name));
       </section>
     )}
   </div>
+
+  <ProjectModal />
 </BaseLayout>

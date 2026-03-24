@@ -1,0 +1,623 @@
+---
+/**
+ * ProjectModal — Desktop Modal + Mobile BottomSheet for project details.
+ * Single Responsibility: renders the overlay shell; JS fills content dynamically.
+ */
+---
+
+<div id="pm-overlay" role="presentation">
+  <div id="pm-backdrop"></div>
+
+  <!-- Desktop Modal: sticky header + scrollable body both inside #pm-content -->
+  <div id="pm-modal" role="dialog" aria-modal="true" aria-labelledby="pm-title">
+    <div id="pm-content"></div>
+  </div>
+
+  <!-- Mobile Bottom Sheet -->
+  <div id="pm-sheet" role="dialog" aria-modal="true">
+    <div id="pm-sheet-drag" aria-hidden="true"><div class="pm-drag-handle"></div></div>
+    <div id="pm-sheet-content" class="pm-sheet-scroll"></div>
+  </div>
+</div>
+
+<style is:global>
+  /* ── Overlay ── */
+  #pm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+  }
+  #pm-overlay.open { display: block; }
+
+  #pm-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    cursor: pointer;
+    transition: background 0.3s ease, backdrop-filter 0.3s ease;
+  }
+  #pm-overlay.open #pm-backdrop {
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* ── Desktop Modal ── */
+  #pm-modal {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(860px, calc(100vw - 2rem));
+    max-height: min(90vh, 860px);
+    overflow: hidden;
+    background: rgb(var(--color-bg-medium));
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 1.25rem;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.55);
+  }
+
+  /* #pm-content is the scroll container */
+  #pm-content {
+    max-height: min(90vh, 860px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+  #pm-content::-webkit-scrollbar { display: none; }
+
+  /* ── Mobile Bottom Sheet ── */
+  #pm-sheet {
+    display: none;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    max-height: 92vh;
+    background: rgb(var(--color-bg-medium));
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1.5rem 1.5rem 0 0;
+    flex-direction: column;
+    overflow: hidden;
+    will-change: transform;
+  }
+  #pm-sheet-drag {
+    flex-shrink: 0;
+    padding: 0.75rem 0 0.5rem;
+    cursor: grab;
+    display: flex; justify-content: center;
+  }
+  .pm-drag-handle {
+    width: 2.5rem; height: 4px;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.2);
+  }
+  .pm-sheet-scroll {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    overscroll-behavior: contain;
+  }
+  .pm-sheet-scroll::-webkit-scrollbar { display: none; }
+
+  /* ══════════════════════════════════════════════
+     Inner content — scoped under #pm-content and
+     #pm-sheet-content to prevent global leakage
+
+     Design tokens used throughout:
+       border:  rgba(255,255,255,0.1)
+       border-subtle: rgba(255,255,255,0.06)
+       muted text: rgba(255,255,255,0.4)
+       radius-lg: 0.875rem  radius-sm: 0.5rem
+       gap-lg: 1.5rem  gap-md: 1rem  gap-sm: 0.5rem
+  ══════════════════════════════════════════════ */
+
+  /* ── Sticky Header ── */
+  #pm-content .pm-sticky-header,
+  #pm-sheet-content .pm-sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.125rem 1.5rem;
+    background: rgb(var(--color-bg-medium));
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  #pm-content .pm-title,
+  #pm-sheet-content .pm-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.35rem; font-weight: 700; letter-spacing: 0.05em;
+    color: rgb(var(--color-primary));
+    text-shadow:
+      0 0 8px rgba(var(--color-primary) / 0.9),
+      0 0 20px rgba(var(--color-primary) / 0.6),
+      0 0 40px rgba(var(--color-primary) / 0.3);
+    margin: 0; line-height: 1.25;
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #pm-content .pm-title .pm-title-bracket,
+  #pm-sheet-content .pm-title .pm-title-bracket {
+    color: rgba(var(--color-primary) / 0.35);
+    text-shadow: none;
+    font-weight: 500;
+  }
+  #pm-sheet-content .pm-close-trigger {
+    display: flex; align-items: center; justify-content: center;
+    width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.75rem; cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+  }
+  #pm-content .pm-close-trigger:hover,
+  #pm-sheet-content .pm-close-trigger:hover {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.9);
+    transform: scale(1.1);
+  }
+
+  /* ── Body: flex column with consistent gap rhythm ── */
+  #pm-content .pm-body,
+  #pm-sheet-content .pm-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ── Two-column split (desktop) ── */
+  #pm-content .pm-split {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  /* Media first in HTML → col 2 visually on desktop */
+  #pm-content .pm-split-media {
+    grid-column: 2; grid-row: 1;
+    border-radius: 0.875rem;
+    overflow: hidden;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    aspect-ratio: 16/9;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #pm-content .pm-split-media > img {
+    width: 100%; height: 100%;
+    object-fit: contain; display: block;
+  }
+  /* Text second in HTML → col 1 visually on desktop; plain, no boxing */
+  #pm-content .pm-split-text {
+    grid-column: 1; grid-row: 1;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  /* Section label inside left col (e.g. "About The Project") */
+  /* uses .pm-section-title — same style as highlights heading */
+  /* Tech row sits naturally above description; gap from parent flex */
+  #pm-content .pm-split-text .pm-tech-row {
+    margin-top: 0;
+  }
+
+  /* Mobile sheet: flex column — image top, text below */
+  #pm-sheet-content .pm-split {
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  #pm-sheet-content .pm-split-media {
+    border-radius: 0.75rem; overflow: hidden;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    aspect-ratio: 16/9;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #pm-sheet-content .pm-split-media > img {
+    width: 100%; height: 100%;
+    object-fit: contain; display: block;
+  }
+  #pm-sheet-content .pm-split-text {
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+
+  /* ── Tech badges row (top of left col) ── */
+  #pm-content .pm-tech-row,
+  #pm-sheet-content .pm-tech-row {
+    display: flex; flex-wrap: wrap; gap: 0.375rem;
+  }
+  #pm-content .pm-tech-badge,
+  #pm-sheet-content .pm-tech-badge {
+    display: inline-flex; align-items: center;
+    padding: 0.3rem 0.7rem; border-radius: 9999px;
+    background: rgb(var(--color-accent) / 0.1);
+    color: rgb(var(--color-accent));
+    border-width: 1px; border-style: solid;
+    border-color: rgb(var(--color-accent) / 0.25);
+    font-size: 0.75rem; font-weight: 500;
+    line-height: 1; white-space: nowrap;
+  }
+
+  /* ── Description (plain text, parent panel provides visual frame) ── */
+  #pm-content .pm-description,
+  #pm-sheet-content .pm-description {
+    font-size: 0.9375rem; line-height: 1.7;
+    color: rgb(var(--color-text-secondary)); margin: 0;
+  }
+
+  /* ── No-cover dino placeholder ── */
+  #pm-content .pm-no-cover,
+  #pm-sheet-content .pm-no-cover {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 0.875rem;
+    color: rgba(255,255,255,0.12);
+    user-select: none;
+  }
+  #pm-content .pm-no-cover svg,
+  #pm-sheet-content .pm-no-cover svg { display: block; }
+  #pm-content .pm-no-cover span,
+  #pm-sheet-content .pm-no-cover span {
+    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.18);
+  }
+
+  /* ── Carousel ── */
+  #pm-content .pm-split-media .pm-carousel,
+  #pm-sheet-content .pm-split-media .pm-carousel {
+    width: 100%; height: 100%;
+    display: flex; overflow-x: auto;
+    scroll-snap-type: x mandatory; scrollbar-width: none;
+  }
+  #pm-content .pm-split-media .pm-carousel::-webkit-scrollbar,
+  #pm-sheet-content .pm-split-media .pm-carousel::-webkit-scrollbar { display: none; }
+  #pm-content .pm-split-media .pm-carousel img,
+  #pm-sheet-content .pm-split-media .pm-carousel img {
+    flex-shrink: 0; width: 100%; height: 100%;
+    object-fit: contain; scroll-snap-align: start;
+  }
+
+  /* ── Highlights section: clear heading hierarchy ── */
+  #pm-content .pm-section-title,
+  #pm-sheet-content .pm-section-title {
+    font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em;
+    color: rgb(var(--color-text-primary));
+    margin: 0 0 1rem;
+    padding-bottom: 0.625rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  /* Desktop: 2-col grid */
+  #pm-content .pm-features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 2rem;
+    list-style: none; padding: 0; margin: 0;
+  }
+  /* Mobile: single col */
+  #pm-sheet-content .pm-features-grid {
+    display: flex; flex-direction: column; gap: 0.5rem;
+    list-style: none; padding: 0; margin: 0;
+  }
+  #pm-content .pm-features-grid li,
+  #pm-sheet-content .pm-features-grid li {
+    display: flex; gap: 0.625rem; align-items: flex-start;
+    font-size: 0.875rem; line-height: 1.65;
+    color: rgb(var(--color-text-secondary));
+  }
+  #pm-content .pm-hl-dot,
+  #pm-sheet-content .pm-hl-dot {
+    color: rgb(var(--color-primary));
+    flex-shrink: 0; display: flex; align-items: center;
+    padding-top: 0.22em;
+  }
+
+  /* ── Footer: actions left, stats right ── */
+  #pm-content .pm-footer-bar,
+  #pm-sheet-content .pm-footer-bar {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem; flex-wrap: wrap;
+    padding-top: 1.125rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  #pm-content .pm-actions,
+  #pm-sheet-content .pm-actions {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+  }
+  #pm-content .pm-btn,
+  #pm-sheet-content .pm-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.5rem 1.1rem; border-radius: 0.5rem;
+    font-size: 0.875rem; font-weight: 500;
+    cursor: pointer; text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+  #pm-content .pm-btn:hover,
+  #pm-sheet-content .pm-btn:hover { opacity: 0.8; transform: translateY(-1px); }
+  #pm-content .pm-btn-github,
+  #pm-sheet-content .pm-btn-github {
+    background: rgba(255,255,255,0.07);
+    color: rgb(var(--color-text-primary));
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  #pm-content .pm-btn-demo,
+  #pm-sheet-content .pm-btn-demo {
+    background: rgb(var(--color-primary) / 0.12);
+    color: rgb(var(--color-primary));
+    border-width: 1px; border-style: solid;
+    border-color: rgb(var(--color-primary) / 0.28);
+  }
+  #pm-content .pm-btn-blog,
+  #pm-sheet-content .pm-btn-blog {
+    background: rgb(var(--color-accent) / 0.1);
+    color: rgb(var(--color-accent));
+    border-width: 1px; border-style: solid;
+    border-color: rgb(var(--color-accent) / 0.22);
+  }
+  /* Stats (muted, right-aligned) */
+  #pm-content .pm-stats-inline,
+  #pm-sheet-content .pm-stats-inline {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-size: 0.75rem; color: rgba(255,255,255,0.4);
+    flex-shrink: 0;
+  }
+  #pm-content .pm-stat,
+  #pm-sheet-content .pm-stat {
+    display: flex; align-items: center; gap: 0.3rem;
+  }
+  #pm-content .pm-lang-dot,
+  #pm-sheet-content .pm-lang-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    display: inline-block; flex-shrink: 0;
+  }
+
+  /* ── Mobile overrides ── */
+  @media (max-width: 639px) {
+    #pm-sheet-content .pm-body { padding: 1rem 1rem 2rem; gap: 1.125rem; }
+    #pm-sheet-content .pm-sticky-header { padding: 0.75rem 1rem; }
+    #pm-sheet-content .pm-title { font-size: 1rem; letter-spacing: 0.02em; }
+    #pm-sheet-content .pm-description { font-size: 0.875rem; line-height: 1.65; }
+    #pm-sheet-content .pm-tech-badge { font-size: 0.7rem; padding: 0.25rem 0.55rem; }
+    #pm-sheet-content .pm-features-grid { grid-template-columns: 1fr; }
+    #pm-sheet-content .pm-footer-bar {
+      flex-direction: column; align-items: flex-start; gap: 0.75rem;
+    }
+    #pm-sheet-content .pm-actions { flex-direction: column; width: 100%; }
+    #pm-sheet-content .pm-btn {
+      justify-content: center; padding: 0.65rem 1rem;
+    }
+  }
+</style>
+
+<script>
+  const SPRING   = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+  const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+  const overlay      = document.getElementById('pm-overlay')!;
+  const backdrop     = document.getElementById('pm-backdrop')!;
+  const modal        = document.getElementById('pm-modal')!;
+  const content      = document.getElementById('pm-content')!;
+  const sheet        = document.getElementById('pm-sheet')!;
+  const sheetContent = document.getElementById('pm-sheet-content')!;
+
+  const isMobile = () => window.innerWidth < 640;
+
+  interface ProjectData {
+    name: string;
+    description: string | null;
+    url: string;
+    homepageUrl: string | null;
+    cover: string;
+    role: string | null;
+    period: string | null;
+    techStack: string[];
+    highlights: string[];
+    screenshots: string[];
+    blogPost: string | null;
+    language: string | null;
+    languageColor: string;
+    stars: number;
+    forks: number;
+  }
+
+  function esc(s: string) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildHTML(p: ProjectData): string {
+    const iconGH  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>`;
+    const iconExt = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M10 14L21 3M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/></svg>`;
+    const iconCheck = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+    // ── Sticky Header: title + close button ────────────────
+    const stickyHeader = `
+      <div class="pm-sticky-header">
+        <h2 id="pm-title" class="pm-title"><span class="pm-title-bracket">&lt;</span>${esc(p.name)}<span class="pm-title-bracket"> /&gt;</span></h2>
+        <button class="pm-close-trigger" aria-label="關閉">✕</button>
+      </div>`;
+
+    // ── Media (right col on desktop, top on mobile) ─────────
+    // Multiple screenshots → carousel; single cover → plain img; none → dino
+    let mediaInner = '';
+    if (p.screenshots.length > 1) {
+      mediaInner = `<div class="pm-carousel">${p.screenshots.map(s =>
+        `<img src="${esc(s)}" alt="screenshot" loading="lazy">`).join('')}</div>`;
+    } else if (p.cover) {
+      mediaInner = `<img src="${esc(p.cover)}" alt="${esc(p.name)}" onerror="pmNoCover(this.parentElement)">`;
+    } else {
+      mediaInner = `<div class="pm-no-cover" data-pm-dino></div>`;
+    }
+    const splitMedia = `<div class="pm-split-media">${mediaInner}</div>`;
+
+    // ── Left col: "About" label + description + tech badges (pinned bottom) ──
+    const techBadges = p.techStack
+      .map(t => `<span class="pm-tech-badge">${esc(t)}</span>`).join('');
+    const techRow = techBadges
+      ? `<div class="pm-tech-row">${techBadges}</div>` : '';
+    const description = p.description
+      ? `<p class="pm-description">${esc(p.description)}</p>` : '';
+    const splitText = (techRow || description)
+      ? `<div class="pm-split-text">${techRow}${description}</div>` : '';
+
+    // ── Two-col split (media HTML-first for mobile ordering) ─
+    const split = (splitMedia || splitText)
+      ? `<div class="pm-split">${splitMedia}${splitText}</div>` : '';
+
+    // ── Highlights section (full-width, 2-col grid) ──────────
+    const highlightsSection = p.highlights.length ? `
+      <div class="pm-section">
+        <h3 class="pm-section-title">亮點</h3>
+        <ul class="pm-features-grid">
+          ${p.highlights.map(h => `
+            <li>
+              <span class="pm-hl-dot">${iconCheck}</span>
+              <span>${esc(h)}</span>
+            </li>`).join('')}
+        </ul>
+      </div>` : '';
+
+    // ── Footer: action buttons (left) + stats (right) ────────
+    const statsChips = [
+      p.language ? `<span class="pm-stat"><span class="pm-lang-dot" style="background:${esc(p.languageColor)}"></span>${esc(p.language)}</span>` : '',
+      p.stars > 0 ? `<span class="pm-stat"><svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>${p.stars}</span>` : '',
+      p.forks  > 0 ? `<span class="pm-stat"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>${p.forks}</span>` : ''
+    ].filter(Boolean).join('');
+
+    const footerBar = `
+      <div class="pm-footer-bar">
+        <div class="pm-actions">
+          <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" class="pm-btn pm-btn-github">
+            ${iconGH} GitHub
+          </a>
+          ${p.homepageUrl ? `<a href="${esc(p.homepageUrl)}" target="_blank" rel="noopener noreferrer" class="pm-btn pm-btn-demo">${iconExt} Demo</a>` : ''}
+          ${p.blogPost   ? `<a href="${esc(p.blogPost)}" ${p.blogPost.startsWith('/') ? '' : 'target="_blank" rel="noopener noreferrer"'} class="pm-btn pm-btn-blog">閱讀文章 →</a>` : ''}
+        </div>
+        ${statsChips ? `<div class="pm-stats-inline">${statsChips}</div>` : ''}
+      </div>`;
+
+    return `
+      ${stickyHeader}
+      <div class="pm-body">
+        ${split}
+        ${highlightsSection}
+        ${footerBar}
+      </div>`;
+  }
+
+  // ── Open ─────────────────────────────────────────
+  function openModal(data: ProjectData) {
+    const html = buildHTML(data);
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    if (isMobile()) {
+      sheetContent.innerHTML = html;
+      fillDinoContainers(sheetContent);
+      sheet.style.display = 'flex';
+      sheet.style.transform = 'translateY(100%)';
+      requestAnimationFrame(() => {
+        sheet.style.transition = `transform 0.4s ${EASE_OUT}`;
+        sheet.style.transform = 'translateY(0)';
+      });
+    } else {
+      content.innerHTML = html;
+      fillDinoContainers(content);
+      modal.style.display = 'block';
+      modal.style.opacity = '0';
+      modal.style.transform = 'translate(-50%, -50%) scale(0.93) translateY(12px)';
+      requestAnimationFrame(() => {
+        modal.style.transition = `opacity 0.3s ${SPRING}, transform 0.3s ${SPRING}`;
+        modal.style.opacity = '1';
+        modal.style.transform = 'translate(-50%, -50%) scale(1) translateY(0)';
+      });
+    }
+  }
+
+  // ── Close ─────────────────────────────────────────
+  function closeModal() {
+    if (isMobile()) {
+      sheet.style.transition = 'transform 0.25s ease-in';
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        sheet.style.cssText = '';
+        sheetContent.innerHTML = '';
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }, 260);
+    } else {
+      modal.style.transition = 'opacity 0.2s ease-in, transform 0.2s ease-in';
+      modal.style.opacity = '0';
+      modal.style.transform = 'translate(-50%, -50%) scale(0.93) translateY(12px)';
+      setTimeout(() => {
+        modal.style.cssText = '';
+        content.innerHTML = '';
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }, 220);
+    }
+  }
+
+  // ── Dino placeholder ─────────────────────────────
+  const DINO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="52" viewBox="0 0 72 52" fill="currentColor">
+    <rect x="0"  y="20" width="6"  height="6"/>
+    <rect x="6"  y="16" width="6"  height="10"/>
+    <rect x="12" y="12" width="30" height="22"/>
+    <rect x="18" y="34" width="6"  height="4"/>
+    <rect x="24" y="34" width="6"  height="12"/>
+    <rect x="30" y="34" width="6"  height="10"/>
+    <rect x="30" y="42" width="10" height="6"/>
+    <rect x="36" y="8"  width="10" height="10"/>
+    <rect x="42" y="0"  width="20" height="16"/>
+    <rect x="56" y="14" width="4"  height="4"/>
+    <rect x="54" y="4"  width="4"  height="4" style="fill:rgba(0,0,0,0.4)"/>
+  </svg>`;
+  const DINO_HTML = `<div class="pm-no-cover">${DINO_SVG}<span>No Preview</span></div>`;
+
+  function pmNoCover(el: Element) {
+    el.innerHTML = DINO_HTML;
+  }
+  // Expose for inline onerror handler
+  (window as any).pmNoCover = pmNoCover;
+
+  // Fill static dino containers (data-pm-dino) after modal renders
+  function fillDinoContainers(root: Element) {
+    root.querySelectorAll('[data-pm-dino]').forEach(el => { el.innerHTML = DINO_SVG + '<span>No Preview</span>'; });
+  }
+
+  // ── Listeners ─────────────────────────────────────
+  backdrop.addEventListener('click', closeModal);
+  // Close button is rendered dynamically inside content — use event delegation
+  overlay.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('.pm-close-trigger')) closeModal();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as Element).closest('[data-project]') as HTMLElement | null;
+    if (!btn) return;
+    const raw = btn.getAttribute('data-project');
+    if (!raw) return;
+    try { openModal(JSON.parse(raw) as ProjectData); } catch { /* ignore */ }
+  });
+
+  // ── Swipe-down to close (bottom sheet) ───────────
+  let dragStartY = 0;
+  const dragHandle = document.getElementById('pm-sheet-drag')!;
+  dragHandle.addEventListener('touchstart', (e) => { dragStartY = e.touches[0].clientY; }, { passive: true });
+  dragHandle.addEventListener('touchmove', (e) => {
+    const dy = e.touches[0].clientY - dragStartY;
+    if (dy > 0) sheet.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+  dragHandle.addEventListener('touchend', (e) => {
+    const dy = e.changedTouches[0].clientY - dragStartY;
+    if (dy > 80) closeModal();
+    else {
+      sheet.style.transition = `transform 0.3s ${EASE_OUT}`;
+      sheet.style.transform = 'translateY(0)';
+    }
+  });
+</script>

@@ -2,6 +2,7 @@
  * Site Configuration
  * Following SOLID principles: Single Responsibility
  */
+import type { ProjectMeta } from '../types/projects';
 
 export const siteConfig = {
   title: '黑糖ㄉ貓窩',
@@ -31,12 +32,37 @@ export const siteConfig = {
   googleAnalyticsId: '', // TODO: Add GA4 ID
   
   // Projects: repos shown in addition to GitHub Pinned repos
-  // image: optional custom cover (place files in public/images/projects/)
-  // if image omitted → falls back to GitHub Social Preview automatically
+  // Fill in meta for each project to power the portfolio Modal.
   projectsWhitelist: [
-    { name: 'MailCat' },
-    // { name: 'repo-name', image: '/images/projects/repo-name.png' },
-  ] as Array<{ name: string; image?: string }>,
+    {
+      name: 'MailCat',
+      role: '個人作品',
+      period: '2024',
+      image: 'https://opengraph.githubassets.com/1/HeiTang/MailCat',
+      customDescription: '一款輕量級 CLI 工具，讓開發者能在終端機直接寄送 Email，無需打開任何介面。設計用於自動化工作流程、CI/CD 通知推送，以及各種需要程式化發信的情境。',
+      techStack: ['Node.js', 'TypeScript', 'SMTP', 'Commander.js', 'Nodemailer'],
+      highlights: [
+        '以 CLI 方式快速寄送 HTML / 純文字 Email',
+        '支援 SMTP 自訂設定與 .env 環境變數管理',
+        '可作為 CI/CD pipeline 中的通知工具',
+        '支援附件、多收件人、CC / BCC 等完整 Email 欄位',
+        '零依賴部署，npm install 即可使用',
+        '提供互動式設定精靈，降低初次使用門檻',
+      ],
+      screenshots: [],
+      blogPost: '/blog/mailcat',
+    },
+    // Add more projects below:
+    // {
+    //   name: 'ShortYou',
+    //   image: '/images/projects/shortyou.png',
+    //   role: '個人作品',
+    //   period: '2022',
+    //   techStack: ['JavaScript', 'Node.js', 'MongoDB'],
+    //   highlights: ['短網址服務，支援自訂 slug', '每日產生數百次縮址'],
+    //   blogPost: '/blog/shortyou-dev-story',
+    // },
+  ] as ProjectMeta[],
 
   // Navigation
   nav: {

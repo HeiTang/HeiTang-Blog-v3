@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectCard from '../../components/projects/ProjectCard.astro';
+import ProjectModal from '../../components/projects/ProjectModal.astro';
 import { fetchPinnedRepos, fetchPublicRepos } from '../../services/github';
 import { useTranslations } from '../../i18n';
 import { siteConfig } from '../../config/site';
@@ -13,14 +14,14 @@ const [pinnedRepos, publicRepos] = await Promise.all([
   fetchPublicRepos(),
 ]);
 
-// Whitelist: show these repos even if not pinned
-const whitelistMap = new Map(siteConfig.projectsWhitelist.map(e => [e.name, e.image]));
+// Build a lookup map: repoName → ProjectMeta
+const metaMap = new Map(siteConfig.projectsWhitelist.map(m => [m.name, m]));
 const pinnedNames = new Set(pinnedRepos.map(r => r.name));
 
 // Extra repos from whitelist that are not already pinned
 const whitelistRepos = publicRepos
-  .filter(r => whitelistMap.has(r.name) && !pinnedNames.has(r.name))
-  .map(r => ({ ...r, coverImage: whitelistMap.get(r.name) }));
+  .filter(r => metaMap.has(r.name) && !pinnedNames.has(r.name))
+  .map(r => ({ ...r, meta: metaMap.get(r.name) }));
 ---
 
 <BaseLayout title={t.projects.title} currentPath="/projects" lang={lang}>
@@ -34,7 +35,7 @@ const whitelistRepos = publicRepos
         <a href="https://github.com/HeiTang" target="_blank" rel="noopener noreferrer"
           class="hover:text-[rgb(var(--color-primary))] transition-colors">
           @HeiTang
-        </a> 的 GitHub 專案
+        </a> 的 GitHub 專案 — 點擊卡片查看詳情
       </p>
     </div>
 
@@ -44,7 +45,7 @@ const whitelistRepos = publicRepos
         <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))] flex items-center gap-2">
           ⭐ {t.projects.pinned}
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {pinnedRepos.map(repo => (
             <div class="card-interactive rounded-3xl border border-white/[0.08] overflow-hidden ring-1 ring-[rgba(var(--color-primary),0.2)]"
               style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
@@ -59,6 +60,7 @@ const whitelistRepos = publicRepos
                 forks={repo.forkCount}
                 topics={repo.repositoryTopics.nodes.map(n => n.topic.name)}
                 pinned={true}
+                meta={metaMap.get(repo.name)}
               />
             </div>
           ))}
@@ -72,7 +74,7 @@ const whitelistRepos = publicRepos
         <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))]">
           📦 {t.projects.all}
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {whitelistRepos.map(repo => (
             <div class="card-interactive rounded-3xl border border-white/[0.08] overflow-hidden"
               style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
@@ -85,7 +87,7 @@ const whitelistRepos = publicRepos
                 stars={repo.stargazers_count}
                 forks={repo.forks_count}
                 topics={repo.topics}
-                coverImage={repo.coverImage}
+                meta={repo.meta}
               />
             </div>
           ))}
@@ -99,4 +101,8 @@ const whitelistRepos = publicRepos
       </div>
     )}
   </div>
+
+  <!-- Project detail Modal (rendered once, reused for all cards) -->
+  <ProjectModal />
 </BaseLayout>
+
