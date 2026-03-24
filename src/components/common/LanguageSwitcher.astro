@@ -1,6 +1,7 @@
 ---
 /**
- * LanguageSwitcher — Switches between zh and en while preserving path
+ * LanguageSwitcher — Compact ZH / EN pill toggle
+ * Active language is highlighted; clicking switches to the other
  */
 import { getLangFromUrl, getAlternateLangUrl } from '../../i18n';
 
@@ -8,21 +9,51 @@ const url = Astro.url;
 const currentLang = getLangFromUrl(url);
 const altLang = currentLang === 'zh' ? 'en' : 'zh';
 const altUrl = getAlternateLangUrl(url, altLang);
-
-const labels = { zh: '中文', en: 'EN' };
 ---
 <a
   href={altUrl}
-  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium
-    glass border border-[var(--glass-border)] 
-    text-[rgb(var(--color-text-secondary))] hover:text-[rgb(var(--color-primary))]
-    hover:border-[rgba(var(--color-primary),0.4)] transition-all duration-200"
+  class="lang-switcher"
   title={`Switch to ${altLang === 'zh' ? '繁體中文' : 'English'}`}
+  aria-label={`Switch language to ${altLang === 'zh' ? 'Chinese' : 'English'}`}
 >
-  <span class="text-xs opacity-60">{labels[currentLang]}</span>
-  <svg class="w-3.5 h-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-  </svg>
-  <span class="text-xs">{labels[altLang]}</span>
+  <span class:list={["lang-opt", currentLang === 'zh' && "lang-opt--active"]}>ZH</span>
+  <span class="lang-divider">/</span>
+  <span class:list={["lang-opt", currentLang === 'en' && "lang-opt--active"]}>EN</span>
 </a>
+
+<style>
+  .lang-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .lang-switcher:hover {
+    border-color: rgba(var(--color-primary) / 0.4);
+    background: rgba(var(--color-primary) / 0.06);
+  }
+  .lang-opt {
+    color: rgba(255,255,255,0.3);
+    transition: color 0.2s, text-shadow 0.2s;
+  }
+  .lang-opt--active {
+    color: rgb(var(--color-primary));
+    text-shadow:
+      0 0 6px rgba(var(--color-primary) / 0.8),
+      0 0 14px rgba(var(--color-primary) / 0.4);
+  }
+  .lang-divider {
+    color: rgba(255,255,255,0.15);
+    font-weight: 300;
+  }
+  .lang-switcher:hover .lang-opt:not(.lang-opt--active) {
+    color: rgba(255,255,255,0.6);
+  }
+</style>
