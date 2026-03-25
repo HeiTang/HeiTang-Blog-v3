@@ -34,4 +34,7 @@ export interface ProjectMeta {
 
   /** Link to a related blog post — renders as「閱讀文章 →」button in Modal */
   blogPost?: string;
+
+  /** When true, hides the GitHub link button in Modal (e.g. private repos) */
+  hideGithubLink?: boolean;
 }

@@ -418,6 +418,7 @@
     highlights: string[];
     screenshots: string[];
     blogPost: string | null;
+    hideGithubLink: boolean;
     language: string | null;
     languageColor: string;
     stars: number;
@@ -490,9 +491,9 @@
     const footerBar = `
       <div class="pm-footer-bar">
         <div class="pm-actions">
-          <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" class="pm-btn pm-btn-github">
+          ${!p.hideGithubLink ? `<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" class="pm-btn pm-btn-github">
             ${iconGH} GitHub
-          </a>
+          </a>` : ''}
           ${p.homepageUrl ? `<a href="${esc(p.homepageUrl)}" target="_blank" rel="noopener noreferrer" class="pm-btn pm-btn-demo">${iconExt} Demo</a>` : ''}
           ${p.blogPost   ? `<a href="${esc(p.blogPost)}" ${p.blogPost.startsWith('/') ? '' : 'target="_blank" rel="noopener noreferrer"'} class="pm-btn pm-btn-blog">閱讀文章 →</a>` : ''}
         </div>

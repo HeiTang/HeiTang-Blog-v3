@@ -16,10 +16,27 @@ const [pinnedRepos, publicRepos] = await Promise.all([
 
 const metaMap = new Map(siteConfig.projectsWhitelist.map(m => [m.name, m]));
 const pinnedNames = new Set(pinnedRepos.map(r => r.name));
+const apiRepoNames = new Set(publicRepos.map(r => r.name));
 
 const whitelistRepos = publicRepos
   .filter(r => metaMap.has(r.name) && !pinnedNames.has(r.name))
   .map(r => ({ ...r, meta: metaMap.get(r.name) }));
+
+// Fallback: whitelist entries with no GitHub API data (private repos, rate-limited, etc.)
+const fallbackRepos = siteConfig.projectsWhitelist
+  .filter(m => !pinnedNames.has(m.name) && !apiRepoNames.has(m.name))
+  .map(m => ({
+    name: m.name,
+    description: m.customDescription ?? null,
+    html_url: `https://github.com/HeiTang/${m.name}`,
+    homepage: null as string | null,
+    language: m.techStack?.[0] ?? null,
+    stargazers_count: 0,
+    forks_count: 0,
+    topics: [] as string[],
+    meta: m,
+    isFallback: true,
+  }));
 
 // Collect all tags: language + topics from all repos
 const allRepos = [
@@ -34,6 +51,13 @@ const allRepos = [
     name: r.name,
     language: r.language ?? null,
     topics: r.topics ?? [],
+    pinned: false,
+    meta: r.meta,
+  })),
+  ...fallbackRepos.map(r => ({
+    name: r.name,
+    language: r.language ?? null,
+    topics: [] as string[],
     pinned: false,
     meta: r.meta,
   })),
@@ -119,6 +143,25 @@ const sortedTags = Object.entries(tagCount)
         </div>
       ))}
       {whitelistRepos.map(repo => (
+        <div
+          class="proj-card card-interactive rounded-3xl border border-white/[0.08] overflow-hidden"
+          style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));"
+          data-tags={[...(repo.meta?.tags ?? [])].join(',')}
+        >
+          <ProjectCard
+            name={repo.name}
+            description={repo.description}
+            url={repo.html_url}
+            homepageUrl={repo.homepage}
+            language={repo.language}
+            stars={repo.stargazers_count}
+            forks={repo.forks_count}
+            topics={repo.topics}
+            meta={repo.meta}
+          />
+        </div>
+      ))}
+      {fallbackRepos.map(repo => (
         <div
           class="proj-card card-interactive rounded-3xl border border-white/[0.08] overflow-hidden"
           style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));"
