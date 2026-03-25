@@ -50,6 +50,7 @@ export const siteConfig = {
         '提供互動式設定精靈，降低初次使用門檻',
       ],
       screenshots: [],
+      tags: ['CLI', 'Tool', 'TypeScript', 'Open Source'],
       blogPost: '/blog/mailcat',
     },
     // Add more projects below:

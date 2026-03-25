@@ -13,59 +13,146 @@ const pinnedNames = new Set(pinnedRepos.map(r => r.name));
 const whitelistRepos = publicRepos
   .filter(r => metaMap.has(r.name) && !pinnedNames.has(r.name))
   .map(r => ({ ...r, meta: metaMap.get(r.name) }));
+
+const allRepos = [
+  ...pinnedRepos.map(r => ({
+    name: r.name,
+    language: r.primaryLanguage?.name ?? null,
+    topics: r.repositoryTopics.nodes.map((n: any) => n.topic.name),
+  })),
+  ...whitelistRepos.map(r => ({
+    name: r.name,
+    language: r.language ?? null,
+    topics: r.topics ?? [],
+  })),
+];
+
+const tagCount: Record<string, number> = {};
+for (const repo of allRepos) {
+  const tags = (metaMap.get(repo.name)?.tags ?? []) as string[];
+  for (const tag of tags) tagCount[tag] = (tagCount[tag] ?? 0) + 1;
+}
+const sortedTags = Object.entries(tagCount).sort((a, b) => b[1] - a[1]).map(([t]) => t);
 ---
 
 <BaseLayout title="Projects" lang={lang} currentPath="/en/projects">
   <div class="container mx-auto px-6 py-24">
-    <div class="mb-10">
+    <div class="mb-8">
       <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
         🚀 GitHub Projects
       </h1>
       <p class="text-[rgb(var(--color-text-secondary))]">Click a card to view project details</p>
     </div>
 
-    {pinnedRepos.length > 0 && (
-      <section class="mb-12">
-        <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))]">⭐ Pinned</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pinnedRepos.map(repo => (
-            <div class="card-interactive rounded-3xl border border-white/[0.08] overflow-hidden ring-1 ring-[rgba(var(--color-primary),0.2)]"
-              style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
-              <ProjectCard
-                name={repo.name} description={repo.description} url={repo.url}
-                homepageUrl={repo.homepageUrl}
-                language={repo.primaryLanguage?.name ?? null}
-                languageColor={repo.primaryLanguage?.color ?? null}
-                stars={repo.stargazerCount} forks={repo.forkCount}
-                topics={repo.repositoryTopics.nodes.map(n => n.topic.name)}
-                pinned={true}
-                meta={metaMap.get(repo.name)}
-              />
-            </div>
-          ))}
+    {sortedTags.length > 0 && (
+      <div class="tag-tabs-wrapper sticky top-16 z-20 mb-8 -mx-2 px-2 py-2">
+        <div class="relative">
+          <div class="tag-tabs-scroll flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button class="tag-tab active flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium" data-tag="__all__">
+              All <span class="ml-1.5 text-xs opacity-70">({allRepos.length})</span>
+            </button>
+            {sortedTags.map(tag => (
+              <button class="tag-tab flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium" data-tag={tag}>
+                {tag} <span class="ml-1.5 text-xs opacity-70">({tagCount[tag]})</span>
+              </button>
+            ))}
+          </div>
+          <div class="tag-tabs-fade pointer-events-none absolute right-0 top-0 bottom-0 w-12
+            bg-gradient-to-l from-[rgb(var(--color-bg))] to-transparent rounded-r-full"></div>
         </div>
-      </section>
+      </div>
     )}
 
-    {whitelistRepos.length > 0 && (
-      <section>
-        <h2 class="font-display text-lg font-semibold mb-4 text-[rgb(var(--color-text-primary))]">📦 More Projects</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {whitelistRepos.map(repo => (
-            <div class="card-interactive rounded-3xl border border-white/[0.08] overflow-hidden"
-              style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));">
-              <ProjectCard
-                name={repo.name} description={repo.description} url={repo.html_url}
-                homepageUrl={repo.homepage} language={repo.language}
-                stars={repo.stargazers_count} forks={repo.forks_count} topics={repo.topics}
-                meta={repo.meta}
-              />
-            </div>
-          ))}
+    <div id="projects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {pinnedRepos.map(repo => (
+        <div
+          class="proj-card card-interactive rounded-3xl border border-white/[0.08] overflow-hidden ring-1 ring-[rgba(var(--color-primary),0.2)]"
+          style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));"
+          data-tags={[...(metaMap.get(repo.name)?.tags ?? [])].join(',')}
+        >
+          <ProjectCard
+            name={repo.name} description={repo.description} url={repo.url}
+            homepageUrl={repo.homepageUrl}
+            language={repo.primaryLanguage?.name ?? null}
+            languageColor={repo.primaryLanguage?.color ?? null}
+            stars={repo.stargazerCount} forks={repo.forkCount}
+            topics={repo.repositoryTopics.nodes.map((n: any) => n.topic.name)}
+            pinned={true} meta={metaMap.get(repo.name)}
+          />
         </div>
-      </section>
-    )}
+      ))}
+      {whitelistRepos.map(repo => (
+        <div
+          class="proj-card card-interactive rounded-3xl border border-white/[0.08] overflow-hidden"
+          style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));"
+          data-tags={[...(repo.meta?.tags ?? [])].join(',')}
+        >
+          <ProjectCard
+            name={repo.name} description={repo.description} url={repo.html_url}
+            homepageUrl={repo.homepage} language={repo.language}
+            stars={repo.stargazers_count} forks={repo.forks_count} topics={repo.topics}
+            meta={repo.meta}
+          />
+        </div>
+      ))}
+    </div>
+
+    <div id="projects-empty" class="hidden glass p-12 rounded-2xl text-center">
+      <p class="text-[rgb(var(--color-text-secondary))] text-lg">No matching projects</p>
+    </div>
   </div>
 
   <ProjectModal />
 </BaseLayout>
+
+<style>
+  .tag-tab {
+    color: rgb(var(--color-text-secondary));
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    transition: color 0.2s, background 0.2s, border-color 0.2s;
+  }
+  .tag-tab:hover { color: rgb(var(--color-text-primary)); background: rgba(255,255,255,0.06); }
+  .tag-tab.active {
+    color: rgb(var(--color-primary));
+    border-color: rgba(var(--color-primary), 0.5);
+    background: rgba(var(--color-primary), 0.1);
+  }
+  .tag-tabs-wrapper {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(var(--color-bg), 0.6);
+    border-radius: 1rem;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .proj-card.hidden-card { display: none; }
+</style>
+
+<script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.tag-tab');
+  const cards = document.querySelectorAll<HTMLElement>('.proj-card');
+  const emptyEl = document.getElementById('projects-empty');
+  let activeTag = '__all__';
+
+  function applyFilter() {
+    let visible = 0;
+    cards.forEach(card => {
+      const tags = (card.dataset.tags ?? '').split(',').filter(Boolean);
+      const match = activeTag === '__all__' || tags.includes(activeTag);
+      card.classList.toggle('hidden-card', !match);
+      if (match) visible++;
+    });
+    emptyEl?.classList.toggle('hidden', visible > 0);
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeTag = tab.dataset.tag ?? '__all__';
+      applyFilter();
+    });
+  });
+</script>
+

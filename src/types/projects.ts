@@ -29,6 +29,9 @@ export interface ProjectMeta {
   /** Overrides the GitHub API description in Modal (use for richer narrative) */
   customDescription?: string;
 
+  /** Custom filter tags shown in the projects page tag bar (e.g. ['CLI', 'Tool', 'Open Source']) */
+  tags?: string[];
+
   /** Link to a related blog post — renders as「閱讀文章 →」button in Modal */
   blogPost?: string;
 }
