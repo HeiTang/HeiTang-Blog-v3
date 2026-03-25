@@ -36,13 +36,17 @@ const navItems = siteConfig.nav[lang];
             <a 
               href={item.href}
               class:list={[
-                "nav-link text-sm font-medium transition-all duration-200",
+                "nav-link group relative text-sm font-medium transition-all duration-200 pb-0.5",
                 currentPath === item.href 
                   ? "nav-link--active text-white" 
                   : "text-white/60 hover:text-white"
               ]}
             >
               {item.label}
+              <span class:list={[
+                "absolute bottom-0 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
+                currentPath === item.href ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+              ]}></span>
             </a>
           </li>
         ))}
