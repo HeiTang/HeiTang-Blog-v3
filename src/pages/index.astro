@@ -24,7 +24,7 @@ import { siteConfig } from '../config/site';
       </p>
 
       <!-- Name -->
-      <h1 data-animate class="font-display text-3xl font-bold text-[rgb(var(--color-text-primary))] mb-8
+      <h1 data-animate class="pixel-title font-bold text-3xl text-[rgb(var(--color-text-primary))] mb-8
         [text-shadow:0_0_30px_rgba(var(--color-primary),0.3)]">
         黑糖不是炭
       </h1>
@@ -66,6 +66,10 @@ import { siteConfig } from '../config/site';
 </BaseLayout>
 
 <style>
+  .pixel-title {
+    font-family: 'DotGothic16', sans-serif;
+  }
+
   /* Entrance animation */
   [data-animate] {
     opacity: 0;
