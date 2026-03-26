@@ -49,7 +49,7 @@ export const siteConfig = {
         '⭐ 26 顆星，台灣 GAS 社群熱門工具',
       ],
       screenshots: [],
-      tags: ['GAS', 'Gmail', 'Automation', 'Open Source'],
+      tags: ['Google Apps Script', 'Gmail', 'Automation'],
       blogPost: '/blog/mailcat',
     },
     {
@@ -66,7 +66,7 @@ export const siteConfig = {
         '⭐ 18 顆星，動畫社群實用工具',
       ],
       screenshots: [],
-      tags: ['Python', 'CLI', 'Scraper', 'Open Source'],
+      tags: ['Python', 'CLI', 'Scraper'],
     },
     {
       name: 'ShortYou',
@@ -83,7 +83,7 @@ export const siteConfig = {
         '⭐ 9 顆星，零成本可自架的短網址方案',
       ],
       screenshots: [],
-      tags: ['GAS', 'Serverless', 'Web', 'Open Source'],
+      tags: ['Google Apps Script', 'Serverless', 'Web', 'URL Shortener', 'GitHub Pages'],
     },
     {
       name: 'Gmail-Archiver',
@@ -99,7 +99,7 @@ export const siteConfig = {
         '依 Gmail 標籤自動建立層級式資料夾結構於 Google Drive',
       ],
       screenshots: [],
-      tags: ['GAS', 'Gmail', 'Tool', 'TypeScript'],
+      tags: ['Google Apps Script', 'Gmail', 'TypeScript'],
     },
     {
       name: 'Zrss',
@@ -115,7 +115,7 @@ export const siteConfig = {
         '可直接貼入 Inoreader、Feedly 等 RSS 閱讀器使用',
       ],
       screenshots: [],
-      tags: ['Python', 'Security', 'RSS', 'Open Source'],
+      tags: ['Python', 'Security', 'RSS'],
     },
     {
       name: 'Travel-Advisory',

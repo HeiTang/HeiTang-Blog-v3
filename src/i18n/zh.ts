@@ -15,7 +15,7 @@ export interface Translations {
 export const zh: Translations = {
   home: {
     greeting: '嗨！我是一隻',
-    typewriterTexts: ['橘線迷路的橘貓 /ᐠ-˕-マⳊ', '不胖只是蓬鬆的橘貓 ₍˄•༝•˄₎◞✩︎', '記得放飯的鏟屎官 ₍^..^₎ 𐒡'],
+    typewriterTexts: ['Developer /ᐠ-˕-マⳊ', '不胖只是蓬鬆的橘貓 ₍˄•༝•˄₎◞✩︎', ' ₍^..^₎ 𐒡'],
     name: '黑糖不是炭',
     handle: '@HeiTang',
   },
@@ -48,15 +48,18 @@ export const zh: Translations = {
     title: '關於我',
     heading: '關於黑糖',
     name: '黑糖不是炭',
-    tagline: '橘貓工程師',
+    tagline: '程式通靈師',
     bio1: '橘貓不胖，只是蓬鬆了點！ヽ(=^･ω･^=)丿',
     bio2: '這裡記錄著我的技術學習、專案開發、以及各種實用資源分享。',
     bio3: '#勿毛色歧視',
-    skillsTitle: '技術棧',
+    skillsTitle: '技能', // 繁體中文用「技術棧」或「技術堆疊」都可以，這裡選擇了「技術棧」
     skillGroups: [
-      { label: '前端', skills: ['TypeScript', 'JavaScript', 'React', 'Vue', 'Astro', 'Tailwind CSS', 'HTML / CSS'] },
-      { label: '後端', skills: ['Node.js', 'Python', 'Go', 'REST API', 'GraphQL', 'PostgreSQL', 'Redis'] },
-      { label: '工具 & DevOps', skills: ['Git', 'GitHub Actions', 'Docker', 'Linux', 'Nginx', 'Cloudflare', 'Google Apps Script'] },
+      { label: '前端', skills: ['TypeScript', 'JavaScript', 'Astro', 'Tailwind CSS', 'HTML / CSS'] },
+      { label: '後端', skills: ['Python', 'Flask', 'Django', 'PHP', 'Laravel'] },
+      { label: '資料庫', skills: ['MySQL', 'PostgreSQL', 'SQL Server', 'InfluxDB', 'SQLite', 'Redis'] },
+      { label: 'DevOps & 雲端', skills: ['Docker', 'Docker Swarm', 'GitHub Actions', 'Jenkins', 'Linux', 'Nginx', 'Cloudflare', 'AWS', 'Google Cloud', 'Prometheus', 'Grafana'] },
+      { label: 'APIs & 自動化', skills: ['REST API', 'Swagger', 'OpenAPI', 'Selenium', 'Requests', 'Apache Airflow', 'Google Apps Script'] },
+      { label: '開發工具', skills: ['Git', 'Git flow', 'GitHub', 'Postman', 'Notion', 'Jira', 'Gemini', 'Copilot', 'Codex'] },
     ],
   },
   error: {
