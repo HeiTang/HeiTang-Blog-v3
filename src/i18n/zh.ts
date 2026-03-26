@@ -4,71 +4,40 @@ export interface SkillGroup {
 }
 
 export interface Translations {
-  nav: { home: string; blog: string; projects: string; inviteCodes: string; about: string };
-  home: { greeting: string; bio: string; blogCta: string; projectsCta: string; typewriterTexts: string[]; name: string; handle: string; articleCount: string };
-  blog: { title: string; searchPlaceholder: string; allTags: string; readMore: string; readingTime: string; noResults: string; publishedOn: string; updatedOn: string; articleCount: string };
-  projects: { title: string; pinned: string; all: string; stars: string; forks: string; viewOnGitHub: string; noRepos: string; noMatchingProjects: string; allFilter: string; subtitle: string };
-  inviteCodes: { title: string; description: string; service: string; code: string; copy: string; copied: string; visit: string; expiry: string; status: { active: string; expired: string; limited: string }; noData: string; lastUpdated: string; allFilter: string; loadError: string; noApiUrl: string };
+  home: { greeting: string; typewriterTexts: string[]; name: string; handle: string };
+  blog: { title: string; allTags: string; articleCount: string; emptyState: string; readingTime: string; publishedOn: string; updatedOn: string };
+  projects: { title: string; subtitle: string; noRepos: string; noMatchingProjects: string; allFilter: string };
+  inviteCodes: { title: string; description: string; noData: string; lastUpdated: string; allFilter: string; loadError: string; noApiUrl: string };
   about: { title: string; heading: string; name: string; tagline: string; bio1: string; bio2: string; bio3: string; skillsTitle: string; skillGroups: SkillGroup[] };
-  footer: { builtWith: string; rights: string };
   error: { notFound: string; desc: string; goHome: string };
 }
 
 export const zh: Translations = {
-  nav: {
-    home: '首頁',
-    blog: '文章',
-    projects: '專案',
-    inviteCodes: '邀請碼',
-    about: '關於',
-  },
   home: {
     greeting: '嗨！我是一隻',
-    bio: '橘貓工程師 · 技術部落客 · 開源愛好者',
-    blogCta: '閱讀文章',
-    projectsCta: '查看專案',
     typewriterTexts: ['橘線迷路的橘貓 /ᐠ-˕-マⳊ', '不胖只是蓬鬆的橘貓 ₍˄•༝•˄₎◞✩︎', '記得放飯的鏟屎官 ₍^..^₎ 𐒡'],
     name: '黑糖不是炭',
     handle: '@HeiTang',
-    articleCount: '篇文章',
   },
   blog: {
     title: '文章',
-    searchPlaceholder: '搜尋文章...',
     allTags: '全部',
-    readMore: '繼續閱讀',
+    articleCount: '篇文章',
+    emptyState: '✍️ 文章即將到來…',
     readingTime: '分鐘閱讀',
-    noResults: '找不到相關文章',
     publishedOn: '發布於',
     updatedOn: '更新於',
-    articleCount: '篇文章',
   },
   projects: {
     title: 'GitHub 專案',
-    pinned: '精選置頂',
-    all: '所有專案',
-    stars: '星星',
-    forks: 'Fork',
-    viewOnGitHub: '在 GitHub 上查看',
+    subtitle: ' 的 GitHub 專案 — 點擊卡片查看詳情',
     noRepos: '暫無公開專案',
     noMatchingProjects: '沒有符合的專案',
     allFilter: '全部',
-    subtitle: ' 的 GitHub 專案 — 點擊卡片查看詳情',
   },
   inviteCodes: {
     title: '邀請碼',
     description: '分享我使用並推薦的各類服務邀請碼',
-    service: '服務',
-    code: '邀請碼',
-    copy: '複製',
-    copied: '已複製！',
-    visit: '前往',
-    expiry: '到期日',
-    status: {
-      active: '有效',
-      expired: '已到期',
-      limited: '名額有限',
-    },
     noData: '目前暫無邀請碼',
     lastUpdated: '最後更新',
     allFilter: '全部',
@@ -89,10 +58,6 @@ export const zh: Translations = {
       { label: '後端', skills: ['Node.js', 'Python', 'Go', 'REST API', 'GraphQL', 'PostgreSQL', 'Redis'] },
       { label: '工具 & DevOps', skills: ['Git', 'GitHub Actions', 'Docker', 'Linux', 'Nginx', 'Cloudflare', 'Google Apps Script'] },
     ],
-  },
-  footer: {
-    builtWith: '用 Astro 建立',
-    rights: '版權所有',
   },
   error: {
     notFound: '頁面不存在',

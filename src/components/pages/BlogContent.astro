@@ -55,7 +55,7 @@ const allTags = [...new Set(posts.flatMap(p => p.data.tags))].sort();
     <!-- Posts grid -->
     {posts.length === 0 ? (
       <div class="glass p-12 rounded-2xl text-center">
-        <p class="text-[rgb(var(--color-text-secondary))] text-lg">✍️ {lang === 'zh' ? '文章即將到來…' : 'Articles coming soon…'}</p>
+        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{t.blog.emptyState}</p>
       </div>
     ) : (
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="posts-grid">

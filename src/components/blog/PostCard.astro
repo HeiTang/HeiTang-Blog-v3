@@ -4,6 +4,7 @@
  * Single Responsibility: renders a single blog post preview card
  */
 import { formatDate } from '../../utils/date';
+import { useTranslations } from '../../i18n';
 import type { SupportedLang } from '../../config/site';
 
 export interface Props {
@@ -26,6 +27,7 @@ const {
   lang = 'zh',
 } = Astro.props;
 
+const t = useTranslations(lang);
 const href = `${lang === 'en' ? '/en' : ''}/blog/${slug}`;
 ---
 
@@ -56,7 +58,7 @@ const href = `${lang === 'en' ? '/en' : ''}/blog/${slug}`;
       {formatDate(pubDate, lang)}
     </time>
     <span class="text-xs text-[rgb(var(--color-text-secondary))]">
-      {readingTime} {lang === 'zh' ? 'min' : 'min read'}
+      {readingTime} {t.blog.readingTime}
     </span>
   </div>
 </a>

@@ -6,6 +6,7 @@
 import BaseLayout from './BaseLayout.astro';
 import { siteConfig } from '../config/site';
 import { formatDate } from '../utils/date';
+import { useTranslations } from '../i18n';
 import type { PostMeta } from '../types/blog';
 
 export interface Props {
@@ -16,6 +17,7 @@ export interface Props {
 }
 
 const { post, slug, readingTime, lang = 'zh' } = Astro.props;
+const t = useTranslations(lang);
 
 const title = lang === 'en' && post.titleEn ? post.titleEn : post.title;
 const description = lang === 'en' && post.descriptionEn ? post.descriptionEn : post.description;
@@ -68,13 +70,21 @@ const postUrl = `${siteConfig.url}${lang === 'en' ? '/en' : ''}/blog/${slug}`;
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          {formatDate(post.pubDate, lang)}
+          {t.blog.publishedOn} {formatDate(post.pubDate, lang)}
         </span>
+        {post.updatedDate && (
+          <span class="flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {t.blog.updatedOn} {formatDate(post.updatedDate, lang)}
+          </span>
+        )}
         <span class="flex items-center gap-1.5">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          {readingTime} {lang === 'zh' ? '分鐘閱讀' : 'min read'}
+          {readingTime} {t.blog.readingTime}
         </span>
         <span>{post.author}</span>
       </div>
