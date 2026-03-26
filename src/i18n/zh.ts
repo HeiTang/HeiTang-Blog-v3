@@ -1,4 +1,20 @@
-export const zh = {
+export interface SkillGroup {
+  label: string;
+  skills: readonly string[];
+}
+
+export interface Translations {
+  nav: { home: string; blog: string; projects: string; inviteCodes: string; about: string };
+  home: { greeting: string; bio: string; blogCta: string; projectsCta: string; typewriterTexts: string[]; name: string; handle: string; articleCount: string };
+  blog: { title: string; searchPlaceholder: string; allTags: string; readMore: string; readingTime: string; noResults: string; publishedOn: string; updatedOn: string; articleCount: string };
+  projects: { title: string; pinned: string; all: string; stars: string; forks: string; viewOnGitHub: string; noRepos: string; noMatchingProjects: string; allFilter: string; subtitle: string };
+  inviteCodes: { title: string; description: string; service: string; code: string; copy: string; copied: string; visit: string; expiry: string; status: { active: string; expired: string; limited: string }; noData: string; lastUpdated: string; allFilter: string; loadError: string; noApiUrl: string };
+  about: { title: string; heading: string; name: string; tagline: string; bio1: string; bio2: string; bio3: string; skillsTitle: string; skillGroups: SkillGroup[] };
+  footer: { builtWith: string; rights: string };
+  error: { notFound: string; desc: string; goHome: string };
+}
+
+export const zh: Translations = {
   nav: {
     home: '首頁',
     blog: '文章',
@@ -7,10 +23,14 @@ export const zh = {
     about: '關於',
   },
   home: {
-    greeting: '嗨，我是',
+    greeting: '嗨！我是一隻',
     bio: '橘貓工程師 · 技術部落客 · 開源愛好者',
     blogCta: '閱讀文章',
     projectsCta: '查看專案',
+    typewriterTexts: ['橘線迷路的橘貓 /ᐠ-˕-マⳊ', '不胖只是蓬鬆的橘貓 ₍˄•༝•˄₎◞✩︎', '記得放飯的鏟屎官 ₍^..^₎ 𐒡'],
+    name: '黑糖不是炭',
+    handle: '@HeiTang',
+    articleCount: '篇文章',
   },
   blog: {
     title: '文章',
@@ -21,6 +41,7 @@ export const zh = {
     noResults: '找不到相關文章',
     publishedOn: '發布於',
     updatedOn: '更新於',
+    articleCount: '篇文章',
   },
   projects: {
     title: 'GitHub 專案',
@@ -30,6 +51,9 @@ export const zh = {
     forks: 'Fork',
     viewOnGitHub: '在 GitHub 上查看',
     noRepos: '暫無公開專案',
+    noMatchingProjects: '沒有符合的專案',
+    allFilter: '全部',
+    subtitle: ' 的 GitHub 專案 — 點擊卡片查看詳情',
   },
   inviteCodes: {
     title: '邀請碼',
@@ -47,9 +71,24 @@ export const zh = {
     },
     noData: '目前暫無邀請碼',
     lastUpdated: '最後更新',
+    allFilter: '全部',
+    loadError: '無法載入邀請碼，請稍後再試。',
+    noApiUrl: '尚未設定 INVITE_CODES_API_URL 環境變數。',
   },
   about: {
     title: '關於我',
+    heading: '關於黑糖',
+    name: '黑糖不是炭',
+    tagline: '橘貓工程師',
+    bio1: '橘貓不胖，只是蓬鬆了點！ヽ(=^･ω･^=)丿',
+    bio2: '這裡記錄著我的技術學習、專案開發、以及各種實用資源分享。',
+    bio3: '#勿毛色歧視',
+    skillsTitle: '技術棧',
+    skillGroups: [
+      { label: '前端', skills: ['TypeScript', 'JavaScript', 'React', 'Vue', 'Astro', 'Tailwind CSS', 'HTML / CSS'] },
+      { label: '後端', skills: ['Node.js', 'Python', 'Go', 'REST API', 'GraphQL', 'PostgreSQL', 'Redis'] },
+      { label: '工具 & DevOps', skills: ['Git', 'GitHub Actions', 'Docker', 'Linux', 'Nginx', 'Cloudflare', 'Google Apps Script'] },
+    ],
   },
   footer: {
     builtWith: '用 Astro 建立',
@@ -57,8 +96,7 @@ export const zh = {
   },
   error: {
     notFound: '頁面不存在',
+    desc: '橘貓找不到你要的頁面，也許它在睡覺？',
     goHome: '回到首頁',
   },
-} as const;
-
-export type Translations = typeof zh;
+};

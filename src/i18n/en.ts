@@ -1,4 +1,4 @@
-import type { Translations } from './zh';
+import type { Translations, SkillGroup } from './zh';
 
 export const en: Translations = {
   nav: {
@@ -13,6 +13,10 @@ export const en: Translations = {
     bio: 'Orange Cat Engineer · Tech Blogger · Open Source Enthusiast',
     blogCta: 'Read Articles',
     projectsCta: 'View Projects',
+    typewriterTexts: ['a fluffy orange cat 🐱', 'a developer & blogger ✨', 'not fat, just big-boned 🍊'],
+    name: 'HeiTang',
+    handle: '@HeiTang',
+    articleCount: 'articles',
   },
   blog: {
     title: 'Blog',
@@ -23,6 +27,7 @@ export const en: Translations = {
     noResults: 'No articles found',
     publishedOn: 'Published on',
     updatedOn: 'Updated on',
+    articleCount: 'articles',
   },
   projects: {
     title: 'GitHub Projects',
@@ -32,6 +37,9 @@ export const en: Translations = {
     forks: 'Forks',
     viewOnGitHub: 'View on GitHub',
     noRepos: 'No public repositories',
+    noMatchingProjects: 'No matching projects',
+    allFilter: 'All',
+    subtitle: "'s GitHub Projects — Click a card to view details",
   },
   inviteCodes: {
     title: 'Invite Codes',
@@ -49,9 +57,24 @@ export const en: Translations = {
     },
     noData: 'No invite codes available',
     lastUpdated: 'Last updated',
+    allFilter: 'All',
+    loadError: 'Failed to load invite codes, please try again later.',
+    noApiUrl: 'INVITE_CODES_API_URL environment variable is not set.',
   },
   about: {
     title: 'About',
+    heading: 'About HeiTang',
+    name: 'HeiTang',
+    tagline: 'Orange Cat Engineer',
+    bio1: 'Not fat, just fluffy! ヽ(=^･ω･^=)丿',
+    bio2: 'Here I document my tech learning, project development, and useful resource sharing.',
+    bio3: '#EndFurColorDiscrimination',
+    skillsTitle: 'Tech Stack',
+    skillGroups: [
+      { label: 'Frontend', skills: ['TypeScript', 'JavaScript', 'React', 'Vue', 'Astro', 'Tailwind CSS', 'HTML / CSS'] },
+      { label: 'Backend', skills: ['Node.js', 'Python', 'Go', 'REST API', 'GraphQL', 'PostgreSQL', 'Redis'] },
+      { label: 'Tools & DevOps', skills: ['Git', 'GitHub Actions', 'Docker', 'Linux', 'Nginx', 'Cloudflare', 'Google Apps Script'] },
+    ] as SkillGroup[],
   },
   footer: {
     builtWith: 'Built with Astro',
@@ -59,6 +82,7 @@ export const en: Translations = {
   },
   error: {
     notFound: 'Page Not Found',
+    desc: "The orange cat couldn't find the page. Maybe it's napping?",
     goHome: 'Go Home',
   },
 };

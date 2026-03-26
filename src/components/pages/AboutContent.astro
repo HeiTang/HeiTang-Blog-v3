@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations, localePath } from '../../i18n';
+import type { SupportedLang } from '../../config/site';
+
+interface Props {
+  lang: SupportedLang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const currentPath = localePath('/about', lang);
+
+const skillColors = ['primary', 'accent', 'secondary'];
+---
+
+<BaseLayout title={t.about.title} currentPath={currentPath} lang={lang}>
+  <div class="container mx-auto px-6 py-24">
+    <div class="max-w-2xl mx-auto space-y-8">
+
+      <h1 class="font-display text-4xl font-bold text-[rgb(var(--color-text-primary))]">
+        {t.about.heading}
+      </h1>
+
+      <!-- Profile Card -->
+      <div class="glass p-8 rounded-2xl">
+        <div class="flex items-center gap-6 mb-6">
+          <div class="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border-2 border-[rgb(var(--color-primary))]">
+            <img src="/images/profile.jpeg" alt={t.about.name} class="w-full h-full object-cover" />
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-[rgb(var(--color-text-primary))] mb-1">{t.about.name}</h2>
+            <p class="text-[rgb(var(--color-text-secondary))]">{t.about.tagline}</p>
+          </div>
+        </div>
+        <div class="space-y-3 text-[rgb(var(--color-text-secondary))] leading-relaxed">
+          <p>{t.about.bio1}</p>
+          <p>{t.about.bio2}</p>
+          <p class="text-[rgb(var(--color-primary))] font-semibold">{t.about.bio3}</p>
+        </div>
+      </div>
+
+      <!-- Skills Tag Cloud -->
+      <div class="glass p-8 rounded-2xl">
+        <h3 class="font-display text-xl font-bold text-[rgb(var(--color-text-primary))] mb-6 flex items-center gap-2">
+          <span class="text-[rgb(var(--color-primary))]">⚡</span> {t.about.skillsTitle}
+        </h3>
+        <div class="space-y-6">
+          {t.about.skillGroups.map((group, i) => (
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-widest text-[rgb(var(--color-text-secondary))] mb-3">
+                {group.label}
+              </p>
+              <div class="flex flex-wrap gap-2">
+                {group.skills.map(skill => (
+                  <span class={`skill-tag skill-tag--${skillColors[i % skillColors.length]}`}>{skill}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+.skill-tag {
+  @apply px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 cursor-default;
+  @apply border backdrop-blur-sm;
+  @apply hover:scale-105 hover:-translate-y-0.5;
+}
+.skill-tag--primary {
+  @apply bg-[rgb(var(--color-primary)/0.12)] border-[rgb(var(--color-primary)/0.35)] text-[rgb(var(--color-primary))];
+  @apply hover:bg-[rgb(var(--color-primary)/0.22)];
+}
+.skill-tag--accent {
+  @apply bg-[rgb(var(--color-accent)/0.12)] border-[rgb(var(--color-accent)/0.35)] text-[rgb(var(--color-accent))];
+  @apply hover:bg-[rgb(var(--color-accent)/0.22)];
+}
+.skill-tag--secondary {
+  color: rgb(var(--color-text-secondary));
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.15);
+}
+.skill-tag--secondary:hover {
+  background: rgba(255,255,255,0.10);
+}
+</style>
