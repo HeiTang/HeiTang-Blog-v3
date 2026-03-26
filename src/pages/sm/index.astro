@@ -1,0 +1,103 @@
+---
+// Screen Message — full-screen text display tool
+// Ported from HeiTang-Blog-v2. Supports URL hash params:
+//   #t=<text>  ;f=<foreground color>  ;b=<background color>
+---
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <title>Screen Message</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="description" content="Online Screen Message Tool" />
+    <style>
+      #textarea {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        font-family: 'Helvetica Neue', Helvetica, '微軟正黑體', 'Microsoft JhengHei', Arial, sans-serif;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        text-align: center;
+        overflow: hidden;
+        resize: none;
+        background: #fff;
+        color: #000;
+      }
+      #textarea:focus {
+        outline: none;
+      }
+      #test {
+        position: absolute;
+        visibility: hidden;
+        top: 0;
+        left: 0;
+        font-family: 'Helvetica Neue', Helvetica, '微軟正黑體', 'Microsoft JhengHei', Arial, sans-serif;
+        font-size: 30px;
+        white-space: pre;
+        border: 0;
+        padding: 0.1em;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="textarea" onkeyup="adjust()" onpaste="adjust()" oninput="adjust()">ฅ•ω•ฅ</textarea>
+    <span id="test"></span>
+
+    <script>
+      function adjust() {
+        const ta = document.getElementById('textarea');
+        const test = document.getElementById('test');
+
+        test.textContent = ta.value;
+        if (ta.value[ta.value.length - 1] === '\n') test.innerHTML += '.';
+
+        const ratioX = window.innerWidth / test.offsetWidth;
+        const ratioY = window.innerHeight / test.offsetHeight;
+        const ratio = Math.min(ratioX, ratioY);
+
+        ta.style.fontSize = Math.floor(30 * ratio) + 'px';
+
+        const newHeight = Math.ceil(test.offsetHeight * ratio);
+        ta.style.paddingTop = Math.floor((window.innerHeight - newHeight) / 2) + 'px';
+        ta.style.paddingBottom = Math.floor((window.innerHeight - newHeight) / 2) + 'px';
+
+        const newWidth = Math.ceil(test.offsetWidth * ratio);
+        ta.style.paddingLeft = Math.max(0, Math.floor((window.innerWidth - newWidth) / 2)) + 'px';
+        ta.style.paddingRight = Math.max(0, Math.floor((window.innerWidth - newWidth) / 2)) + 'px';
+
+        let href = '#t=' + encodeURIComponent(ta.value);
+        if (ta.style.color) href += ';f=' + encodeURIComponent(ta.style.color);
+        if (ta.style.backgroundColor) href += ';b=' + encodeURIComponent(ta.style.backgroundColor);
+        window.location.hash = href;
+      }
+
+      function parseHash() {
+        const ta = document.getElementById('textarea');
+        ta.focus();
+
+        const params = {};
+        window.location.href.replace(
+          new RegExp('([^?=&;#]+)(=([^&;]*))', 'g'),
+          (_, key, __, val) => { params[key] = decodeURIComponent(val); }
+        );
+
+        if (params.t) ta.value = params.t;
+        if (params.f) ta.style.color = params.f;
+        if (params.b) ta.style.backgroundColor = params.b;
+
+        adjust();
+      }
+
+      window.addEventListener('load', parseHash);
+      window.addEventListener('hashchange', parseHash);
+      window.addEventListener('resize', adjust);
+    </script>
+  </body>
+</html>
