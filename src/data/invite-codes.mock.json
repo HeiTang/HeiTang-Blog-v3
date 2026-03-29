@@ -2,8 +2,9 @@
   "codes": [
     {
       "title": "Claude Pro",
+      "group": "AI 工具",
       "description": "Anthropic 的 AI 助理，Pro 方案解鎖更長對話與優先使用權。",
-      "tags": ["AI 工具"],
+      "tags": [],
       "status": "active",
       "invite_code": "PURR-CLAUDE",
       "invite_link": "https://claude.ai/referral/PURR-CLAUDE",
@@ -13,8 +14,9 @@
     },
     {
       "title": "Cursor",
+      "group": "AI 工具",
       "description": "AI 程式碼編輯器，內建 GPT-4 與 Claude，大幅提升開發效率。",
-      "tags": ["AI 工具"],
+      "tags": ["限時優惠"],
       "status": "active",
       "invite_link": "https://cursor.sh/referral?ref=purr",
       "official_link": "https://cursor.sh",
@@ -25,8 +27,9 @@
     },
     {
       "title": "Notion",
+      "group": "生產力",
       "description": "All-in-one 筆記與專案管理工具，個人版永久免費。",
-      "tags": ["AI 工具", "生產力"],
+      "tags": [],
       "status": "active",
       "invite_code": "NOTIONPURR",
       "official_link": "https://notion.so",
@@ -34,8 +37,9 @@
     },
     {
       "title": "第一銀行 iLEO",
+      "group": "金融",
       "description": "12 萬最高 2% 高利活存！",
-      "tags": ["金融"],
+      "tags": [],
       "status": "expired",
       "invite_code": "CBSbOt",
       "invite_link": "https://ibank.firstbank.com.tw/?em=CBSbOt",
@@ -47,8 +51,9 @@
     },
     {
       "title": "玉山 Wallet",
+      "group": "金融",
       "description": "數位帳戶，消費回饋最高 3%。",
-      "tags": ["金融"],
+      "tags": ["限時優惠"],
       "status": "active",
       "invite_code": "PURRWLT",
       "official_link": "https://wallet.esunbank.com.tw",
@@ -58,20 +63,22 @@
     },
     {
       "title": "某停用服務",
+      "group": "生產力",
       "description": "這個邀請碼已被手動停用，測試 disabled 狀態顯示。",
-      "tags": ["生產力"],
+      "tags": [],
       "status": "disabled",
       "invite_code": "DISABLED123",
       "official_link": "https://example.com"
     },
     {
-      "title": "無標籤測試",
-      "description": "這張卡片沒有任何 tag，應該出現在「其他」section。",
+      "title": "無分組測試",
+      "group": "其他",
+      "description": "這張卡片屬於其他分組，測試 fallback group 顯示。",
       "tags": [],
       "status": "active",
       "invite_link": "https://example.com/ref/purr",
       "user_benefit": "免費試用 7 天"
     }
   ],
-  "updatedAt": "2026-03-22T00:00:00.000Z"
+  "updatedAt": "2026-03-29T00:00:00.000Z"
 }

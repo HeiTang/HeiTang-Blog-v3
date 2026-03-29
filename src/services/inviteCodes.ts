@@ -27,29 +27,25 @@ export async function fetchInviteCodes(): Promise<InviteCodesResponse> {
   }
 }
 
-/** Extract all unique tags from codes, preserving first-seen order */
-export function extractTags(codes: InviteCode[]): string[] {
+/** Extract all unique groups from codes, preserving first-seen order */
+export function extractGroups(codes: InviteCode[]): string[] {
   const seen = new Set<string>();
-  const tags: string[] = [];
+  const groups: string[] = [];
   for (const code of codes) {
-    for (const tag of code.tags) {
-      const t = tag.trim();
-      if (t && !seen.has(t)) {
-        seen.add(t);
-        tags.push(t);
-      }
+    const g = (code.group ?? '其他').trim();
+    if (g && !seen.has(g)) {
+      seen.add(g);
+      groups.push(g);
     }
   }
-  return tags;
+  return groups;
 }
 
-/** Group codes by tag; codes with no tags appear under '其他' */
-export function groupByTag(codes: InviteCode[], tags: string[]): Record<string, InviteCode[]> {
-  const groups: Record<string, InviteCode[]> = {};
-  for (const tag of tags) {
-    groups[tag] = codes.filter(c => c.tags.includes(tag));
+/** Group codes by group field */
+export function groupByGroup(codes: InviteCode[], groups: string[]): Record<string, InviteCode[]> {
+  const result: Record<string, InviteCode[]> = {};
+  for (const g of groups) {
+    result[g] = codes.filter(c => (c.group ?? '其他') === g);
   }
-  const untagged = codes.filter(c => c.tags.length === 0);
-  if (untagged.length > 0) groups['其他'] = untagged;
-  return groups;
+  return result;
 }

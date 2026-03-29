@@ -34,12 +34,12 @@ const s = statusConfig[code.status];
     {code.title}
   </h3>
 
-  <!-- Status badge + tags: same row -->
+  <!-- Status badge + detail tags -->
   <div class="flex flex-wrap items-center gap-1.5">
     <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${s.color}`}>
       {s.label}
     </span>
-    {code.tags && code.tags.map(tag => (
+    {code.tags && code.tags.length > 0 && code.tags.map(tag => (
       <span class="text-xs px-2 py-0.5 rounded-full
         bg-[rgba(var(--color-accent),0.12)] text-[rgb(var(--color-accent))]
         border border-[rgba(var(--color-accent),0.2)]">

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import InviteCodeCard from '../invite-codes/InviteCodeCard.astro';
-import { fetchInviteCodes, extractTags, groupByTag } from '../../services/inviteCodes';
+import { fetchInviteCodes, extractGroups, groupByGroup } from '../../services/inviteCodes';
 import { useTranslations, localePath } from '../../i18n';
 import { formatDate } from '../../utils/date';
 import type { SupportedLang } from '../../config/site';
@@ -14,9 +14,9 @@ const t = useTranslations(lang);
 const currentPath = localePath('/invite-codes', lang);
 
 const { codes, updatedAt } = await fetchInviteCodes();
-const tags = extractTags(codes);
-const groups = groupByTag(codes, tags);
-const sectionKeys = Object.keys(groups);
+const groups = extractGroups(codes);
+const groupedCodes = groupByGroup(codes, groups);
+const sectionKeys = Object.keys(groupedCodes);
 ---
 
 <BaseLayout title={t.inviteCodes.title} currentPath={currentPath} lang={lang}>
@@ -92,7 +92,7 @@ const sectionKeys = Object.keys(groups);
                     data-tag={tag}
                   >
                     {tag}
-                    <span class="ml-1.5 text-xs opacity-70">({groups[tag].length})</span>
+                    <span class="ml-1.5 text-xs opacity-70">({groupedCodes[tag].length})</span>
                   </button>
                 ))}
               </div>
@@ -136,11 +136,11 @@ const sectionKeys = Object.keys(groups);
                 <span class="inline-block w-1 h-5 rounded-full bg-[rgb(var(--color-primary))]"></span>
                 {tag}
                 <span class="text-xs font-normal text-[rgb(var(--color-text-secondary))] ml-1">
-                  ({groups[tag].length})
+                  ({groupedCodes[tag].length})
                 </span>
               </h2>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {groups[tag].map(code => (
+                {groupedCodes[tag].map(code => (
                   <InviteCodeCard code={code} />
                 ))}
               </div>

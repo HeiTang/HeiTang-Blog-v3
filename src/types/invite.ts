@@ -2,6 +2,8 @@
 export interface InviteCode {
   /** 服務名稱（必填）*/
   title: string;
+  /** 分組名稱（必填），用於頁面 section 與 tab 導覽 */
+  group: string;
   /** 邀請碼（文字，複製用）— invite_code 與 invite_link 至少一個必填 */
   invite_code?: string;
   /** 邀請連結（有追蹤碼 URL）*/
@@ -14,7 +16,7 @@ export interface InviteCode {
   end_date?: string;
   /** 服務說明（必填）*/
   description: string;
-  /** 標籤陣列，用於頁面 section 分組 */
+  /** 細節標籤陣列（選填），顯示在卡片上；與 group 語意不同 */
   tags: string[];
   /** 使用者獲得什麼（利益揭露）*/
   user_benefit?: string;
