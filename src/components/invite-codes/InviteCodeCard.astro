@@ -17,6 +17,22 @@ const statusConfig = {
   disabled: { label: '已停用', color: 'text-zinc-400 border-zinc-500/30 bg-zinc-500/10' },
 };
 const s = statusConfig[code.status];
+
+/** Parse description: convert `- item` / `1. item` lines into HTML list for card preview */
+function descPreviewHtml(raw: string): string {
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const isList = lines.every(l => /^[-*]\s+/.test(l) || /^\d+\.\s+/.test(l));
+
+  if (isList) {
+    const tag = /^\d+\./.test(lines[0]) ? 'ol' : 'ul';
+    const items = lines.map(l => `<li>${l.replace(/^[-*\d.]\s+/, '')}</li>`).join('');
+    return `<${tag}>${items}</${tag}>`;
+  }
+  // Plain text: just return escaped, newlines become space
+  return lines.join(' ');
+}
+
+const descHtml = descPreviewHtml(code.description);
 ---
 
 <div class:list={[
@@ -48,10 +64,9 @@ const s = statusConfig[code.status];
     ))}
   </div>
 
-  <!-- Description (2 lines max) -->
-  <p class="text-xs text-[rgb(var(--color-text-secondary))] leading-relaxed line-clamp-2 flex-1">
-    {code.description}
-  </p>
+  <!-- Description preview -->
+  <div class="ic-card-desc text-xs text-[rgb(var(--color-text-secondary))] leading-relaxed flex-1"
+    set:html={descHtml} />
 
   <!-- Footer hint -->
   <div class="flex items-center justify-end pt-1.5 border-t border-[rgba(255,255,255,0.06)]">
@@ -63,4 +78,18 @@ const s = statusConfig[code.status];
     </span>
   </div>
 </div>
+
+<style>
+  .ic-card-desc ul,
+  .ic-card-desc ol {
+    padding-left: 1.1rem;
+    margin: 0;
+  }
+  .ic-card-desc ul { list-style-type: disc; }
+  .ic-card-desc ol { list-style-type: decimal; }
+  .ic-card-desc li {
+    margin-bottom: 0.15rem;
+    line-height: 1.5;
+  }
+</style>
 

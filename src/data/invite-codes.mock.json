@@ -1,84 +1,364 @@
 {
   "codes": [
     {
-      "title": "Claude Pro",
-      "group": "AI 工具",
-      "description": "Anthropic 的 AI 助理，Pro 方案解鎖更長對話與優先使用權。",
-      "tags": [],
-      "status": "active",
-      "invite_code": "PURR-CLAUDE",
-      "invite_link": "https://claude.ai/referral/PURR-CLAUDE",
-      "official_link": "https://claude.ai",
-      "user_benefit": "首月 Pro 免費",
-      "my_benefit": "帳號點數 $10"
-    },
-    {
-      "title": "Cursor",
-      "group": "AI 工具",
-      "description": "AI 程式碼編輯器，內建 GPT-4 與 Claude，大幅提升開發效率。",
-      "tags": ["限時優惠"],
-      "status": "active",
-      "invite_link": "https://cursor.sh/referral?ref=purr",
-      "official_link": "https://cursor.sh",
-      "start_date": "2026-01-01",
-      "end_date": "2026-12-31",
-      "user_benefit": "Pro 試用 60 天",
-      "my_benefit": "Pro 延長 1 個月"
-    },
-    {
-      "title": "Notion",
-      "group": "生產力",
-      "description": "All-in-one 筆記與專案管理工具，個人版永久免費。",
-      "tags": [],
-      "status": "active",
-      "invite_code": "NOTIONPURR",
-      "official_link": "https://notion.so",
-      "user_benefit": "Plus 方案試用 30 天"
-    },
-    {
       "title": "第一銀行 iLEO",
-      "group": "金融",
-      "description": "12 萬最高 2% 高利活存！",
-      "tags": [],
+      "description": "- 12 萬內 2% 活存！\n- 每月 10 次跨轉及 10 次跨提免手續費",
+      "tags": [
+        "銀行開戶"
+      ],
       "status": "expired",
       "invite_code": "CBSbOt",
-      "invite_link": "https://ibank.firstbank.com.tw/?em=CBSbOt",
-      "official_link": "https://webar.firstbank.com.tw/ileo",
+      "invite_link": "https://ibank.firstbank.com.tw/NetBank/DigAMA/LandingPage/index.html?openExternalBrowser=1&cp=&ch=ileo&&em=CBSbOt",
+      "official_link": "https://webar.firstbank.com.tw/C000004400/index",
       "start_date": "2024-01-01",
       "end_date": "2024-06-30",
-      "user_benefit": "NT$100 + NT$50（開戶禮）",
+      "user_benefit": "新戶禮 NT$100 + 開戶禮 NT$50",
       "my_benefit": "NT$100"
     },
     {
-      "title": "玉山 Wallet",
-      "group": "金融",
-      "description": "數位帳戶，消費回饋最高 3%。",
-      "tags": ["限時優惠"],
+      "title": "華南銀行 SnY",
+      "description": "- 符合條件 10 萬內 2.3% 活存！\n- 每月 20 次跨轉及 10 次跨提免手續費",
+      "tags": [
+        "銀行開戶"
+      ],
+      "status": "expired",
+      "invite_link": "https://netbank.hncb.com.tw/netbank/servlet/TrxDispatcher?trx=com.lb.wibc.trx.eCounter_DigitAcct&state=notice&ATYP=MGM&AID=YUxBdmVEK215a2dPRldLc0FMdStIQT09&openExternalBrowser=1",
+      "official_link": "https://www.hncb.com.tw/wps/portal/HNCB/msg/co-management/pb-best-offer/c1/t1/113B24",
+      "start_date": "2024-09-02",
+      "end_date": "2024-11-30",
+      "user_benefit": "NT$200",
+      "my_benefit": "NT$100"
+    },
+    {
+      "title": "台北富邦 myMoney",
+      "description": "- 180 天 15 萬最高 2.5% 活存！\n- 每月 5 次跨轉及 5 次跨提免手續費",
+      "tags": [
+        "銀行開戶"
+      ],
+      "status": "expired",
+      "invite_link": "https://ebank.taipeifubon.com.tw/EXT/common/CAA/Index.faces?urlCode=wowqmFZ5",
+      "official_link": "https://www.fubon.com/banking/event/deposit/20221220_MGM/index.html",
+      "start_date": "2022-12-20",
+      "end_date": "2023-02-24",
+      "user_benefit": "NT$100",
+      "my_benefit": "NT$100"
+    },
+    {
+      "title": "國泰世華",
+      "description": "抽 500 元百貨量販即享券 & 完成指定條件抽 NT$ 9,000",
+      "tags": [
+        "銀行開戶"
+      ],
+      "status": "expired",
+      "invite_code": "PCZPR",
+      "invite_link": "https://www.cathaybk.com.tw/cathaybk/promo/event/ebanking/product/appdownload/index.html?invite=PCZPR&openExternalBrowser=1",
+      "official_link": "https://www.cathaybk.com.tw/cathaybk/campaign/ebanking/mmball/",
+      "start_date": "2023-07-01",
+      "end_date": "2023-09-30",
+      "user_benefit": "抽 500 元百貨量販即享券 & 完成指定條件抽 NT$ 9,000"
+    },
+    {
+      "title": "聯邦銀行 New New Bank",
+      "description": "新戶 10 萬內 15% 活存！",
+      "tags": [
+        "銀行開戶"
+      ],
+      "status": "expired",
+      "invite_code": "ZPFNADE",
+      "invite_link": "https://newnewbank.ubot.com.tw/web/#/S0101001?pm=3&ID=ZPFNADE",
+      "official_link": "https://newnewbank.com.tw/ntd_demand_deposits10percent.htm",
+      "start_date": "2024-07-21",
+      "end_date": "2025-01-20",
+      "my_benefit": "次月優惠利率加碼 1% ，最高享台幣活儲年利率 3%。"
+    },
+    {
+      "title": "遠東銀行 Bankee",
+      "description": "- 半年 5 萬內 2.6% 活存！",
+      "tags": [
+        "銀行開戶"
+      ],
       "status": "active",
-      "invite_code": "PURRWLT",
-      "official_link": "https://wallet.esunbank.com.tw",
+      "invite_code": "EWL21",
+      "invite_link": "https://www.appbankee.com.tw/bankee/rest/re/EWL21",
+      "official_link": "https://www.bankee.com.tw/event/26Pa/index.html",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "user_benefit": "半年 5 萬內 2.6% 活存",
+      "my_benefit": "半年 5 萬內 2.6% 活存"
+    },
+    {
+      "title": "永豐銀行 DAWHO",
+      "description": "- 30 萬內 1.5% 活存！\n- 每月最高 30 次跨轉及跨提免手續費",
+      "tags": [
+        "銀行開戶"
+      ],
+      "status": "active",
+      "invite_link": "https://applydawho.sinopac.com/OpenAccount/OpenAccount?utm_source=dawho&utm_medium=mgmweblink&utm_term=nonpaid&utm_content=2025MGM&utm_campaign=accountjpmgm20250915&openExternalBrowser=1&tko=1N0FHQ6",
+      "official_link": "https://dawho.tw/hot/2025MGM/",
       "start_date": "2026-01-01",
       "end_date": "2026-06-30",
-      "user_benefit": "NT$200 現金回饋"
+      "user_benefit": "NT$200",
+      "my_benefit": "NT$200"
     },
     {
-      "title": "某停用服務",
-      "group": "生產力",
-      "description": "這個邀請碼已被手動停用，測試 disabled 狀態顯示。",
-      "tags": [],
-      "status": "disabled",
-      "invite_code": "DISABLED123",
-      "official_link": "https://example.com"
-    },
-    {
-      "title": "無分組測試",
-      "group": "其他",
-      "description": "這張卡片屬於其他分組，測試 fallback group 顯示。",
-      "tags": [],
+      "title": "玉山銀行 e.Fingo",
+      "description": "- 每月最高 10 次跨轉及 10 次跨提免手續費",
+      "tags": [
+        "銀行開戶"
+      ],
       "status": "active",
-      "invite_link": "https://example.com/ref/purr",
-      "user_benefit": "免費試用 7 天"
+      "invite_code": "7Sa1YFTM",
+      "invite_link": "https://j3x8a.app.goo.gl/tNpqRje22MjrszKy7",
+      "official_link": "https://efingo.bank/campaign/invite",
+      "start_date": "2026-01-01",
+      "end_date": "2026-03-31",
+      "user_benefit": "10 點 e.Fingo 點數",
+      "my_benefit": "10 點 e.Fingo 點數"
+    },
+    {
+      "title": "台新銀行 Richart",
+      "description": "新戶 30萬內 3.5% 活存！",
+      "tags": [
+        "銀行開戶"
+      ],
+      "status": "active",
+      "invite_link": "https://richart.tw/TSDIB_RichartWeb/RC07/RC070100?sn=STXJU&utm_source=richart&utm_medium=app&utm_campaign=richart_mgm_20230701",
+      "official_link": "https://richart.tw/TSDIB_RichartWeb/discount/discount-details?discount=135",
+      "start_date": "2026-01-01",
+      "end_date": "2026-03-31",
+      "user_benefit": "NT$100",
+      "my_benefit": "NT$200"
+    },
+    {
+      "title": "將來銀行 Next Bank",
+      "description": "6 萬最高 6% 高利活存！",
+      "tags": [
+        "銀行開戶"
+      ],
+      "status": "active",
+      "invite_code": "H8TU7",
+      "invite_link": "https://mgm.nextbank.com.tw/nxb/H8TU7?utm_source=app&utm_medium=link",
+      "official_link": "https://www.nextbank.com.tw/announcement/45c1e31fa40000000285cadc56793797/MGM0002",
+      "start_date": "2026-04-01",
+      "end_date": "2026-06-30",
+      "my_benefit": "NT$300"
+    },
+    {
+      "title": "連線銀行 LINE BanK",
+      "description": "- 口袋帳戶 1.5% 活存！\n- 每月 30 次跨轉免手續費",
+      "tags": [
+        "銀行開戶"
+      ],
+      "status": "active",
+      "invite_link": "https://www.linebank.com.tw/R/mgm-event/invitation?mgm=101000005231",
+      "official_link": "https://www.linebank.com.tw/notice/events/1187364",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "my_benefit": "NT$100 / NT$188 (被推薦人 25 歲以下)"
+    },
+    {
+      "title": "富邦 J 卡",
+      "description": "日韓旅遊！最高 10%，但需要登錄 QAQ",
+      "tags": [
+        "信用卡"
+      ],
+      "status": "expired",
+      "invite_link": "https://efin.taipeifubon.com.tw/bank_bcs/c/b027447f-c0ff-47f8-aedc-ff08d5192b40",
+      "official_link": "https://www.fubon.com/banking/event/hot/omiyagecard/index.html",
+      "start_date": "2025-01-01",
+      "end_date": "2025-03-31",
+      "my_benefit": "刷卡金 300 元"
+    },
+    {
+      "title": "國泰 CUBE 卡",
+      "description": "四大權益自由選！指定通路 3% 無上限！",
+      "tags": [
+        "信用卡"
+      ],
+      "status": "active",
+      "invite_link": "https://cathaybk.tw/22KSN87UY",
+      "official_link": "https://www.cathaybk.com.tw/cathaybk/personal/product/credit-card/cards/cube#blockname05",
+      "start_date": "2026-01-01",
+      "end_date": "2026-03-31",
+      "user_benefit": "200 小樹點",
+      "my_benefit": "200 小樹點"
+    },
+    {
+      "title": "匯豐信用卡",
+      "description": "旅人無限卡 海外消費 NT10元 = 1 哩",
+      "tags": [
+        "信用卡"
+      ],
+      "status": "active",
+      "invite_link": "https://card.apply.hsbc.com.tw/hsbcoa/oaadd?BannerID=MGMplatform&mgmCode=oL6DNXhJ&openExternalBrowser=1",
+      "official_link": "https://www.hsbc.com.tw/credit-cards/offers/acquisition/",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "user_benefit": "各卡別當季新戶首刷活動",
+      "my_benefit": "刷卡金 1,000 元"
+    },
+    {
+      "title": "聯邦賴點卡",
+      "description": "國內消費 / 指定餐廳最高 5%！",
+      "tags": [
+        "信用卡"
+      ],
+      "status": "active",
+      "invite_link": "https://card.ubot.com.tw/eCard/QRCard/ApplyUrl.aspx?KEY=99_A_2008060014_LPM__2918995560",
+      "official_link": "https://card.ubot.com.tw/eCard/activity/LPM_QRcode/login.aspx",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "my_benefit": "刷卡金 300 元"
+    },
+    {
+      "title": "聯邦吉鶴卡悠遊晶緻卡",
+      "description": "無腦神卡！國內 2% 無上限及日本 4.5%！",
+      "tags": [
+        "信用卡"
+      ],
+      "status": "active",
+      "invite_link": "https://card.ubot.com.tw/eCard/QRCard/ApplyUrl.aspx?KEY=59_A_2008060014_JHA__2918995560",
+      "official_link": "https://activity.ubot.com.tw/2023JiHoCard/index.htm",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "my_benefit": "刷卡金 300 元"
+    },
+    {
+      "title": "永豐信用卡",
+      "description": "指定支付及通路最高 7%！",
+      "tags": [
+        "信用卡"
+      ],
+      "status": "active",
+      "invite_code": "0CYO3X3",
+      "invite_link": "https://bank.sinopac.com/sinopacBT/webevents/1809_mgm/index.html?c=0CYO3X3",
+      "official_link": "https://bank.sinopac.com/sinopacBT/personal/credit-card/online-apply/activity.html",
+      "start_date": "2026-01-01",
+      "end_date": "2026-06-30",
+      "my_benefit": "刷卡金 300 元"
+    },
+    {
+      "title": "玉山熊本熊卡",
+      "description": "日韓旅遊最高 8.5%！",
+      "tags": [
+        "信用卡"
+      ],
+      "status": "expired",
+      "invite_link": "https://card.esunbank.com.tw/EsunCreditweb/txnproc/selApplyCard?PRJCD=APYCRD0069&param=241720608186959",
+      "official_link": "https://www.esunbank.com/zh-tw/personal/credit-card/intro/bank-card/kumamon_card#5",
+      "start_date": "2025-01-01",
+      "end_date": "2025-03-31",
+      "my_benefit": "300 元刷卡金"
+    },
+    {
+      "title": "全盈+PAY",
+      "description": "全盈+PAY隨享無「現」每一天",
+      "tags": [
+        "電子支付"
+      ],
+      "status": "active",
+      "invite_link": "https://event.pluspay.com.tw/web/global-register.html?token=8y19ZJzlgTIppMQ/Dn06yra9sUM5/YIgKzxZlnipr05rh/uijPorpOJmD3SbSry99tgOXHw7PEq5ljbYNcvx931rVhN1yekodBAOXBijzx8hJ8QMmT6WK1sOhfo/vu2kpd0MAZdkeoG7m+GAkw5Hr7b0UUCdkxqSl+w5fDDgcpo=&openExternalBrowser=1&AppRedirect=PP",
+      "official_link": "https://event.pluspay.com.tw/web/global-register.html?token=8y19ZJzlgTIppMQ/Dn06yra9sUM5/YIgKzxZlnipr05rh/uijPorpOJmD3SbSry99tgOXHw7PEq5ljbYNcvx931rVhN1yekodBAOXBijzx8hJ8QMmT6WK1sOhfo/vu2kpd0MAZdkeoG7m+GAkw5Hr7b0UUCdkxqSl+w5fDDgcpo=&openExternalBrowser=1&AppRedirect=PP",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "user_benefit": "Let's Cafe 中杯經典美式",
+      "my_benefit": "50 元全盈儲值金"
+    },
+    {
+      "title": "全支付",
+      "description": "全面支持你 為何而付",
+      "tags": [
+        "電子支付"
+      ],
+      "status": "active",
+      "invite_code": "3V7T241O",
+      "invite_link": "https://www.pxpayplus.com/pxplink/web/gud?recommendCode=3V7T241O&appType=7",
+      "official_link": "https://marketing.pxpayplus.com/pxplus_marketing_page/event?EventId=346",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "user_benefit": "完成首筆不限金額消費，享 50 點全點",
+      "my_benefit": "50 點全點"
+    },
+    {
+      "title": "icash Pay",
+      "description": "icash Pay 最好 Pay！",
+      "tags": [
+        "電子支付"
+      ],
+      "status": "active",
+      "invite_code": "UB12S9F3",
+      "invite_link": "https://icpbridge.icashsys.com.tw/ICP?Actions=Mainaction&Event=MGMCode&Value=UB12S9F3",
+      "official_link": "https://www.icashpay.com.tw/advertMessage/view/id/1962",
+      "start_date": "2026-01-01",
+      "end_date": "2026-06-30",
+      "user_benefit": "新戶註冊當月任意消費，享 50 點 OPENPOINT"
+    },
+    {
+      "title": "街口支付",
+      "description": "街口支付，不止支付",
+      "tags": [
+        "電子支付"
+      ],
+      "status": "active",
+      "invite_code": "JKO9J0VPC",
+      "official_link": "https://mkt.jkopay.com/zh-TW/event/welcomegift100out",
+      "start_date": "2026-01-01",
+      "end_date": "2026-06-30",
+      "user_benefit": "註冊送 $50 街口券"
+    },
+    {
+      "title": "國泰證券",
+      "description": "\\全民揪有/ 每人 100 元 禮金無上限",
+      "tags": [
+        "證券 & 投資"
+      ],
+      "status": "expired",
+      "invite_link": "https://istockapp.cathaysec.com.tw/Marketing/HiMyFriend/share.aspx?b=507EA63C-D803-4F90-9DD8-EADABDDDB458&openExternalBrowser=1",
+      "official_link": "https://istockapp.cathaysec.com.tw/Marketing/HiMyFriend/index.aspx",
+      "start_date": "2023-05-02",
+      "end_date": "2023-12-31",
+      "user_benefit": "7-ELEVEN 商品卡 100 元",
+      "my_benefit": "7-ELEVEN 商品卡 100 元"
+    },
+    {
+      "title": "永豐大戶投",
+      "description": "永豐證券",
+      "tags": [
+        "證券 & 投資"
+      ],
+      "status": "expired",
+      "invite_code": "P6HQ0",
+      "invite_link": "https://www.sinotrade.com.tw/ec/20211126/index.aspx?strProd=0129&strWeb=0248&invt=P6HQ0",
+      "official_link": "https://www.sinotrade.com.tw/ec/20211126/index.aspx",
+      "start_date": "2025-01-01",
+      "end_date": "2025-06-30",
+      "user_benefit": "200 元 7-11 電子禮券",
+      "my_benefit": "200 元 7-11 電子禮券"
+    },
+    {
+      "title": "Wise",
+      "description": "Wise（前稱 TransferWise）提供快捷、便宜和安全的國際匯款服務",
+      "tags": [
+        "其他金融"
+      ],
+      "status": "active",
+      "invite_link": "https://wise.com/invite/irhc/yuchenl204",
+      "official_link": "https://wise.com/zh/help/articles/2487043",
+      "my_benefit": "£50"
+    },
+    {
+      "title": "Binance 幣安",
+      "description": "全球性的加密貨幣交易所，提供超100種加密貨幣交易服務，包括期權、現貨、u本位合約、幣本位合約等交易產品。",
+      "tags": [
+        "其他金融"
+      ],
+      "status": "active",
+      "invite_code": "GRO_28502_4G8Y4",
+      "invite_link": "https://www.binance.com/referral/earn-together/refer2earn-usdc/claim?hl=zh-TC&ref=GRO_28502_4G8Y4&utm_source=default",
+      "official_link": "https://www.binance.com/zh-TC/support/announcement/detail/0a82f860f7d64abe9593f4c2b0044235?utm_source=new_share&ref=CPA_00U4X0P37O&utm_medium=web_share_copy",
+      "user_benefit": "USDC",
+      "my_benefit": "USDC"
     }
   ],
-  "updatedAt": "2026-03-29T00:00:00.000Z"
+  "updatedAt": "2026-03-29T14:16:15.025Z"
 }

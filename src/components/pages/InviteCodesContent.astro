@@ -526,7 +526,7 @@ const sectionKeys = Object.keys(groupedCodes);
           ${dateRange}
         </div>` : ''}
       <hr class="ic-divider" />
-      <p class="ic-desc">${formatDesc(String(c.description ?? ''))}</p>
+      <div class="ic-desc">${formatDesc(String(c.description ?? ''))}</div>
       ${tags ? `<div class="ic-badge-row" style="margin-top:0.75rem">${tags}</div>` : ''}
       ${hasBenefit ? `
         <hr class="ic-divider" />
