@@ -74,8 +74,11 @@ const fullTitle = title === siteConfig.title ? title : `${title} | ${siteConfig.
     <!-- Card interactive effects: spotlight + 3D tilt -->
     <script is:inline>
       (function () {
-        // Only on non-touch devices
-        if (window.matchMedia('(hover: none)').matches) return;
+        // Only on non-touch devices and when motion is allowed
+        if (
+          window.matchMedia('(hover: none)').matches ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) return;
 
         const TILT_MAX = 6; // degrees
 
