@@ -42,7 +42,17 @@ const skillColors = ['primary', 'accent', 'secondary'];
       <!-- Skills Tag Cloud -->
       <div class="glass p-8 rounded-2xl">
         <h3 class="font-display text-xl font-bold text-[rgb(var(--color-text-primary))] mb-6 flex items-center gap-2">
-          <span class="text-[rgb(var(--color-primary))]">⚡</span> {t.about.skillsTitle}
+          <svg
+            class="w-4 h-4 text-[rgb(var(--color-primary))]"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
+          </svg>
+          {t.about.skillsTitle}
         </h3>
         <div class="space-y-6">
           {t.about.skillGroups.map((group, i) => (
