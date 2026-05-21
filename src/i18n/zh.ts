@@ -4,7 +4,49 @@ export interface SkillGroup {
 }
 
 export interface Translations {
-  home: { greeting: string; typewriterTexts: string[]; name: string; handle: string };
+  home: {
+    greeting: string;
+    typewriterTexts: string[];
+    name: string;
+    handle: string;
+    subheadline: string;
+    heroModeLabel: string;
+    statusMessage: string;
+    intro: string;
+    primaryCta: string;
+    secondaryCta: string;
+    contactLabel: string;
+    marqueeLead: string;
+    scrollHint: string;
+    deckTitle: string;
+    deckSubtitle: string;
+    deckCta: string;
+    labTitle: string;
+    labSubtitle: string;
+    labLines: string[];
+    journeyTitle: string;
+    journeySubtitle: string;
+    journeySteps: { title: string; desc: string }[];
+    postsKicker: string;
+    recentPostsTitle: string;
+    recentPostsSubtitle: string;
+    viewAllPosts: string;
+    emptyRecentPosts: string;
+    quickLinks: {
+      blog: { title: string; desc: string };
+      projects: { title: string; desc: string };
+      about: { title: string; desc: string };
+    };
+    stats: {
+      title: string;
+      subtitle: string;
+      latestPosts: string;
+      projects: string;
+      languages: string;
+    };
+    liveLabel: string;
+    focusLabel: string;
+  };
   blog: { title: string; allTags: string; articleCount: string; emptyState: string; readingTime: string; publishedOn: string; updatedOn: string };
   projects: { title: string; subtitle: string; noRepos: string; noMatchingProjects: string; allFilter: string };
   inviteCodes: { title: string; description: string; noData: string; lastUpdated: string; allFilter: string; loadError: string; noApiUrl: string };
@@ -17,7 +59,73 @@ export const zh: Translations = {
     greeting: '嗨！我是一隻',
     typewriterTexts: ['Developer /ᐠ-˕-マⳊ', '不胖只是蓬鬆的橘貓 ₍˄•༝•˄₎◞✩︎', ' ₍^..^₎ 𐒡'],
     name: '黑糖不是炭',
-    handle: '@HeiTang',
+    handle: 'HEITANG',
+    subheadline: 'SOFTWARE ENGINEER · PERSONAL LAB',
+    heroModeLabel: 'HEITANG',
+    statusMessage: '橘貓不胖，只是蓬鬆了點！ヽ(=^･ω･^=)丿',
+    intro: '我把日常工程問題拆解成可落地的工具與流程，這裡主要分享實作筆記、專案拆解，以及可直接拿去用的做法。',
+    primaryCta: '看最新文章',
+    secondaryCta: '看專案作品',
+    contactLabel: '快速聯絡',
+    marqueeLead: 'SYSTEM FEED',
+    scrollHint: 'SCROLL',
+    deckTitle: '貓窩洞口',
+    deckSubtitle: '挑一個箱子',
+    deckCta: '喵一下進入 →',
+    labTitle: '近期動態',
+    labSubtitle: '>_ Cat ./0range.log',
+    labLines: [
+      '[status] routine mode: on.',
+      '[focus] break complex things into smaller steps.',
+      '[note] finish first, optimize later.',
+      '[update] log progress when there is progress; rest when there is not.',
+      '[mode] quiet work in progress.',
+      '[end] moved things forward a little today.',
+    ],
+    journeyTitle: '沉浸旅程',
+    journeySubtitle: '從第一眼到深度互動，每一段都設計成有故事張力',
+    journeySteps: [
+      {
+        title: 'MBTI',
+        desc: 'INTJ-O-C (內向、直覺、思考、判斷 + 觀察者)',
+      },
+      {
+        title: '生存三要素',
+        desc: '鮭魚 🍣 、 拉麵 🍜 、 貓貓 🐈',
+      },
+      {
+        title: '常說的一句話',
+        desc: '今天絕對會早點睡！',
+      },
+    ],
+    postsKicker: '最新更新',
+    recentPostsTitle: '最新文章',
+    recentPostsSubtitle: '最近的技術實作與拆解',
+    viewAllPosts: '看全部文章 →',
+    emptyRecentPosts: '目前還沒有文章，稍後會補上。',
+    quickLinks: {
+      blog: {
+        title: '技術文章',
+        desc: '架構、部署、自動化與踩坑紀錄。',
+      },
+      projects: {
+        title: '專案展示',
+        desc: '個人作品與 side project，含實作細節。',
+      },
+      about: {
+        title: '關於我',
+        desc: '背景、技術棧與目前正在做的事。',
+      },
+    },
+    stats: {
+      title: '快速概覽',
+      subtitle: '首頁即時摘要',
+      latestPosts: '最新文章',
+      projects: '展示專案',
+      languages: '站點語言',
+    },
+    liveLabel: 'LIVE',
+    focusLabel: '目前聚焦',
   },
   blog: {
     title: '文章',

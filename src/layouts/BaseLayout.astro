@@ -62,6 +62,13 @@ const fullTitle = title === siteConfig.title ? title : `${title} | ${siteConfig.
       <div class="aurora-orb"></div>
       <div class="aurora-orb"></div>
     </div>
+    <!-- Immersive cosmic background (starfield + shockwave + comet cursor) -->
+    <canvas class="cosmic-canvas" aria-hidden="true"></canvas>
+    <div class="shockwave-layer" aria-hidden="true"></div>
+    <div class="comet-cursor" aria-hidden="true"></div>
+    <div class="intro-splash" aria-hidden="true">
+      <span class="intro-splash-word">HEITANG</span>
+    </div>
     
     <Header currentPath={currentPath} lang={lang} />
     
@@ -70,6 +77,317 @@ const fullTitle = title === siteConfig.title ? title : `${title} | ${siteConfig.
     </main>
     
     <Footer />
+
+    <script is:inline>
+      (() => {
+        const body = document.body;
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const wordmark = document.querySelector('[data-wordmark-intro]');
+        const splash = document.querySelector('.intro-splash');
+        const key = 'ht-wordmark-intro-v5';
+        const forceReplay = new URLSearchParams(window.location.search).get('intro') === '1';
+
+        if (!(wordmark instanceof HTMLElement) || !(splash instanceof HTMLElement) || reduceMotion) {
+          body.classList.add('wordmark-intro-expanded');
+          return;
+        }
+
+        const finalText = ((wordmark.dataset.wordmarkIntroText ?? 'HEITANG').trim() || 'HEITANG').toUpperCase();
+
+        if (forceReplay) {
+          sessionStorage.removeItem(key);
+        } else if (sessionStorage.getItem(key) === 'done') {
+          body.classList.add('wordmark-intro-expanded');
+          return;
+        }
+
+        const revealNodes = Array.from(document.querySelectorAll('[data-intro-reveal]'));
+        revealNodes.forEach((node, index) => {
+          if (!(node instanceof HTMLElement)) return;
+          node.style.setProperty('--intro-order', String(index));
+        });
+
+        let rafId = 0;
+        let done = false;
+        body.classList.add('wordmark-intro-running');
+        const splashWord = splash.querySelector('.intro-splash-word');
+        if (!(splashWord instanceof HTMLElement)) return;
+        splashWord.textContent = finalText;
+
+        const chars = Array.from(finalText);
+        const lockable = chars
+          .map((char, index) => (char === ' ' ? -1 : index))
+          .filter((index) => index >= 0)
+          .sort(() => Math.random() - 0.5);
+        const noiseChars = '█▓▒░01#@*+-=<>';
+
+        const splashRect = splashWord.getBoundingClientRect();
+        const splashBaseWidth = Math.max(1, splashRect.width);
+        const viewportCenterX = window.innerWidth / 2;
+        const viewportCenterY = window.innerHeight / 2;
+
+        const buildScrambled = (revealedCount) => {
+          const revealed = new Set(lockable.slice(0, revealedCount));
+          return chars
+            .map((char, index) => {
+              if (char === ' ' || revealed.has(index)) return char;
+              return noiseChars[Math.floor(Math.random() * noiseChars.length)];
+            })
+            .join('');
+        };
+
+        const clearIntroVars = () => {
+          body.style.removeProperty('--intro-gate-opacity');
+          body.style.removeProperty('--intro-word-scale');
+          body.style.removeProperty('--intro-word-spacing');
+          body.style.removeProperty('--intro-word-opacity');
+          body.style.removeProperty('--intro-word-y');
+          body.style.removeProperty('--intro-word-x');
+          body.style.removeProperty('--intro-word-tilt');
+        };
+
+        const onKeyDown = (event) => {
+          if (event.key === 'Escape') {
+            finish();
+          }
+        };
+
+        const finish = () => {
+          if (done) return;
+          done = true;
+          cancelAnimationFrame(rafId);
+          splashWord.textContent = finalText;
+          clearIntroVars();
+          body.classList.remove('wordmark-intro-running');
+          body.classList.add('wordmark-intro-expanded');
+          window.removeEventListener('keydown', onKeyDown);
+          sessionStorage.setItem(key, 'done');
+        };
+
+        document.querySelectorAll('[data-skip-wordmark-intro]').forEach((el) => {
+          el.addEventListener('click', finish, { once: true });
+        });
+        window.addEventListener('keydown', onKeyDown);
+
+        const duration = 2500;
+        const start = performance.now();
+
+        const tick = (now) => {
+          if (done) return;
+          const progress = Math.min(1, (now - start) / duration);
+          const scrambleProgress = Math.max(0, Math.min(1, progress / 0.56));
+          const easedScramble = 1 - (1 - scrambleProgress) ** 2.8;
+          const keep = Math.floor(lockable.length * easedScramble);
+
+          if (progress < 0.985) {
+            splashWord.textContent = buildScrambled(keep);
+          } else {
+            splashWord.textContent = finalText;
+          }
+
+          const dockProgress = Math.max(0, Math.min(1, (progress - 0.4) / 0.6));
+          const easedDock = 1 - (1 - dockProgress) ** 3;
+          const gateProgress = Math.max(0, Math.min(1, (progress - 0.62) / 0.38));
+          const liveTargetRect = wordmark.getBoundingClientRect();
+          const targetCenterX = liveTargetRect.left + liveTargetRect.width / 2;
+          const targetCenterY = liveTargetRect.top + liveTargetRect.height / 2;
+          const deltaX = targetCenterX - viewportCenterX;
+          const deltaY = targetCenterY - viewportCenterY;
+          const fitScale = Math.max(0.14, Math.min(0.72, liveTargetRect.width / splashBaseWidth));
+          const gateOpacity = Math.max(0, 1 - gateProgress ** 1.6);
+          const wordScale = 1.24 - (1.24 - fitScale) * easedDock;
+          const wordSpacing = Math.max(0.015, 0.46 - 0.43 * easedDock);
+          const wordOpacity = progress < 0.92 ? 1 : Math.max(0, 1 - (progress - 0.92) / 0.08);
+          const wordX = deltaX * easedDock;
+          const wordY = deltaY * easedDock;
+          const wordTilt = (1 - easedDock) * 4.5;
+
+          body.style.setProperty('--intro-gate-opacity', `${gateOpacity.toFixed(4)}`);
+          body.style.setProperty('--intro-word-scale', `${wordScale.toFixed(4)}`);
+          body.style.setProperty('--intro-word-spacing', `${wordSpacing.toFixed(4)}em`);
+          body.style.setProperty('--intro-word-opacity', `${wordOpacity.toFixed(4)}`);
+          body.style.setProperty('--intro-word-x', `${wordX.toFixed(2)}px`);
+          body.style.setProperty('--intro-word-y', `${wordY.toFixed(2)}px`);
+          body.style.setProperty('--intro-word-tilt', `${wordTilt.toFixed(2)}deg`);
+
+          if (progress > 0.66) {
+            body.classList.add('wordmark-intro-expanded');
+          }
+          if (progress >= 1) {
+            finish();
+            return;
+          }
+          rafId = requestAnimationFrame(tick);
+        };
+
+        rafId = requestAnimationFrame(tick);
+        window.addEventListener(
+          'beforeunload',
+          () => {
+            cancelAnimationFrame(rafId);
+            window.removeEventListener('keydown', onKeyDown);
+          },
+          { once: true }
+        );
+      })();
+    </script>
+
+    <!-- Immersive cosmic background runtime (starfield, shockwave, comet cursor) -->
+    <script is:inline>
+      (function () {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduceMotion) return;
+
+        const canvas = document.querySelector('.cosmic-canvas');
+        const shockwaveLayer = document.querySelector('.shockwave-layer');
+        const cometCursor = document.querySelector('.comet-cursor');
+
+        const pointer = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.45 };
+
+        window.addEventListener(
+          'pointermove',
+          (event) => {
+            pointer.x = event.clientX;
+            pointer.y = event.clientY;
+          },
+          { passive: true }
+        );
+
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            let width = 0;
+            let height = 0;
+            let dpr = Math.min(window.devicePixelRatio || 1, 2);
+            let stars = [];
+            let frameId = 0;
+
+            const resetCanvas = () => {
+              dpr = Math.min(window.devicePixelRatio || 1, 2);
+              width = window.innerWidth;
+              height = window.innerHeight;
+              canvas.width = Math.floor(width * dpr);
+              canvas.height = Math.floor(height * dpr);
+              canvas.style.width = width + 'px';
+              canvas.style.height = height + 'px';
+              ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+              const starCount = Math.max(90, Math.floor((width * height) / 13000));
+              stars = Array.from({ length: starCount }, () => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                z: Math.random(),
+                speed: 0.2 + Math.random() * 1.8,
+                size: 0.6 + Math.random() * 1.8,
+              }));
+            };
+
+            const drawNebula = () => {
+              const gx = Math.max(0, Math.min(1, pointer.x / width));
+              const gy = Math.max(0, Math.min(1, pointer.y / height));
+
+              const g1 = ctx.createRadialGradient(
+                gx * width,
+                gy * height,
+                20,
+                gx * width,
+                gy * height,
+                Math.max(width, height) * 0.6
+              );
+              g1.addColorStop(0, 'rgba(255,140,97,0.14)');
+              g1.addColorStop(1, 'rgba(255,140,97,0)');
+              ctx.fillStyle = g1;
+              ctx.fillRect(0, 0, width, height);
+
+              const g2 = ctx.createRadialGradient(
+                width * 0.75,
+                height * 0.2,
+                0,
+                width * 0.75,
+                height * 0.2,
+                Math.max(width, height) * 0.55
+              );
+              g2.addColorStop(0, 'rgba(0,245,255,0.08)');
+              g2.addColorStop(1, 'rgba(0,245,255,0)');
+              ctx.fillStyle = g2;
+              ctx.fillRect(0, 0, width, height);
+            };
+
+            const tick = () => {
+              ctx.clearRect(0, 0, width, height);
+              drawNebula();
+
+              stars.forEach((star) => {
+                star.y += star.speed * (0.35 + star.z * 0.85);
+                star.x += (pointer.x - width * 0.5) * 0.00035 * star.speed;
+
+                if (star.y > height + 12) {
+                  star.y = -12;
+                  star.x = Math.random() * width;
+                }
+                if (star.x > width + 12) star.x = -12;
+                if (star.x < -12) star.x = width + 12;
+
+                const alpha = 0.08 + star.z * 0.52;
+                ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size * (0.45 + star.z), 0, Math.PI * 2);
+                ctx.fill();
+              });
+
+              frameId = requestAnimationFrame(tick);
+            };
+
+            resetCanvas();
+            tick();
+            window.addEventListener('resize', resetCanvas);
+            window.addEventListener(
+              'beforeunload',
+              () => cancelAnimationFrame(frameId),
+              { once: true }
+            );
+          }
+        }
+
+        if (cometCursor && !window.matchMedia('(max-width: 760px)').matches) {
+          const tailCount = 12;
+          const dots = Array.from({ length: tailCount }, (_, idx) => {
+            const dot = document.createElement('span');
+            dot.className = 'comet-dot';
+            dot.style.opacity = String(1 - idx / tailCount);
+            dot.style.width = (10 - idx * 0.55) + 'px';
+            dot.style.height = (10 - idx * 0.55) + 'px';
+            cometCursor.appendChild(dot);
+            return { el: dot, x: pointer.x, y: pointer.y };
+          });
+
+          const follow = () => {
+            let tx = pointer.x;
+            let ty = pointer.y;
+            dots.forEach((dot, idx) => {
+              dot.x += (tx - dot.x) * (0.22 - idx * 0.008);
+              dot.y += (ty - dot.y) * (0.22 - idx * 0.008);
+              dot.el.style.transform = 'translate(' + dot.x + 'px, ' + dot.y + 'px)';
+              tx = dot.x;
+              ty = dot.y;
+            });
+            requestAnimationFrame(follow);
+          };
+          follow();
+        }
+
+        if (shockwaveLayer) {
+          window.addEventListener('pointerdown', (event) => {
+            const wave = document.createElement('span');
+            wave.className = 'shockwave';
+            wave.style.left = event.clientX + 'px';
+            wave.style.top = event.clientY + 'px';
+            shockwaveLayer.appendChild(wave);
+            wave.addEventListener('animationend', () => wave.remove(), { once: true });
+          });
+        }
+      })();
+    </script>
 
     <!-- Card interactive effects: spotlight + 3D tilt -->
     <script is:inline>

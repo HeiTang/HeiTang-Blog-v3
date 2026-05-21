@@ -4,6 +4,10 @@
  */
 
 @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.cdnfonts.com/css/nasalization');
+@import url('https://fonts.cdnfonts.com/css/neuropol');
+@import url('https://fonts.cdnfonts.com/css/changeling-neo');
+@import url('https://fonts.cdnfonts.com/css/all-round-gothic');
 
 @tailwind base;
 @tailwind components;
@@ -30,6 +34,7 @@
     
     --glow-intensity: 0.3;
     --border-radius: 1.5rem;
+    --font-heitang-brand: 'Nasalization Rg', 'Nasalization', 'Orbitron', sans-serif;
 
     /* Bento Grid */
     --bento-gap: 1rem;
@@ -129,6 +134,107 @@
     @apply transition-colors duration-200;
   }
 
+  .wordmark-intro-target {
+    display: inline-block;
+    transform-origin: center center;
+    transition:
+      opacity 0.62s cubic-bezier(0.2, 0.65, 0.3, 0.9),
+      transform 0.62s cubic-bezier(0.2, 0.65, 0.3, 0.9),
+      filter 0.62s cubic-bezier(0.2, 0.65, 0.3, 0.9);
+  }
+
+  .heitang-brand-font {
+    font-family: var(--font-heitang-brand);
+    text-transform: uppercase;
+  }
+
+  body.wordmark-intro-running .wordmark-intro-target {
+    opacity: 0;
+    transform: translateY(0.7rem) scale(0.98);
+    filter: blur(8px);
+  }
+
+  body.wordmark-intro-expanded .wordmark-intro-target {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    transition-delay: 120ms;
+  }
+
+  [data-intro-reveal] {
+    --intro-order: 0;
+    transition:
+      opacity 0.62s cubic-bezier(0.2, 0.65, 0.3, 0.9),
+      transform 0.62s cubic-bezier(0.2, 0.65, 0.3, 0.9),
+      filter 0.62s cubic-bezier(0.2, 0.65, 0.3, 0.9);
+    transition-delay: calc(var(--intro-order) * 85ms);
+  }
+
+  body.wordmark-intro-running [data-intro-reveal] {
+    opacity: 0;
+    transform: translateY(0.7rem);
+    filter: blur(4px);
+    pointer-events: none;
+  }
+
+  body.wordmark-intro-expanded [data-intro-reveal] {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+    pointer-events: auto;
+  }
+
+  .intro-splash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 95;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.65s ease, visibility 0.65s ease;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, calc(var(--intro-gate-opacity, 1) * 0.035)) 0%,
+        rgba(0, 0, 0, 0) 56%
+      ),
+      rgba(0, 0, 0, var(--intro-gate-opacity, 1));
+  }
+
+  body.wordmark-intro-running .intro-splash {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .intro-splash-word {
+    color: rgb(255, 255, 255);
+    font-family: var(--font-heitang-brand);
+    font-size: clamp(2.8rem, 13vw, 10rem);
+    font-weight: 700;
+    letter-spacing: var(--intro-word-spacing, 0.36em);
+    text-transform: uppercase;
+    line-height: 1;
+    opacity: var(--intro-word-opacity, 1);
+    transform:
+      translate3d(var(--intro-word-x, 0px), var(--intro-word-y, 0px), 0)
+      scale(var(--intro-word-scale, 1))
+      rotateX(var(--intro-word-tilt, 0deg));
+    transform-origin: center center;
+    text-shadow:
+      0 0 10px rgba(255, 255, 255, 0.2),
+      0 0 28px rgba(255, 255, 255, 0.09);
+    transition: opacity 90ms linear, transform 90ms linear, letter-spacing 90ms linear;
+    will-change: transform, opacity, letter-spacing;
+  }
+
+  body.wordmark-intro-expanded .intro-splash {
+    opacity: 0;
+    visibility: hidden;
+    transition-delay: 180ms;
+  }
+
   :focus-visible {
     outline: 2px solid rgb(var(--color-accent));
     outline-offset: 2px;
@@ -143,6 +249,23 @@
       animation: none !important;
       transition-duration: 0ms !important;
       transition-delay: 0ms !important;
+    }
+
+    [data-intro-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+      filter: none !important;
+      pointer-events: auto !important;
+    }
+
+    .wordmark-intro-target {
+      opacity: 1 !important;
+      transform: none !important;
+      filter: none !important;
+    }
+
+    .intro-splash {
+      display: none !important;
     }
   }
   
@@ -215,6 +338,77 @@
     33%  { transform: translate(60px, -40px) scale(1.08); }
     66%  { transform: translate(-40px, 60px) scale(0.96); }
     100% { transform: translate(30px, 20px) scale(1.04); }
+  }
+
+  /* ─── Immersive cosmic background (shared by all pages) ─── */
+  .cosmic-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -3;
+    opacity: 0.42;
+  }
+
+  .shockwave-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 32;
+    overflow: hidden;
+  }
+  .shockwave {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    border: 1.5px solid rgba(var(--color-primary), 0.46);
+    box-shadow: 0 0 16px rgba(var(--color-primary), 0.35);
+    transform: translate(-50%, -50%) scale(0.6);
+    animation: shockwave-expand 700ms cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+  }
+
+  .comet-cursor {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 35;
+  }
+  .comet-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    background: rgba(var(--color-primary), 0.56);
+    box-shadow: 0 0 12px rgba(var(--color-primary), 0.45);
+    will-change: transform, opacity;
+    transform: translate(-50%, -50%);
+  }
+
+  @keyframes shockwave-expand {
+    0% {
+      opacity: 0.55;
+      transform: translate(-50%, -50%) scale(0.6);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(24);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .comet-cursor {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cosmic-canvas,
+    .shockwave-layer,
+    .comet-cursor {
+      display: none;
+    }
   }
 
   /* ─── Interactive Card Effects ─── */

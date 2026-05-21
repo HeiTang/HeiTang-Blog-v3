@@ -1,5 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { getReadingTime } from '../../utils/reading-time';
+import { formatDate } from '../../utils/date';
 import { useTranslations, localePath } from '../../i18n';
 import { siteConfig } from '../../config/site';
 import type { SupportedLang } from '../../config/site';
@@ -7,101 +10,527 @@ import type { SupportedLang } from '../../config/site';
 interface Props {
   lang: SupportedLang;
 }
+
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const title = lang === 'zh' ? siteConfig.title : siteConfig.titleEn;
 const currentPath = lang === 'zh' ? '/' : '/en';
+
+const allPosts = await getCollection('blog', ({ data }) => {
+  if (data.draft) return false;
+  if (lang === 'zh') return data.lang === 'zh';
+  return true;
+});
+
+const recentPosts = allPosts
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3)
+  .map(post => ({
+    ...post,
+    readingTime: getReadingTime(post.body ?? ''),
+  }));
+
+const quickLinks = [
+  {
+    href: localePath('/blog', lang),
+    title: t.home.quickLinks.blog.title,
+    desc: t.home.quickLinks.blog.desc,
+    icon: 'blog',
+  },
+  {
+    href: localePath('/projects', lang),
+    title: t.home.quickLinks.projects.title,
+    desc: t.home.quickLinks.projects.desc,
+    icon: 'projects',
+  },
+  {
+    href: localePath('/about', lang),
+    title: t.home.quickLinks.about.title,
+    desc: t.home.quickLinks.about.desc,
+    icon: 'about',
+  },
+];
+
+const marqueeItems = [
+  ...new Set(t.about.skillGroups.flatMap(group => [...group.skills])),
+].slice(0, 14);
+
+const journeySteps = t.home.journeySteps;
+const interestTags = lang === 'zh'
+  ? [
+      { label: '喜歡吃 🍣', x: '12%', y: '16%' },
+      { label: '半夜修 bug 🐛', x: '82%', y: '15%' },
+      { label: '邊寫邊吸貓 🐾', x: '14%', y: '80%' },
+      { label: '奶茶控 🥤', x: '80%', y: '78%' },
+      { label: '行走的 BUG 製造機 🐛', x: '50%', y: '9%' },
+    ]
+  : [
+      { label: 'Sushi fuel 🍣', x: '12%', y: '16%' },
+      { label: 'Midnight bug fixing 🐛', x: '82%', y: '15%' },
+      { label: 'Code + cat time 🐾', x: '14%', y: '80%' },
+      { label: 'Milk tea lover 🥤', x: '80%', y: '78%' },
+      { label: 'Bug generator 🐛', x: '50%', y: '9%' },
+    ];
 ---
 
 <BaseLayout title={title} currentPath={currentPath} lang={lang}>
-  <div class="min-h-[calc(100vh-4rem)] flex items-center justify-center px-6">
-    <div class="text-center max-w-sm w-full">
-
-      <!-- Avatar -->
-      <div data-animate class="mx-auto w-28 h-28 rounded-full mb-6 overflow-hidden
-        ring-2 ring-[rgba(var(--color-primary),0.4)] ring-offset-4 ring-offset-transparent"
-        style="box-shadow: 0 0 40px rgba(var(--color-primary), 0.15);">
-        <img src="/images/profile.jpeg" alt={t.about.name} class="w-full h-full object-cover" />
-      </div>
-
-      <!-- Typewriter sentence -->
-      <p data-animate class="text-[rgb(var(--color-text-secondary))] mb-3 leading-relaxed min-h-[1.6em]">
-        {t.home.greeting}
-        <span class="txt-rotate font-medium text-[rgb(var(--color-primary))]"
-          data-period="2000"
-          data-rotate={JSON.stringify(t.home.typewriterTexts)}
-        ><span class="wrap"></span></span><span class="tw-cursor">▍</span>
-      </p>
-
-      <!-- Name -->
-      {lang === 'zh' ? (
-        <h1 data-animate class="pixel-title font-bold text-3xl text-[rgb(var(--color-text-primary))] mb-8
-          [text-shadow:0_0_30px_rgba(var(--color-primary),0.3)]">
-          {t.home.name}
-        </h1>
-      ) : (
-        <>
-          <h1 data-animate class="font-display text-3xl font-bold text-[rgb(var(--color-text-primary))] mb-1">
-            {t.home.name}
-          </h1>
-          <p data-animate class="text-sm text-[rgb(var(--color-primary))] font-medium mb-8 tracking-wide">
-            {t.home.handle}
-          </p>
-        </>
-      )}
-
-      <!-- Social icons -->
-      <div data-animate class="flex justify-center items-center gap-6">
-
-        <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer"
-          aria-label="GitHub"
-          class="social-icon group">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-          </svg>
-          <span class="social-label">GitHub</span>
-        </a>
-
-        <a href={`mailto:${siteConfig.social.email}`}
-          aria-label="Email"
-          class="social-icon group">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-          </svg>
-          <span class="social-label">Email</span>
-        </a>
-
-        <a href="/rss.xml" target="_blank" rel="noopener noreferrer"
-          aria-label="RSS"
-          class="social-icon group">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M6.18 15.64a2.18 2.18 0 012.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 012.18-2.18M4 4.44A15.56 15.56 0 0119.56 20h-2.83A12.73 12.73 0 004 7.27V4.44m0 5.66a9.9 9.9 0 019.9 9.9h-2.83A7.07 7.07 0 004 12.93V10.1z"/>
-          </svg>
-          <span class="social-label">RSS</span>
-        </a>
-
-      </div>
-
+  <div class="immersive-home container mx-auto px-6 pt-24 pb-20 space-y-8">
+    <div class="scroll-indicator" aria-hidden="true">
+      <span class="scroll-indicator-label">{t.home.scrollHint}</span>
+      <span class="scroll-indicator-track">
+        <span class="scroll-indicator-bar"></span>
+      </span>
     </div>
+    <section data-reveal class="portal border border-white/[0.08] rounded-3xl p-6 md:p-8 xl:p-10">
+      <div class="portal-grid">
+        <div class="portal-copy">
+          <div class="mode-line" data-intro-reveal>
+            <span class="status-chip">
+              <span class="status-chip-dot" aria-hidden="true"></span>
+              {t.home.statusMessage}
+            </span>
+          </div>
+
+          <div class="portal-title-wrap">
+            {lang === 'zh' ? (
+              <h1
+                class="pixel-title portal-title glitch-title"
+                data-text={t.home.name}
+              >{t.home.name}</h1>
+            ) : (
+              <h1
+                class="font-display portal-title glitch-title"
+                data-text={t.home.name}
+              >{t.home.name}</h1>
+            )}
+
+            <p class="portal-handle">
+              <span
+                class="heitang-handle-tech wordmark-intro-target"
+                data-wordmark-intro
+                data-wordmark-intro-text="HEITANG"
+                aria-label="HEITANG"
+              >{t.home.handle}</span>
+            </p>
+          </div>
+
+          <p class="portal-greeting" data-intro-reveal>
+            {t.home.greeting}
+            <span
+              class="txt-rotate portal-rotate"
+              data-period="2000"
+              data-rotate={JSON.stringify(t.home.typewriterTexts)}
+            ><span class="wrap"></span></span><span class="tw-cursor">▍</span>
+          </p>
+
+          <p class="portal-intro" data-intro-reveal>{t.home.intro}</p>
+
+          <div class="cta-row" data-intro-reveal>
+            <a href={localePath('/blog', lang)} class="btn-primary magnetic" data-skip-wordmark-intro>{t.home.primaryCta}</a>
+            <a href={localePath('/projects', lang)} class="btn-secondary magnetic" data-skip-wordmark-intro>{t.home.secondaryCta}</a>
+          </div>
+
+        </div>
+
+        <div class="portal-visual">
+          <div class="interest-field" aria-hidden="true">
+            {interestTags.map((tag, idx) => (
+              <span
+                class="interest-chip"
+                style={`--i:${idx}; --x:${tag.x}; --y:${tag.y};`}
+              >{tag.label}</span>
+            ))}
+          </div>
+
+          <div class="orbital-core parallax-node" data-depth="16">
+            <img src="/images/profile.jpeg" alt={t.about.name} class="orbital-avatar" />
+            <span class="orbital-glow" aria-hidden="true"></span>
+          </div>
+          <span class="orbit orbit-a" aria-hidden="true"></span>
+          <span class="orbit orbit-b" aria-hidden="true"></span>
+          <span class="orbit orbit-c" aria-hidden="true"></span>
+
+          <div class="portal-contact-slot" data-intro-reveal>
+            <div class="contact-row">
+              <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="contact-link" data-skip-wordmark-intro>
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                </svg>
+                <span class="contact-link-label">GitHub</span>
+              </a>
+              <a href={`mailto:${siteConfig.social.email}`} aria-label="Email" class="contact-link" data-skip-wordmark-intro>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span class="contact-link-label">Email</span>
+              </a>
+              <a href="/rss.xml" target="_blank" rel="noopener noreferrer" aria-label="RSS" class="contact-link" data-skip-wordmark-intro>
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6.18 15.64a2.18 2.18 0 012.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 012.18-2.18M4 4.44A15.56 15.56 0 0119.56 20h-2.83A12.73 12.73 0 004 7.27V4.44m0 5.66a9.9 9.9 0 019.9 9.9h-2.83A7.07 7.07 0 004 12.93V10.1z" />
+                </svg>
+                <span class="contact-link-label">RSS</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section data-reveal data-intro-reveal class="marquee-shell border border-white/[0.08] rounded-2xl">
+      <div class="marquee-track">
+        {[...marqueeItems, ...marqueeItems].map((item, idx) => (
+          <span class="marquee-item">
+            {idx % 4 === 0 ? t.home.marqueeLead : item}
+          </span>
+        ))}
+      </div>
+    </section>
+
+    <section data-reveal data-intro-reveal class="experience-shell border border-white/[0.08] rounded-3xl p-6 md:p-8">
+      <div class="section-head">
+        <p class="section-kicker">{t.home.deckTitle}</p>
+        <h2 class="font-display text-2xl md:text-3xl font-semibold text-[rgb(var(--color-text-primary))]">{t.home.deckSubtitle}</h2>
+      </div>
+
+      <div class="experience-grid">
+        {quickLinks.map((link, idx) => (
+          <a href={link.href} class={`experience-card magnetic card-style-${idx + 1}`}>
+            <div class="experience-icon">
+              {link.icon === 'blog' && (
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M4 19h16M6 3h12a1 1 0 011 1v12H5V4a1 1 0 011-1z" />
+                  <path d="M9 7h6M9 11h6" />
+                </svg>
+              )}
+              {link.icon === 'projects' && (
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M4 7h16M4 12h10M4 17h7" />
+                </svg>
+              )}
+              {link.icon === 'about' && (
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3" />
+                  <path d="M5 20a7 7 0 0114 0" />
+                </svg>
+              )}
+            </div>
+            <h3 class="font-display text-lg text-[rgb(var(--color-text-primary))]">{link.title}</h3>
+            <p class="text-sm text-[rgb(var(--color-text-secondary))] leading-relaxed">{link.desc}</p>
+            <span class="experience-arrow">{t.home.deckCta}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section data-reveal data-intro-reveal class="lab-shell border border-white/[0.08] rounded-3xl p-6 md:p-8">
+      <div class="section-head">
+        <p class="section-kicker">{t.home.labTitle}</p>
+        <h2 class="font-display text-2xl md:text-3xl font-semibold text-[rgb(var(--color-text-primary))]">{t.home.labSubtitle}</h2>
+      </div>
+
+      <div class="lab-grid">
+        <div class="lab-terminal magnetic" data-lines={JSON.stringify(t.home.labLines)}>
+          <p class="terminal-prefix">$ cat 0range.log</p>
+          <div class="terminal-lines">
+            {t.home.labLines.slice(0, 4).map((line) => (
+              <p class="terminal-line">{line}</p>
+            ))}
+          </div>
+        </div>
+
+        <div class="lab-radar">
+          {journeySteps.slice(0, 3).map((step, idx) => (
+            <article class="radar-item magnetic">
+              <span class="radar-index">{String(idx + 1).padStart(2, '0')}</span>
+              <h3 class="radar-title">{step.title}</h3>
+              <p class="radar-desc">{step.desc}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section data-reveal data-intro-reveal class="recent-shell border border-white/[0.08] rounded-3xl p-6 md:p-8">
+      <div class="section-head section-head-posts">
+        <div>
+          <p class="section-kicker">{t.home.postsKicker}</p>
+          <h2 class="font-display text-2xl md:text-3xl font-semibold text-[rgb(var(--color-text-primary))]">{t.home.recentPostsTitle}</h2>
+        </div>
+        <a href={localePath('/blog', lang)} class="posts-all-link">{t.home.viewAllPosts}</a>
+      </div>
+
+      {recentPosts.length === 0 ? (
+        <div class="empty-state">{t.home.emptyRecentPosts}</div>
+      ) : (
+        <div class="recent-grid">
+          {recentPosts.map(post => (
+            <a href={`${lang === 'en' ? '/en' : ''}/blog/${post.id}`} class="recent-post magnetic">
+              <p class="recent-date">{formatDate(post.data.pubDate, lang)}</p>
+              <h3 class="recent-title">{lang === 'en' ? (post.data.titleEn ?? post.data.title) : post.data.title}</h3>
+              <p class="recent-desc">{lang === 'en' ? (post.data.descriptionEn ?? post.data.description) : post.data.description}</p>
+              <div class="recent-meta">{post.readingTime} {t.blog.readingTime}</div>
+            </a>
+          ))}
+        </div>
+      )}
+    </section>
   </div>
 </BaseLayout>
 
 <style>
+  .immersive-home {
+    --mx: 50%;
+    --my: 45%;
+    position: relative;
+    isolation: isolate;
+  }
+
   .pixel-title {
     font-family: 'DotGothic16', sans-serif;
   }
 
-  [data-animate] {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
+  .glitch-title {
+    position: relative;
   }
-  [data-animate].is-visible {
-    opacity: 1;
-    transform: translateY(0);
+  .glitch-title::before,
+  .glitch-title::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    pointer-events: none;
+    opacity: 0.2;
+    mix-blend-mode: screen;
+  }
+  .glitch-title::before {
+    color: rgba(var(--color-accent), 0.55);
+    transform: translate(1px, -1px);
+    animation: glitch-shift-a 2800ms steps(2, end) infinite;
+  }
+  .glitch-title::after {
+    color: rgba(var(--color-primary), 0.58);
+    transform: translate(-1px, 1px);
+    animation: glitch-shift-b 2300ms steps(2, end) infinite;
   }
 
-  .social-icon {
+  .portal,
+  .marquee-shell,
+  .lab-shell,
+  .journey-shell,
+  .experience-shell,
+  .recent-shell {
+    background: var(--bento-card-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+  }
+
+  .scroll-indicator {
+    position: fixed;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    pointer-events: none;
+  }
+  .scroll-indicator-label {
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    opacity: 0.65;
+  }
+  .scroll-indicator-track {
+    width: 3px;
+    height: 110px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+  }
+  .scroll-indicator-bar {
+    display: block;
+    width: 100%;
+    height: 0%;
+    border-radius: inherit;
+    background: linear-gradient(to bottom, rgba(var(--color-primary), 0.9), rgba(var(--color-accent), 0.9));
+    box-shadow: 0 0 14px rgba(var(--color-primary), 0.65);
+    transition: height 0.12s linear;
+  }
+
+  .portal {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .portal::before {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background:
+      radial-gradient(circle at var(--mx) var(--my), rgba(var(--color-primary), 0.14), transparent 36%),
+      radial-gradient(circle at 75% 10%, rgba(var(--color-accent), 0.1), transparent 42%);
+    z-index: -2;
+    transition: background-position 0.2s linear;
+  }
+  .portal::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.03),
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    opacity: 0.07;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .portal-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 2rem;
+    align-items: stretch;
+  }
+  .portal-copy {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+  }
+  .portal-copy::before {
+    content: '';
+    position: absolute;
+    inset: -0.5rem -0.85rem;
+    border-radius: 1rem;
+    background: linear-gradient(
+      120deg,
+      rgba(var(--color-bg-dark), 0.74),
+      rgba(var(--color-bg-dark), 0.42) 48%,
+      rgba(var(--color-bg-dark), 0.16)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: -1;
+    pointer-events: none;
+  }
+  .mode-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.9rem;
+  }
+  .status-chip {
+    @apply inline-flex items-center rounded-full text-xs font-medium;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid rgba(var(--color-primary), 0.3);
+    color: rgb(var(--color-primary));
+    background: rgba(var(--color-primary), 0.08);
+  }
+  .status-chip {
+    gap: 0.45rem;
+  }
+  .status-chip-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 9999px;
+    background: rgb(var(--color-primary));
+    box-shadow: 0 0 12px rgba(var(--color-primary), 0.8);
+  }
+  .portal-title {
+    font-size: clamp(2.2rem, 7vw, 4.2rem);
+    font-weight: 700;
+    line-height: 1.04;
+    color: rgb(var(--color-text-primary));
+    margin: 0 0 0.4rem;
+    text-shadow: 0 0 30px rgba(var(--color-primary), 0.26);
+  }
+  .portal-title-wrap {
+    position: relative;
+    display: inline-block;
+    max-width: fit-content;
+  }
+  .portal-handle {
+    position: absolute;
+    left: calc(100% + 0.58rem);
+    bottom: -0.14rem;
+    margin: 0;
+    z-index: 3;
+  }
+  .heitang-handle-tech {
+    display: inline-flex;
+    align-items: center;
+    color: rgb(var(--color-primary));
+    font-family: var(--font-heitang-brand);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-shadow: 0 0 16px rgba(var(--color-primary), 0.35);
+  }
+  .portal-greeting {
+    color: rgb(var(--color-text-secondary));
+    margin: auto 0 0.95rem;
+    line-height: 1.7;
+    min-height: 1.6em;
+  }
+  .portal-rotate {
+    color: rgb(var(--color-primary));
+    font-weight: 600;
+  }
+  .portal-intro {
+    color: rgb(var(--color-text-secondary));
+    line-height: 1.75;
+    max-width: 40rem;
+    margin: 0 0 1.45rem;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
+  }
+
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .btn-primary,
+  .btn-secondary {
+    @apply inline-flex items-center rounded-xl text-sm font-medium;
+    padding: 0.72rem 1rem;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+  }
+  .btn-primary {
+    color: rgb(var(--color-bg-dark));
+    background: rgb(var(--color-primary));
+    border: 1px solid rgba(var(--color-primary), 0.78);
+  }
+  .btn-secondary {
+    color: rgb(var(--color-primary));
+    background: rgba(var(--color-primary), 0.09);
+    border: 1px solid rgba(var(--color-primary), 0.35);
+  }
+  .btn-primary:hover,
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+  }
+
+  .contact-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: nowrap;
+  }
+  .contact-link {
     position: relative;
     display: flex;
     justify-content: center;
@@ -111,27 +540,373 @@ const currentPath = lang === 'zh' ? '/' : '/en';
     border-radius: 9999px;
     border: 2px solid rgba(var(--color-primary), 0.45);
     color: rgba(var(--color-primary), 0.75);
-    transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    background: transparent;
+    transition:
+      transform 0.3s ease,
+      background 0.3s ease,
+      color 0.3s ease,
+      box-shadow 0.3s ease;
   }
-  .social-icon:hover {
-    transform: scale(1.25) translateY(-5px);
-    background: rgb(var(--color-primary));
-    color: #1a1a1a;
-    box-shadow: 0 0 24px rgb(var(--color-primary));
+  .contact-link svg {
+    width: 1.25rem;
+    height: 1.25rem;
   }
-  .social-label {
+  .contact-link-label {
     position: absolute;
     bottom: -1.8rem;
     left: 50%;
     transform: translateX(-50%) scale(0);
     font-size: 0.7rem;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
     white-space: nowrap;
     transition: transform 0.25s ease;
     pointer-events: none;
   }
-  .social-icon:hover .social-label {
+  .contact-link:hover {
+    transform: scale(1.2) translateY(-4px);
+    background: rgb(var(--color-primary));
+    color: rgb(var(--color-bg-dark));
+    box-shadow: 0 0 24px rgba(var(--color-primary), 0.8);
+  }
+  .contact-link:hover .contact-link-label,
+  .contact-link:focus-visible .contact-link-label {
     transform: translateX(-50%) scale(1);
+  }
+
+  .portal-visual {
+    position: relative;
+    min-height: 360px;
+    display: grid;
+    place-items: center;
+    padding-bottom: 3.4rem;
+  }
+  .portal-contact-slot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.55rem;
+    z-index: 4;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .portal-contact-slot .contact-row {
+    pointer-events: auto;
+  }
+  .interest-field {
+    position: absolute;
+    inset: 0 0 3.1rem 0;
+    pointer-events: none;
+  }
+  .interest-chip {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+    border-radius: 9999px;
+    border: 1px solid rgba(var(--color-primary), 0.28);
+    background: rgba(0, 0, 0, 0.3);
+    color: rgb(var(--color-text-primary));
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    padding: 0.28rem 0.6rem;
+    white-space: nowrap;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 0 14px rgba(var(--color-primary), 0.16);
+    animation:
+      interest-float calc(9s + (var(--i) * 0.55s)) ease-in-out infinite,
+      interest-pulse calc(2.2s + (var(--i) * 0.1s)) ease-in-out infinite;
+  }
+  .orbital-core {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    border-radius: 9999px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(var(--color-primary), 0.28);
+    box-shadow:
+      0 0 35px rgba(var(--color-primary), 0.18),
+      inset 0 0 20px rgba(255, 255, 255, 0.08);
+    z-index: 2;
+    transform-style: preserve-3d;
+  }
+  .orbital-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 9999px;
+    object-fit: cover;
+    border: 2px solid rgba(var(--color-primary), 0.5);
+  }
+  .orbital-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 30px rgba(var(--color-primary), 0.4);
+    pointer-events: none;
+  }
+  .orbit {
+    position: absolute;
+    border: 1px dashed rgba(var(--color-primary), 0.3);
+    border-radius: 9999px;
+    animation: orbit-spin linear infinite;
+    transform-origin: center;
+  }
+  .orbit-a { width: 240px; height: 240px; animation-duration: 16s; }
+  .orbit-b { width: 290px; height: 290px; animation-duration: 22s; animation-direction: reverse; }
+  .orbit-c { width: 340px; height: 340px; animation-duration: 28s; }
+
+  .marquee-shell {
+    overflow: hidden;
+    padding: 0.85rem 0;
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    gap: 0.55rem;
+    animation: marquee-slide 28s linear infinite;
+  }
+  .marquee-item {
+    @apply inline-flex items-center rounded-full text-xs font-medium;
+    padding: 0.42rem 0.75rem;
+    color: rgb(var(--color-text-primary));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+  }
+
+  .lab-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: 0.9rem;
+  }
+  .lab-terminal {
+    border-radius: 1rem;
+    border: 1px solid rgba(var(--color-primary), 0.25);
+    background: rgba(0, 0, 0, 0.34);
+    padding: 1rem;
+    min-height: 220px;
+    position: relative;
+    overflow: hidden;
+  }
+  .lab-terminal::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(var(--color-primary), 0.11) 50%,
+      transparent 100%
+    );
+    transform: translateY(-100%);
+    animation: scanline 3.6s linear infinite;
+    pointer-events: none;
+  }
+  .terminal-prefix {
+    color: rgb(var(--color-primary));
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    margin-bottom: 0.6rem;
+  }
+  .terminal-lines {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .terminal-line {
+    color: rgb(var(--color-text-secondary));
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    opacity: 0.9;
+  }
+
+  .lab-radar {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .radar-item {
+    border-radius: 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.85rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .radar-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(130deg, rgba(var(--color-primary), 0.12), transparent 42%);
+    pointer-events: none;
+  }
+  .radar-index {
+    color: rgb(var(--color-primary));
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .radar-title {
+    color: rgb(var(--color-text-primary));
+    margin: 0.35rem 0;
+    font-size: 1rem;
+  }
+  .radar-desc {
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.83rem;
+    line-height: 1.55;
+  }
+
+  .section-head {
+    margin-bottom: 1rem;
+  }
+  .section-kicker {
+    color: rgb(var(--color-text-secondary));
+    text-transform: uppercase;
+    font-size: 0.73rem;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.45rem;
+  }
+
+  .experience-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+  .experience-card {
+    position: relative;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    min-height: 185px;
+    overflow: hidden;
+    transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  }
+  .experience-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.7;
+    pointer-events: none;
+    background: linear-gradient(145deg, rgba(var(--color-primary), 0.16), transparent 40%);
+  }
+  .experience-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    border-color: rgba(var(--color-primary), 0.36);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  }
+  .card-style-1 { transform: rotate(-0.8deg); }
+  .card-style-2 { transform: rotate(0.65deg); }
+  .card-style-3 { transform: rotate(-0.45deg); }
+  .experience-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+    display: grid;
+    place-items: center;
+    color: rgb(var(--color-primary));
+    background: rgba(var(--color-primary), 0.16);
+  }
+  .experience-arrow {
+    margin-top: auto;
+    color: rgb(var(--color-primary));
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .section-head-posts {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.9rem;
+  }
+  .posts-all-link {
+    color: rgb(var(--color-primary));
+    font-size: 0.83rem;
+    transition: opacity 0.2s ease;
+  }
+  .posts-all-link:hover { opacity: 0.8; }
+
+  .recent-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+  .recent-post {
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    min-height: 210px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.22s ease, border-color 0.22s ease;
+  }
+  .recent-post:hover {
+    transform: translateY(-4px);
+    border-color: rgba(var(--color-primary), 0.36);
+  }
+  .recent-date {
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.72rem;
+    margin-bottom: 0.55rem;
+  }
+  .recent-title {
+    color: rgb(var(--color-text-primary));
+    font-size: 1.05rem;
+    line-height: 1.4;
+    font-weight: 600;
+    margin-bottom: 0.55rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .recent-desc {
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: auto;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .recent-meta {
+    margin-top: 0.8rem;
+    color: rgb(var(--color-primary));
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .empty-state {
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1rem;
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.9rem;
+  }
+
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  [data-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .magnetic {
+    will-change: transform;
   }
 
   .tw-cursor {
@@ -143,14 +918,189 @@ const currentPath = lang === 'zh' ? '/' : '/en';
   }
   @keyframes tw-blink {
     0%, 100% { opacity: 1; }
-    50%       { opacity: 0; }
+    50% { opacity: 0; }
+  }
+  @keyframes orbit-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes marquee-slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes interest-float {
+    0%, 100% { transform: translate(-50%, -50%) translate(0, 0); }
+    50% { transform: translate(-50%, -50%) translate(6px, -10px); }
+  }
+  @keyframes interest-pulse {
+    0%, 100% {
+      opacity: 0.72;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 0 14px rgba(var(--color-primary), 0.16);
+    }
+    50% {
+      opacity: 1;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 0 20px rgba(var(--color-primary), 0.28);
+    }
+  }
+  @keyframes scanline {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(160%); }
+  }
+  @keyframes glitch-shift-a {
+    0%, 86%, 100% { clip-path: inset(0 0 0 0); transform: translate(1px, -1px); opacity: 0.16; }
+    88% { clip-path: inset(20% 0 56% 0); transform: translate(3px, -2px); opacity: 0.32; }
+    90% { clip-path: inset(72% 0 6% 0); transform: translate(-2px, 2px); opacity: 0.34; }
+  }
+  @keyframes glitch-shift-b {
+    0%, 85%, 100% { clip-path: inset(0 0 0 0); transform: translate(-1px, 1px); opacity: 0.14; }
+    87% { clip-path: inset(10% 0 70% 0); transform: translate(-3px, 2px); opacity: 0.28; }
+    91% { clip-path: inset(64% 0 14% 0); transform: translate(2px, -2px); opacity: 0.34; }
+  }
+
+  @media (max-width: 1100px) {
+    .portal-grid {
+      grid-template-columns: 1fr;
+    }
+    .portal-visual {
+      min-height: 300px;
+      margin-top: 0.4rem;
+      padding-bottom: 3rem;
+    }
+    .portal-contact-slot {
+      bottom: 0.3rem;
+    }
+    .lab-grid {
+      grid-template-columns: 1fr;
+    }
+    .experience-grid,
+    .recent-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 760px) {
+    .scroll-indicator {
+      display: none;
+    }
+    .portal-title-wrap {
+      margin-bottom: 0.9rem;
+    }
+    .experience-grid,
+    .recent-grid {
+      grid-template-columns: 1fr;
+    }
+    .section-head-posts {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .contact-row {
+      gap: 1.1rem;
+    }
+    .portal-handle {
+      left: calc(100% + 0.48rem);
+      bottom: -0.1rem;
+    }
+    .heitang-handle-tech {
+      font-size: 1.5rem;
+      letter-spacing: 0.13em;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .glitch-title::before,
+    .glitch-title::after {
+      display: none;
+    }
   }
 </style>
 
 <script>
-  document.querySelectorAll<HTMLElement>('[data-animate]').forEach((el, i) => {
-    setTimeout(() => el.classList.add('is-visible'), i * 160 + 80);
-  });
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const root = document.querySelector<HTMLElement>('.immersive-home');
+  const revealItems = document.querySelectorAll<HTMLElement>('[data-reveal]');
+  const parallaxNodes = document.querySelectorAll<HTMLElement>('.parallax-node');
+  const magneticNodes = document.querySelectorAll<HTMLElement>('.magnetic');
+  const progressBar = document.querySelector<HTMLElement>('.scroll-indicator-bar');
+  const terminal = document.querySelector<HTMLElement>('.lab-terminal');
+
+  function updateScrollProgress() {
+    if (!progressBar) return;
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
+    progressBar.style.height = `${progress}%`;
+  }
+
+  updateScrollProgress();
+  window.addEventListener('scroll', updateScrollProgress, { passive: true });
+
+  function showItem(el: HTMLElement) {
+    el.classList.add('is-visible');
+  }
+
+  if (reduceMotion) {
+    revealItems.forEach(showItem);
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        showItem(entry.target as HTMLElement);
+        io.unobserve(entry.target);
+      });
+    }, { threshold: 0.18 });
+    revealItems.forEach(el => io.observe(el));
+  }
+
+  if (!reduceMotion && root) {
+    window.addEventListener('pointermove', (event) => {
+      const rect = root.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      root.style.setProperty('--mx', `${Math.max(0, Math.min(100, x))}%`);
+      root.style.setProperty('--my', `${Math.max(0, Math.min(100, y))}%`);
+
+      const dx = event.clientX - (rect.left + rect.width / 2);
+      const dy = event.clientY - (rect.top + rect.height / 2);
+
+      parallaxNodes.forEach(node => {
+        const depth = Number(node.dataset.depth ?? '10');
+        const tx = (dx / rect.width) * depth;
+        const ty = (dy / rect.height) * depth;
+        node.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+      });
+    });
+
+    magneticNodes.forEach(node => {
+      node.addEventListener('mousemove', (event) => {
+        const rect = node.getBoundingClientRect();
+        const mx = event.clientX - (rect.left + rect.width / 2);
+        const my = event.clientY - (rect.top + rect.height / 2);
+        node.style.transform = `translate(${mx * 0.06}px, ${my * 0.06}px)`;
+      });
+      node.addEventListener('mouseleave', () => {
+        node.style.transform = '';
+      });
+    });
+  }
+
+  if (!reduceMotion && terminal) {
+    const raw = terminal.dataset.lines;
+    const lineNodes = Array.from(terminal.querySelectorAll<HTMLElement>('.terminal-line'));
+
+    if (raw && lineNodes.length > 0) {
+      const lines = JSON.parse(raw) as string[];
+      let pointer = 0;
+      setInterval(() => {
+        lineNodes.forEach((node, idx) => {
+          const lineIndex = (pointer + idx) % lines.length;
+          node.textContent = lines[lineIndex];
+        });
+        pointer = (pointer + 1) % lines.length;
+      }, 2200);
+    }
+  }
 
   class TxtRotate {
     private el: HTMLElement;
@@ -164,7 +1114,7 @@ const currentPath = lang === 'zh' ? '/' : '/en';
       this.el = el;
       this.toRotate = toRotate;
       this.period = period;
-      setTimeout(() => this.tick(), 600);
+      setTimeout(() => this.tick(), 500);
     }
 
     tick() {
@@ -177,8 +1127,8 @@ const currentPath = lang === 'zh' ? '/' : '/en';
 
       this.el.querySelector<HTMLElement>('.wrap')!.textContent = this.txt;
 
-      let delta = 100 - Math.round(Math.random() * 40);
-      if (this.isDeleting) delta /= 2.5;
+      let delta = 100 - Math.round(Math.random() * 35);
+      if (this.isDeleting) delta /= 2.2;
 
       if (!this.isDeleting && this.txt === fullTxt) {
         delta = this.period;
@@ -186,7 +1136,7 @@ const currentPath = lang === 'zh' ? '/' : '/en';
       } else if (this.isDeleting && this.txt === '') {
         this.isDeleting = false;
         this.loopNum++;
-        delta = 500;
+        delta = 450;
       }
 
       setTimeout(() => this.tick(), delta);
@@ -195,7 +1145,18 @@ const currentPath = lang === 'zh' ? '/' : '/en';
 
   document.querySelectorAll<HTMLElement>('.txt-rotate').forEach(el => {
     const raw = el.getAttribute('data-rotate');
+    if (!raw) return;
+
+    const rotateTexts = JSON.parse(raw) as string[];
     const period = parseInt(el.getAttribute('data-period') || '2000', 10);
-    if (raw) new TxtRotate(el, JSON.parse(raw), period);
+
+    if (reduceMotion) {
+      el.querySelector<HTMLElement>('.wrap')!.textContent = rotateTexts[0] ?? '';
+      const cursor = el.parentElement?.querySelector<HTMLElement>('.tw-cursor');
+      if (cursor) cursor.style.display = 'none';
+      return;
+    }
+
+    new TxtRotate(el, rotateTexts, period);
   });
 </script>
