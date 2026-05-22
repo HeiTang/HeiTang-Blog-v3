@@ -95,7 +95,7 @@ export const siteConfig = {
       name: 'MailCat',
       role: '個人作品',
       period: '2024',
-      image: 'https://opengraph.githubassets.com/1/HeiTang/MailCat',
+      image: '/images/projects/mailcat/inbox.png',
       customDescription: 'Google Apps Script 打造的 Gmail 自動化規則管理器。自動替銀行、電子支付信件加上標籤、定時刪除登入通知、封存已讀信件、備份電子帳單附件至 Google Drive。',
       techStack: ['Google Apps Script', 'JavaScript', 'Gmail API', 'Google Drive API'],
       highlights: [
@@ -105,7 +105,9 @@ export const siteConfig = {
         '自動備份電子帳單附件至 Google Drive 指定資料夾',
         '⭐ 26 顆星，台灣 GAS 社群熱門工具',
       ],
-      screenshots: [],
+      screenshots: [
+        { src: '/images/projects/mailcat/inbox.png', caption: '銀行信件自動分類為「登入通知 / 交易通知 / 電子帳單」並掛上對應銀行子標籤' },
+      ],
       tags: ['Google Apps Script', 'Gmail', 'Automation'],
       blogPost: '/blog/mailcat',
     },
