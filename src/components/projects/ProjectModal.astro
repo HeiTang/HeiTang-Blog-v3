@@ -675,22 +675,24 @@
     // ── Media (right col on desktop, top on mobile) ─────────
     // Multiple screenshots → carousel; single cover → plain img; none → dino
     let mediaInner = '';
-    if (p.screenshots.length > 1) {
+    if (p.screenshots.length >= 1) {
       const shots = p.screenshots.map(normShot);
+      const isMulti = shots.length > 1;
       const slides = shots.map(s =>
         `<figure class="pm-carousel-slide">
           <img src="${esc(s.src)}" alt="${esc(s.caption || 'screenshot')}" loading="lazy">
           ${s.caption ? `<figcaption class="pm-carousel-caption">${esc(s.caption)}</figcaption>` : ''}
         </figure>`).join('');
-      const dots = shots.map((_, i) =>
-        `<button type="button" class="pm-dot${i === 0 ? ' is-active' : ''}" data-idx="${i}" aria-label="第 ${i + 1} 張"></button>`).join('');
+      const navHtml = isMulti ? `
+        <button type="button" class="pm-carousel-nav pm-carousel-prev" aria-label="上一張">&#8249;</button>
+        <button type="button" class="pm-carousel-nav pm-carousel-next" aria-label="下一張">&#8250;</button>
+        <div class="pm-carousel-counter">1 / ${shots.length}</div>
+        <div class="pm-carousel-dots">${shots.map((_, i) =>
+          `<button type="button" class="pm-dot${i === 0 ? ' is-active' : ''}" data-idx="${i}" aria-label="第 ${i + 1} 張"></button>`).join('')}</div>` : '';
       mediaInner = `
         <div class="pm-carousel-wrap">
           <div class="pm-carousel">${slides}</div>
-          <button type="button" class="pm-carousel-nav pm-carousel-prev" aria-label="上一張">&#8249;</button>
-          <button type="button" class="pm-carousel-nav pm-carousel-next" aria-label="下一張">&#8250;</button>
-          <div class="pm-carousel-counter">1 / ${shots.length}</div>
-          <div class="pm-carousel-dots">${dots}</div>
+          ${navHtml}
         </div>`;
     } else if (p.cover) {
       mediaInner = `<img src="${esc(p.cover)}" alt="${esc(p.name)}" onerror="pmNoCover(this.parentElement)">`;
@@ -841,14 +843,13 @@
     const wrap = root.querySelector<HTMLElement>('.pm-carousel-wrap');
     if (!wrap) return;
     const track = wrap.querySelector<HTMLElement>('.pm-carousel');
+    if (!track) return;
     const dots = Array.from(wrap.querySelectorAll<HTMLElement>('.pm-dot'));
     const counter = wrap.querySelector<HTMLElement>('.pm-carousel-counter');
     const prev = wrap.querySelector<HTMLButtonElement>('.pm-carousel-prev');
     const next = wrap.querySelector<HTMLButtonElement>('.pm-carousel-next');
-    if (!track || dots.length === 0) return;
-    const total = dots.length;
 
-    // Click image → open lightbox at this index
+    // Click image → open lightbox at this index (works for single + multi)
     const slides = Array.from(track.querySelectorAll<HTMLElement>('.pm-carousel-slide'));
     const shots = slides.map(slide => ({
       src: slide.querySelector<HTMLImageElement>('img')?.src ?? '',
@@ -858,6 +859,9 @@
       const img = slide.querySelector<HTMLImageElement>('img');
       img?.addEventListener('click', () => openLightbox(shots, i));
     });
+
+    if (dots.length === 0) return;
+    const total = dots.length;
 
     let scrollRaf = 0;
     let currentIdx = 0;
