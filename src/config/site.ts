@@ -35,6 +35,63 @@ export const siteConfig = {
   // Fill in meta for each project to power the portfolio Modal.
   projectsWhitelist: [
     {
+      name: 'FX-Pulse',
+      role: '個人作品',
+      period: '2026',
+      image: '/images/projects/fx-pulse/home.png',
+      customDescription: 'FX Pulse — 匯率脈動。每日自動抓取 VISA、Mastercard、JCB 三大信用卡組織官方匯率並排比較，同幣別最優匯率自動標綠、最差標紅，搭配 ECharts 互動式三線歷史走勢圖。前端 Astro 6 + Tailwind v4 部署於 GitHub Pages，爬蟲透過 GitHub Actions 排程，零伺服器成本。目前運行於 fx.purr.tw。',
+      techStack: [
+        'Python 3.12',
+        'Poetry',
+        'curl-cffi',
+        'Astro 6',
+        'Tailwind CSS v4',
+        'ECharts',
+        'GitHub Actions',
+      ],
+      highlights: [
+        '同幣別三家匯率並排比較，最優自動標綠、最差標紅，省去逐站比價。',
+        'JCB 無公開 API，從 jcb.jp 抓取 USD 基準匯率，以 cross-rate 推算全 8 幣別。',
+        '以 curl-cffi 模擬 Chrome TLS 指紋，成功繞過 VISA Cloudflare 與 Mastercard Akamai 防護。',
+        '互動走勢圖（ECharts）三線對比、點擊幣別卡片切換、支援滑動縮放。',
+        '每日抓取後自動掃描近 7 天缺漏、JCB 週末自動跳過，確保歷史資料完整。',
+        '彈性 CLI：支援指定來源 / 日期 / 區間 / 月份、dry-run、整月平行批量抓取。',
+      ],
+      screenshots: [
+        { src: '/images/projects/fx-pulse/home.png', caption: '首頁即時匯率：同幣別三家並排，最優標綠、最差標紅' },
+        { src: '/images/projects/fx-pulse/full-usd.png', caption: 'USD 三線歷史走勢圖（ECharts），支援滑動縮放' },
+        { src: '/images/projects/fx-pulse/jpy-chart.png', caption: '點擊幣別卡片即切換走勢圖 — JPY 為例' },
+      ],
+      tags: ['Python', 'Astro', 'Scraper', 'GitHub Actions', 'Serverless'],
+    },
+    {
+      name: 'yannick-stock-checker',
+      role: '個人作品',
+      period: '2026',
+      image: '/images/projects/yannick/demo.png',
+      customDescription: '亞尼克 YTM 庫存查詢。以商品為核心建立反向索引，快速定位仍有現貨的 YTM 站點。FastAPI + Astro 同時提供網頁查詢與 REST API，內建快取、限流與重試機制，兼顧查詢速度與來源負載。目前運行於 yannick.purr.tw。',
+      techStack: [
+        'Python 3.11',
+        'FastAPI',
+        'Astro 6',
+        'SQLite',
+        'Docker',
+        'pytest',
+      ],
+      highlights: [
+        '商品導向反向索引：從商品查站點，省去逐站翻 YTM 庫存的時間成本。',
+        '同時提供網頁查詢介面與完整 REST API，可串自建工具、通知流程或資料分析。',
+        '內建快取（TTL）、併發限流、退避重試，兼顧查詢速度與對來源網站的友善度。',
+        'FastAPI 對外提供同一個入口，Docker 一鍵啟動內含 Astro 靜態檔案。',
+        '完整 pytest 覆蓋率與 coverage 報告，部署可靠度有保障。',
+      ],
+      screenshots: [
+        { src: '/images/projects/yannick/demo.png', caption: '商品總覽 — 顯示有貨商品數與可購買站點數' },
+        { src: '/images/projects/yannick/detail.png', caption: '點開單一商品可看所有仍有貨的 YTM 站點' },
+      ],
+      tags: ['Python', 'FastAPI', 'Astro', 'Scraper', 'API'],
+    },
+    {
       name: 'MailCat',
       role: '個人作品',
       period: '2024',
