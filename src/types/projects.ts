@@ -23,8 +23,12 @@ export interface ProjectMeta {
   /** Achievement bullet points shown in Modal (✦ prefix) */
   highlights?: string[];
 
-  /** Additional screenshots for Modal carousel (public paths or URLs) */
-  screenshots?: string[];
+  /**
+   * Additional screenshots for Modal carousel. Each entry can be:
+   *  - a string (path / URL), or
+   *  - `{ src, caption }` to attach a caption shown on the slide & lightbox.
+   */
+  screenshots?: Array<string | { src: string; caption?: string }>;
 
   /** Overrides the GitHub API description in Modal (use for richer narrative) */
   customDescription?: string;

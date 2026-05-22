@@ -23,7 +23,10 @@
 <!-- Lightbox (fullscreen image viewer) -->
 <div id="pm-lightbox" aria-hidden="true">
   <div class="pm-lb-backdrop"></div>
-  <img class="pm-lb-img" alt="" />
+  <figure class="pm-lb-figure">
+    <img class="pm-lb-img" alt="" />
+    <figcaption class="pm-lb-caption"></figcaption>
+  </figure>
   <button type="button" class="pm-lb-close" aria-label="關閉">✕</button>
   <button type="button" class="pm-lb-nav pm-lb-prev" aria-label="上一張">&#8249;</button>
   <button type="button" class="pm-lb-nav pm-lb-next" aria-label="下一張">&#8250;</button>
@@ -286,10 +289,47 @@
   }
   #pm-content .pm-split-media .pm-carousel::-webkit-scrollbar,
   #pm-sheet-content .pm-split-media .pm-carousel::-webkit-scrollbar { display: none; }
-  #pm-content .pm-split-media .pm-carousel img,
-  #pm-sheet-content .pm-split-media .pm-carousel img {
-    flex-shrink: 0; width: 100%; height: 100%;
-    object-fit: contain; scroll-snap-align: start;
+  #pm-content .pm-split-media .pm-carousel-slide,
+  #pm-sheet-content .pm-split-media .pm-carousel-slide {
+    position: relative;
+    flex-shrink: 0;
+    width: 100%; height: 100%;
+    scroll-snap-align: start;
+    margin: 0;
+  }
+  #pm-content .pm-split-media .pm-carousel-slide img,
+  #pm-sheet-content .pm-split-media .pm-carousel-slide img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  #pm-content .pm-carousel-caption,
+  #pm-sheet-content .pm-carousel-caption {
+    position: absolute;
+    left: 0.6rem; right: 0.6rem; bottom: 2.4rem;
+    margin: 0;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: rgba(255,255,255,0.95);
+    background: rgba(0,0,0,0.55);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.4rem;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  #pm-content .pm-carousel-slide:hover .pm-carousel-caption,
+  #pm-sheet-content .pm-carousel-slide:hover .pm-carousel-caption {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (hover: none) {
+    #pm-content .pm-carousel-caption,
+    #pm-sheet-content .pm-carousel-caption { display: none; }
   }
 
   /* ── Carousel: wrap + dots + counter + nav ── */
@@ -390,16 +430,36 @@
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
     cursor: zoom-out;
   }
-  #pm-lightbox .pm-lb-img {
+  #pm-lightbox .pm-lb-figure {
     position: relative;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
     max-width: min(96vw, 1600px);
-    max-height: 92vh;
+  }
+  #pm-lightbox .pm-lb-img {
+    max-width: 100%;
+    max-height: 84vh;
     object-fit: contain;
     border-radius: 0.5rem;
     box-shadow: 0 24px 80px rgba(0,0,0,0.6);
     user-select: none;
     pointer-events: none;
   }
+  #pm-lightbox .pm-lb-caption {
+    max-width: min(90vw, 720px);
+    padding: 0.45rem 0.95rem;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: rgba(255,255,255,0.95);
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.5rem;
+    text-align: center;
+  }
+  #pm-lightbox .pm-lb-caption:empty { display: none; }
   #pm-lightbox .pm-lb-close {
     position: absolute;
     top: 1rem; right: 1rem;
@@ -573,6 +633,7 @@
 
   const isMobile = () => window.innerWidth < 640;
 
+  type Shot = string | { src: string; caption?: string };
   interface ProjectData {
     name: string;
     description: string | null;
@@ -583,13 +644,16 @@
     period: string | null;
     techStack: string[];
     highlights: string[];
-    screenshots: string[];
+    screenshots: Shot[];
     blogPost: string | null;
     hideGithubLink: boolean;
     language: string | null;
     languageColor: string;
     stars: number;
     forks: number;
+  }
+  function normShot(s: Shot): { src: string; caption: string } {
+    return typeof s === 'string' ? { src: s, caption: '' } : { src: s.src, caption: s.caption ?? '' };
   }
 
   function esc(s: string) {
@@ -612,16 +676,20 @@
     // Multiple screenshots → carousel; single cover → plain img; none → dino
     let mediaInner = '';
     if (p.screenshots.length > 1) {
-      const imgs = p.screenshots.map(s =>
-        `<img src="${esc(s)}" alt="screenshot" loading="lazy">`).join('');
-      const dots = p.screenshots.map((_, i) =>
+      const shots = p.screenshots.map(normShot);
+      const slides = shots.map(s =>
+        `<figure class="pm-carousel-slide">
+          <img src="${esc(s.src)}" alt="${esc(s.caption || 'screenshot')}" loading="lazy">
+          ${s.caption ? `<figcaption class="pm-carousel-caption">${esc(s.caption)}</figcaption>` : ''}
+        </figure>`).join('');
+      const dots = shots.map((_, i) =>
         `<button type="button" class="pm-dot${i === 0 ? ' is-active' : ''}" data-idx="${i}" aria-label="第 ${i + 1} 張"></button>`).join('');
       mediaInner = `
         <div class="pm-carousel-wrap">
-          <div class="pm-carousel">${imgs}</div>
+          <div class="pm-carousel">${slides}</div>
           <button type="button" class="pm-carousel-nav pm-carousel-prev" aria-label="上一張">&#8249;</button>
           <button type="button" class="pm-carousel-nav pm-carousel-next" aria-label="下一張">&#8250;</button>
-          <div class="pm-carousel-counter">1 / ${p.screenshots.length}</div>
+          <div class="pm-carousel-counter">1 / ${shots.length}</div>
           <div class="pm-carousel-dots">${dots}</div>
         </div>`;
     } else if (p.cover) {
@@ -781,10 +849,14 @@
     const total = dots.length;
 
     // Click image → open lightbox at this index
-    const imgs = Array.from(track.querySelectorAll<HTMLImageElement>('img'));
-    const shots = imgs.map(i => i.src);
-    imgs.forEach((img, i) => {
-      img.addEventListener('click', () => openLightbox(shots, i));
+    const slides = Array.from(track.querySelectorAll<HTMLElement>('.pm-carousel-slide'));
+    const shots = slides.map(slide => ({
+      src: slide.querySelector<HTMLImageElement>('img')?.src ?? '',
+      caption: slide.querySelector<HTMLElement>('.pm-carousel-caption')?.textContent ?? '',
+    }));
+    slides.forEach((slide, i) => {
+      const img = slide.querySelector<HTMLImageElement>('img');
+      img?.addEventListener('click', () => openLightbox(shots, i));
     });
 
     let scrollRaf = 0;
@@ -817,16 +889,18 @@
   // ── Lightbox ─────────────────────────────────────
   const lightbox = document.getElementById('pm-lightbox')!;
   const lbImg = lightbox.querySelector<HTMLImageElement>('.pm-lb-img')!;
+  const lbCaption = lightbox.querySelector<HTMLElement>('.pm-lb-caption')!;
   const lbCounter = lightbox.querySelector<HTMLElement>('.pm-lb-counter')!;
   const lbPrev = lightbox.querySelector<HTMLButtonElement>('.pm-lb-prev')!;
   const lbNext = lightbox.querySelector<HTMLButtonElement>('.pm-lb-next')!;
   const lbClose = lightbox.querySelector<HTMLButtonElement>('.pm-lb-close')!;
   const lbBackdrop = lightbox.querySelector<HTMLElement>('.pm-lb-backdrop')!;
 
-  let lbShots: string[] = [];
+  interface LBShot { src: string; caption: string }
+  let lbShots: LBShot[] = [];
   let lbIdx = 0;
 
-  function openLightbox(shots: string[], idx: number) {
+  function openLightbox(shots: LBShot[], idx: number) {
     lbShots = shots;
     lbIdx = idx;
     updateLightbox();
@@ -847,11 +921,13 @@
   }
   function updateLightbox() {
     const total = lbShots.length || 1;
-    lbImg.src = lbShots[lbIdx] ?? '';
+    const cur = lbShots[lbIdx];
+    lbImg.src = cur?.src ?? '';
+    lbCaption.textContent = cur?.caption ?? '';
     lbCounter.textContent = `${lbIdx + 1} / ${lbShots.length}`;
     // Preload neighbours (with wrap-around) so left/right feels instant
-    preload(lbShots[(lbIdx + 1) % total]);
-    preload(lbShots[(lbIdx - 1 + total) % total]);
+    preload(lbShots[(lbIdx + 1) % total]?.src);
+    preload(lbShots[(lbIdx - 1 + total) % total]?.src);
   }
   lbBackdrop.addEventListener('click', closeLightbox);
   lbClose.addEventListener('click', closeLightbox);
