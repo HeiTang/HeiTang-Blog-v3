@@ -112,6 +112,14 @@ const metaJson = JSON.stringify({
     )}
     <!-- Gradient fade into card body -->
     <div class="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+    <!-- Period badge -->
+    {meta?.period && (
+      <div class="absolute bottom-2 left-2">
+        <span class="font-mono text-[0.6rem] tracking-wider px-2 py-0.5 rounded-full bg-black/55 backdrop-blur-sm text-[rgba(var(--color-primary),0.95)] border border-[rgba(var(--color-primary),0.25)]">
+          {meta.period}
+        </span>
+      </div>
+    )}
   </div>
 
   <!-- Card body -->
