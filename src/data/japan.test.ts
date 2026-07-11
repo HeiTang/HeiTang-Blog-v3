@@ -24,3 +24,10 @@ test('level legend content stays inside its native details element', async () =>
 
   assert.ok(detailsStart >= 0 && content > detailsStart && content < detailsEnd);
 });
+
+test('score uses per-digit flip tiles and stays on one line', async () => {
+  const source = await readFile(new URL('../pages/japan/index.astro', import.meta.url), 'utf8');
+
+  assert.match(source, /data-score-digit/);
+  assert.match(source, /white-space:\s*nowrap/);
+});

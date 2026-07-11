@@ -5,6 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const title = `制縣等級 ${japanScore}：我的 47 都道府縣足跡`;
 const description = '記錄在日本 47 都道府縣的通過、到訪、住宿與居住經驗。';
+const japanScoreDigits = String(japanScore).split('');
 const visitedCount = japanPrefectures.filter(prefecture => prefecture.level > 0).length;
 const stayedCount = japanPrefectures.filter(prefecture => prefecture.level >= 4).length;
 const livedCount = japanPrefectures.filter(prefecture => prefecture.level === 5).length;
@@ -56,12 +57,11 @@ const structuredData = [
       <header class="page-header">
         <p class="eyebrow">JAPAN PREFECTURE LOG</p>
         <h1 aria-label={`制縣等級 ${japanScore}`}>
-          制縣等級 <span
-            class="japan-score"
-            data-japan-score={japanScore}
-            style={`--japan-score-width: ${String(japanScore).length}ch`}
-            aria-hidden="true"
-          >{japanScore}</span>
+          制縣等級<span class="japan-score" data-japan-score={japanScore} aria-hidden="true">
+            {japanScoreDigits.map(digit => (
+              <span class="japan-score-digit" data-score-digit={digit}>{digit}</span>
+            ))}
+          </span>
         </h1>
         <p>{description}</p>
         <dl class="travel-stats" aria-label="日本旅行統計">
@@ -114,23 +114,32 @@ const structuredData = [
   const score = document.querySelector<HTMLElement>('[data-japan-score]');
 
   if (score && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const target = Number(score.dataset.japanScore);
+    const digits = [...score.querySelectorAll<HTMLElement>('[data-score-digit]')];
+    const targets = digits.map(digit => Number(digit.dataset.scoreDigit));
 
-    if (Number.isFinite(target)) {
-      score.textContent = '0';
-      const duration = 1100;
-
-      requestAnimationFrame(startedAt => {
-        const updateScore = (now: number) => {
-          const progress = Math.min((now - startedAt) / duration, 1);
-          const eased = 1 - Math.pow(1 - progress, 3);
-          score.textContent = String(Math.round(target * eased));
-
-          if (progress < 1) requestAnimationFrame(updateScore);
-        };
-
-        updateScore(startedAt);
+    if (targets.every(Number.isInteger)) {
+      const wait = (duration: number) => new Promise<void>(resolve => window.setTimeout(resolve, duration));
+      digits.forEach(digit => {
+        digit.textContent = '0';
       });
+
+      const flipDigit = async (digit: HTMLElement, target: number) => {
+        for (let step = 1; step <= 10 + target; step += 1) {
+          digit.classList.remove('is-flipping');
+          void digit.offsetWidth;
+          digit.classList.add('is-flipping');
+          await wait(28);
+          digit.textContent = String(step % 10);
+          await wait(28);
+        }
+        digit.classList.remove('is-flipping');
+      };
+
+      void (async () => {
+        for (const [index, digit] of digits.entries()) {
+          await flipDigit(digit, targets[index]);
+        }
+      })();
     }
   }
 
@@ -202,20 +211,72 @@ const structuredData = [
   }
 
   h1 {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.2em;
+    align-items: baseline;
     margin-bottom: 0.8rem;
     font-size: clamp(2.8rem, 6vw, 4.8rem);
     line-height: 1.05;
     letter-spacing: -0.035em;
+    white-space: nowrap;
   }
 
   .japan-score {
-    display: inline-block;
-    min-width: var(--japan-score-width);
-    color: rgb(var(--color-text-accent));
+    display: inline-flex;
+    flex: none;
+    gap: 0.06em;
+    perspective: 6em;
     font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.06em;
-    text-align: right;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+
+  .japan-score-digit {
+    position: relative;
+    display: inline-grid;
+    width: 0.72em;
+    height: 0.96em;
+    overflow: hidden;
+    border: 1px solid rgb(var(--color-text-primary) / 0.12);
+    border-radius: 0.1em;
+    place-items: center;
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--color-bg-light) / 0.9) 0 49%,
+      rgb(var(--color-bg-medium) / 0.96) 50% 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgb(var(--color-text-primary) / 0.08),
+      0 0.08em 0.2em rgba(0, 0, 0, 0.28);
+    color: rgb(var(--color-text-accent));
+    line-height: 1;
+    transform-origin: center;
+    backface-visibility: hidden;
+  }
+
+  .japan-score-digit::after {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.42);
+    box-shadow: 0 1px 0 rgb(var(--color-text-primary) / 0.04);
+    content: '';
+  }
+
+  .japan-score-digit.is-flipping {
+    animation: japan-score-flip 56ms linear;
+  }
+
+  @keyframes japan-score-flip {
+    0% { filter: brightness(1); transform: rotateX(0); }
+    49% { filter: brightness(0.72); transform: rotateX(-88deg); }
+    50% { filter: brightness(0.72); transform: rotateX(88deg); }
+    100% { filter: brightness(1); transform: rotateX(0); }
   }
 
   .page-header > p:last-of-type {
