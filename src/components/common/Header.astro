@@ -9,9 +9,10 @@ import LanguageSwitcher from './LanguageSwitcher.astro';
 export interface Props {
   currentPath?: string;
   lang?: 'zh' | 'en';
+  hasLanguageAlternate?: boolean;
 }
 
-const { currentPath = '/', lang = 'zh' } = Astro.props;
+const { currentPath = '/', lang = 'zh', hasLanguageAlternate = true } = Astro.props;
 const navItems = siteConfig.nav[lang];
 ---
 
@@ -31,35 +32,82 @@ const navItems = siteConfig.nav[lang];
 
       <!-- Navigation Links -->
       <ul class="hidden md:flex items-center gap-8">
-        {navItems.map(item => (
-          <li>
-            <a 
-              href={item.href}
-              class:list={[
-                "nav-link group relative text-sm font-medium transition-all duration-200 pb-0.5",
-                currentPath === item.href 
-                  ? "nav-link--active text-white" 
-                  : "text-white/60 hover:text-white"
-              ]}
-            >
-              {item.label}
-              <span class:list={[
-                "absolute bottom-0 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
-                currentPath === item.href ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-              ]}></span>
-            </a>
-          </li>
+        {navItems.map((item, index) => (
+          'children' in item ? (
+            <li class="nav-dropdown" data-nav-group>
+              <details class="nav-dropdown-toggle" data-nav-dropdown>
+                <summary
+                  class:list={[
+                    "nav-link nav-dropdown-summary group relative flex items-center gap-1 text-sm font-medium transition-all duration-200 pb-0.5",
+                    item.children.some(child => currentPath === child.href)
+                      ? "nav-link--active text-white"
+                      : "text-white/60 hover:text-white"
+                  ]}
+                  aria-controls={`desktop-nav-group-${index}`}
+                >
+                  {item.label}
+                  <svg class="nav-dropdown-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path d="m5 7.5 5 5 5-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+                  </svg>
+                  <span class:list={[
+                    "absolute bottom-0 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
+                    item.children.some(child => currentPath === child.href)
+                      ? "scale-x-100"
+                      : "scale-x-0 group-hover:scale-x-100"
+                  ]}></span>
+                </summary>
+              </details>
+
+              <ul id={`desktop-nav-group-${index}`} class="nav-dropdown-menu" aria-label={`${item.label}選單`}>
+                {item.children.map(child => (
+                  <li>
+                    <a
+                      href={child.href}
+                      aria-current={currentPath === child.href ? 'page' : undefined}
+                      class:list={[
+                        'nav-dropdown-link',
+                        currentPath === child.href ? 'nav-dropdown-link--active' : ''
+                      ]}
+                    >
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ) : (
+            <li>
+              <a
+                href={item.href}
+                aria-current={currentPath === item.href ? 'page' : undefined}
+                class:list={[
+                  "nav-link group relative text-sm font-medium transition-all duration-200 pb-0.5",
+                  currentPath === item.href
+                    ? "nav-link--active text-white"
+                    : "text-white/60 hover:text-white"
+                ]}
+              >
+                {item.label}
+                <span class:list={[
+                  "absolute bottom-0 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
+                  currentPath === item.href ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                ]}></span>
+              </a>
+            </li>
+          )
         ))}
       </ul>
 
       <!-- Language Switch + Mobile Button -->
       <div class="flex items-center gap-3">
-        <LanguageSwitcher />
+        {hasLanguageAlternate && <LanguageSwitcher />}
 
-        <button 
+        <button
           id="mobile-menu-btn"
-          class="md:hidden text-white"
+          class="flex h-11 w-11 items-center justify-center text-white md:hidden"
           aria-label="Toggle menu"
+          aria-controls="mobile-menu"
+          aria-expanded="false"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -70,21 +118,58 @@ const navItems = siteConfig.nav[lang];
 
     <!-- Mobile Menu -->
     <div id="mobile-menu" class="hidden md:hidden mt-4 pt-4 border-t border-white/10">
-      <ul class="flex flex-col gap-3">
-        {navItems.map(item => (
-          <li>
-            <a 
-              href={item.href}
-              class:list={[
-                "text-sm font-medium transition-colors",
-                currentPath === item.href 
-                  ? "text-white" 
-                  : "text-white/60 hover:text-white"
-              ]}
-            >
-              {item.label}
-            </a>
-          </li>
+      <ul class="flex flex-col gap-1">
+        {navItems.map((item, index) => (
+          'children' in item ? (
+            <li class="mobile-nav-dropdown" data-nav-group>
+              <details class="mobile-nav-dropdown-toggle" data-nav-dropdown>
+                <summary
+                  class:list={[
+                    'mobile-nav-dropdown-summary',
+                    item.children.some(child => currentPath === child.href) ? 'text-white' : 'text-white/60'
+                  ]}
+                  aria-controls={`mobile-nav-group-${index}`}
+                >
+                  {item.label}
+                  <svg class="nav-dropdown-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
+                    <path d="m5 7.5 5 5 5-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+                  </svg>
+                </summary>
+              </details>
+
+              <ul id={`mobile-nav-group-${index}`} class="mobile-nav-dropdown-menu">
+                {item.children.map(child => (
+                  <li>
+                    <a
+                      href={child.href}
+                      aria-current={currentPath === child.href ? 'page' : undefined}
+                      class:list={[
+                        'mobile-nav-dropdown-link',
+                        currentPath === child.href ? 'text-white' : 'text-white/60'
+                      ]}
+                    >
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ) : (
+            <li>
+              <a
+                href={item.href}
+                aria-current={currentPath === item.href ? 'page' : undefined}
+                class:list={[
+                  "flex min-h-11 items-center text-sm font-medium transition-colors",
+                  currentPath === item.href
+                    ? "text-white"
+                    : "text-white/60 hover:text-white"
+                ]}
+              >
+                {item.label}
+              </a>
+            </li>
+          )
         ))}
       </ul>
     </div>
@@ -102,12 +187,171 @@ const navItems = siteConfig.nav[lang];
       0 0 6px rgba(var(--color-primary) / 0.6),
       0 0 16px rgba(var(--color-primary) / 0.3);
   }
+
+  .nav-dropdown {
+    position: relative;
+  }
+
+  .nav-dropdown-summary,
+  .mobile-nav-dropdown-summary {
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .nav-dropdown-summary::-webkit-details-marker,
+  .mobile-nav-dropdown-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-dropdown-chevron {
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: transform 180ms ease;
+  }
+
+  .nav-dropdown-toggle[open] .nav-dropdown-chevron,
+  .mobile-nav-dropdown-toggle[open] .nav-dropdown-chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-dropdown-menu {
+    position: absolute;
+    z-index: 1;
+    top: calc(100% + 0.625rem);
+    left: 50%;
+    display: grid;
+    width: 10.5rem;
+    gap: 0.125rem;
+    margin: 0;
+    padding: 0.375rem;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 0.875rem;
+    background: rgb(var(--color-bg-medium) / 0.92);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 16px 36px rgba(0, 0, 0, 0.42),
+      0 3px 10px rgba(0, 0, 0, 0.24);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    backdrop-filter: blur(18px) saturate(120%);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    transform: translate(-50%, -0.375rem);
+    transform-origin: top center;
+    transition: opacity 160ms ease, visibility 160ms ease, transform 160ms ease;
+  }
+
+  .nav-dropdown::after {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 10.5rem;
+    height: 0.625rem;
+    content: '';
+    transform: translateX(-50%);
+  }
+
+  .nav-dropdown-toggle[open] + .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .nav-dropdown:hover .nav-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translate(-50%, 0);
+    }
+  }
+
+  .nav-dropdown-link,
+  .mobile-nav-dropdown-link {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    border-radius: 0.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem;
+    transition: color 160ms ease, background 160ms ease;
+  }
+
+  .nav-dropdown-link {
+    position: relative;
+    padding: 0 0.625rem 0 0.75rem;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-dropdown-link:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.055);
+  }
+
+  .nav-dropdown-link--active {
+    color: white;
+    border-left-color: rgb(var(--color-primary) / 0.82);
+    background: rgb(var(--color-primary) / 0.1);
+  }
+
+  .mobile-nav-dropdown-summary {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .mobile-nav-dropdown-menu {
+    display: none;
+    gap: 0.125rem;
+    margin: 0;
+    padding: 0 0 0.25rem 0.75rem;
+  }
+
+  .mobile-nav-dropdown-toggle[open] + .mobile-nav-dropdown-menu {
+    display: grid;
+  }
+
+  .mobile-nav-dropdown-link {
+    padding: 0 0.75rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-dropdown-menu,
+    .nav-dropdown-chevron {
+      transition: none;
+    }
+  }
 </style>
 
 <script>
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
   mobileMenuBtn?.addEventListener('click', () => {
-    mobileMenu?.classList.toggle('hidden');
+    if (!mobileMenu) return;
+    const isOpen = !mobileMenu.classList.toggle('hidden');
+    mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  const navDropdowns = document.querySelectorAll<HTMLDetailsElement>('[data-nav-dropdown]');
+  const closeNavDropdowns = (restoreFocus = false) => {
+    navDropdowns.forEach(dropdown => {
+      if (!dropdown.open) return;
+      dropdown.open = false;
+      if (restoreFocus) dropdown.querySelector('summary')?.focus();
+    });
+  };
+
+  document.addEventListener('pointerdown', event => {
+    if (event.target instanceof Element && !event.target.closest('[data-nav-group]')) {
+      closeNavDropdowns();
+    }
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeNavDropdowns(true);
   });
 </script>
