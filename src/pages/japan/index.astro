@@ -1,9 +1,9 @@
 ---
 import JapanPrefectureMap from '../../components/japan/JapanPrefectureMap.astro';
-import { japanLevelLabels, japanPrefectures } from '../../data/japan';
+import { japanLevelLabels, japanPrefectures, japanScore } from '../../data/japan';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-const title = '日本制縣圖：我的 47 都道府縣足跡';
+const title = `制縣等級 ${japanScore}：我的 47 都道府縣足跡`;
 const description = '記錄在日本 47 都道府縣的通過、到訪、住宿與居住經驗。';
 const visitedCount = japanPrefectures.filter(prefecture => prefecture.level > 0).length;
 const stayedCount = japanPrefectures.filter(prefecture => prefecture.level >= 4).length;
@@ -31,7 +31,7 @@ const structuredData = [
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: '首頁', item: 'https://purr.tw/' },
-      { '@type': 'ListItem', position: 2, name: '日本制縣圖', item: 'https://purr.tw/japan/' },
+      { '@type': 'ListItem', position: 2, name: `制縣等級 ${japanScore}`, item: 'https://purr.tw/japan/' },
     ],
   },
 ];
@@ -50,12 +50,19 @@ const structuredData = [
       <nav class="breadcrumb" aria-label="麵包屑">
         <a href="/">首頁</a>
         <span aria-hidden="true">/</span>
-        <span aria-current="page">日本制縣圖</span>
+        <span aria-current="page">制縣等級 {japanScore}</span>
       </nav>
 
       <header class="page-header">
         <p class="eyebrow">JAPAN PREFECTURE LOG</p>
-        <h1>日本制縣圖</h1>
+        <h1 aria-label={`制縣等級 ${japanScore}`}>
+          制縣等級 <span
+            class="japan-score"
+            data-japan-score={japanScore}
+            style={`--japan-score-width: ${String(japanScore).length}ch`}
+            aria-hidden="true"
+          >{japanScore}</span>
+        </h1>
         <p>{description}</p>
         <dl class="travel-stats" aria-label="日本旅行統計">
           <div class="travel-stat travel-stat-primary">
@@ -82,28 +89,51 @@ const structuredData = [
       <div class="legend">
         <details class="legend-toggle">
           <summary aria-controls="japan-level-legend">0–5 分級</summary>
+          <div id="japan-level-legend" class="legend-content" role="region" aria-label="Level 0 到 5 分級定義">
+            <ol class="legend-list">
+              {japanLevelLabels.map(item => (
+                <li>
+                  <span class="level-swatch" data-level={item.level} aria-hidden="true"></span>
+                  <span><strong>Level {item.level}　{item.label}</strong><small>{item.description}</small></span>
+                </li>
+              ))}
+            </ol>
+            <p class="method-note">分級看的是停留深度，不是景點數量；同一都道府縣只記最高等級。</p>
+            <p class="map-credit">
+              地圖來源：<a href="https://github.com/ukyouz/JapanEx" rel="external">JapanEx</a> ·
+              <a href="/licenses/japanex.txt">MIT License</a>
+            </p>
+          </div>
         </details>
-        <div id="japan-level-legend" class="legend-content" role="region" aria-label="Level 0 到 5 分級定義">
-          <ol class="legend-list">
-            {japanLevelLabels.map(item => (
-              <li>
-                <span class="level-swatch" data-level={item.level} aria-hidden="true"></span>
-                <span><strong>Level {item.level}　{item.label}</strong><small>{item.description}</small></span>
-              </li>
-            ))}
-          </ol>
-          <p class="method-note">分級看的是停留深度，不是景點數量；同一都道府縣只記最高等級。</p>
-          <p class="map-credit">
-            地圖來源：<a href="https://github.com/ukyouz/JapanEx" rel="external">JapanEx</a> ·
-            <a href="/licenses/japanex.txt">MIT License</a>
-          </p>
-        </div>
       </div>
     </section>
   </article>
 </BaseLayout>
 
 <script>
+  const score = document.querySelector<HTMLElement>('[data-japan-score]');
+
+  if (score && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const target = Number(score.dataset.japanScore);
+
+    if (Number.isFinite(target)) {
+      score.textContent = '0';
+      const duration = 1100;
+
+      requestAnimationFrame(startedAt => {
+        const updateScore = (now: number) => {
+          const progress = Math.min((now - startedAt) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          score.textContent = String(Math.round(target * eased));
+
+          if (progress < 1) requestAnimationFrame(updateScore);
+        };
+
+        updateScore(startedAt);
+      });
+    }
+  }
+
   const legend = document.querySelector<HTMLElement>('.legend');
   const legendToggle = legend?.querySelector<HTMLDetailsElement>('.legend-toggle');
 
@@ -176,6 +206,16 @@ const structuredData = [
     font-size: clamp(2.8rem, 6vw, 4.8rem);
     line-height: 1.05;
     letter-spacing: -0.035em;
+  }
+
+  .japan-score {
+    display: inline-block;
+    min-width: var(--japan-score-width);
+    color: rgb(var(--color-text-accent));
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.06em;
+    text-align: right;
   }
 
   .page-header > p:last-of-type {
@@ -358,7 +398,7 @@ const structuredData = [
     content: '';
   }
 
-  .legend-toggle[open] + .legend-content {
+  .legend-toggle[open] .legend-content {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;

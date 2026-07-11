@@ -129,6 +129,8 @@ export const japanPrefectures = prefectureDefinitions.map(prefecture => ({
   level: japanPrefectureLevels[prefecture.id] ?? 0,
 }));
 
+export const japanScore = japanPrefectures.reduce((total, prefecture) => total + prefecture.level, 0);
+
 export const japanPrefectureById = new Map(
   japanPrefectures.map(prefecture => [prefecture.id, prefecture]),
 );
