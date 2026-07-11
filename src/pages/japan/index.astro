@@ -119,25 +119,36 @@ const structuredData = [
 
     if (targets.every(Number.isInteger)) {
       const wait = (duration: number) => new Promise<void>(resolve => window.setTimeout(resolve, duration));
+      const values = digits.map(() => 0);
+
       digits.forEach(digit => {
         digit.textContent = '0';
       });
 
-      const flipDigit = async (digit: HTMLElement, target: number) => {
-        for (let step = 1; step <= 10 + target; step += 1) {
+      const flipDigits = async (activeDigits: HTMLElement[], startIndex: number) => {
+        activeDigits.forEach(digit => {
           digit.classList.remove('is-flipping');
           void digit.offsetWidth;
           digit.classList.add('is-flipping');
-          await wait(28);
-          digit.textContent = String(step % 10);
-          await wait(28);
-        }
-        digit.classList.remove('is-flipping');
+        });
+        await wait(28);
+        activeDigits.forEach((digit, offset) => {
+          const index = startIndex + offset;
+          values[index] = (values[index] + 1) % 10;
+          digit.textContent = String(values[index]);
+        });
+        await wait(28);
+        activeDigits.forEach(digit => digit.classList.remove('is-flipping'));
       };
 
       void (async () => {
-        for (const [index, digit] of digits.entries()) {
-          await flipDigit(digit, targets[index]);
+        for (const index of digits.keys()) {
+          const activeDigits = digits.slice(index);
+          const flips = 10 + ((targets[index] - values[index] + 10) % 10);
+
+          for (let step = 0; step < flips; step += 1) {
+            await flipDigits(activeDigits, index);
+          }
         }
       })();
     }

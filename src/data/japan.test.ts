@@ -29,5 +29,6 @@ test('score uses per-digit flip tiles and stays on one line', async () => {
   const source = await readFile(new URL('../pages/japan/index.astro', import.meta.url), 'utf8');
 
   assert.match(source, /data-score-digit/);
+  assert.match(source, /const activeDigits = digits\.slice\(index\)/);
   assert.match(source, /white-space:\s*nowrap/);
 });
