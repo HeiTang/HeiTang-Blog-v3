@@ -4,7 +4,6 @@
  * Liskov Substitution: interchangeable with BaseLayout via consistent props
  */
 import BaseLayout from './BaseLayout.astro';
-import { siteConfig } from '../config/site';
 import { formatDate } from '../utils/date';
 import { useTranslations } from '../i18n';
 import type { PostMeta } from '../types/blog';
@@ -21,15 +20,18 @@ const t = useTranslations(lang);
 
 const title = lang === 'en' && post.titleEn ? post.titleEn : post.title;
 const description = lang === 'en' && post.descriptionEn ? post.descriptionEn : post.description;
-const postUrl = `${siteConfig.url}${lang === 'en' ? '/en' : ''}/blog/${slug}`;
 ---
 
-<BaseLayout title={title} description={description} lang={lang} currentPath="/blog">
+<BaseLayout
+  title={title}
+  description={description}
+  lang={lang}
+  currentPath="/blog"
+  image={post.cover}
+  ogType="article"
+>
   <!-- OG meta for article -->
   <Fragment slot="head">
-    <meta property="og:type" content="article" />
-    <meta property="og:url" content={postUrl} />
-    {post.cover && <meta property="og:image" content={post.cover} />}
     <meta property="article:published_time" content={post.pubDate.toISOString()} />
     {post.updatedDate && <meta property="article:modified_time" content={post.updatedDate.toISOString()} />}
   </Fragment>

@@ -1,0 +1,325 @@
+---
+/** SVG geometry adapted from ukyouz/JapanEx under the MIT License. */
+import {
+  japanLevelLabels,
+  japanPrefectureById,
+  type PrefectureId,
+} from '../../data/japan';
+
+const levelFor = (id: PrefectureId) => japanPrefectureById.get(id)?.level ?? 0;
+const titleFor = (id: PrefectureId) => {
+  const prefecture = japanPrefectureById.get(id);
+  const level = prefecture?.level ?? 0;
+  return `${prefecture?.name ?? id}：Level ${level} ${japanLevelLabels[level].label}`;
+};
+---
+
+<svg
+  class="japan-map"
+  viewBox="318 -317.5 1147.5 1147.5"
+  role="img"
+  aria-labelledby="japan-map-title japan-map-description"
+>
+  <title id="japan-map-title">日本 47 都道府縣制縣圖</title>
+  <desc id="japan-map-description">各都道府縣依個人旅行經驗分為零至五級，縣名與等級標示於各區塊。</desc>
+  <defs>
+    <pattern id="unvisited-pattern" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="16" height="16" fill="#252b35" />
+      <rect width="5" height="16" fill="#39404c" />
+    </pattern>
+  </defs>
+
+  <rect class="map-background" x="318" y="-317.5" width="1147.5" height="1147.5" rx="28" />
+
+  <g id="北海道" class="prefecture" data-level={levelFor('北海道')} role="group" aria-label={titleFor('北海道')}>
+    <title>{titleFor('北海道')}</title>
+    <polygon points="1442.6,-160.6 1442.6,-60.6 1387.3,-60.6 1315.9,-22 1255.6,-61.6 1218.6,-61.6 1218.6,-33.6 1143.6,-33.6 1143.6,-86.2 1195.6,-125.2 1195.6,-270.6 1263.4,-270.6 1397,-160.6" />
+    <text x="1292" y="-122">北海道</text>
+  </g>
+  <g id="青森" class="prefecture" data-level={levelFor('青森')} role="group" aria-label={titleFor('青森')}>
+    <title>{titleFor('青森')}</title>
+    <polygon points="1313.6,50.1 1313.6,75.4 1143.6,75.4 1143.6,8.4 1187.6,8.4 1187.6,25.4 1234.6,25.4 1234.6,-18.6 1269.6,-18.6 1269.6,19.6" />
+    <text x="1227" y="48">青森</text>
+  </g>
+  <g id="秋田" class="prefecture" data-level={levelFor('秋田')} role="group" aria-label={titleFor('秋田')}>
+    <title>{titleFor('秋田')}</title>
+    <rect x="1143.6" y="75.4" width="79" height="82" />
+    <text x="1183" y="121">秋田</text>
+  </g>
+  <g id="岩手" class="prefecture" data-level={levelFor('岩手')} role="group" aria-label={titleFor('岩手')}>
+    <title>{titleFor('岩手')}</title>
+    <polygon points="1313.6,75.4 1313.6,137.1 1296.6,151.9 1296.6,157.4 1222.6,157.4 1222.6,75.4" />
+    <text x="1266" y="120">岩手</text>
+  </g>
+  <g id="山形" class="prefecture" data-level={levelFor('山形')} role="group" aria-label={titleFor('山形')}>
+    <title>{titleFor('山形')}</title>
+    <polygon points="1222.6,157.4 1222.6,245.4 1157.6,245.4 1157.6,210.4 1148.5,210.4 1143.6,204.9 1143.6,157.4" />
+    <text x="1183" y="199">山形</text>
+  </g>
+  <g id="宮城" class="prefecture" data-level={levelFor('宮城')} role="group" aria-label={titleFor('宮城')}>
+    <title>{titleFor('宮城')}</title>
+    <rect x="1222.6" y="157.4" width="74" height="88" />
+    <text x="1260" y="203">宮城</text>
+  </g>
+  <g id="福島" class="prefecture" data-level={levelFor('福島')} role="group" aria-label={titleFor('福島')}>
+    <title>{titleFor('福島')}</title>
+    <rect x="1157.6" y="245.4" width="139" height="66" />
+    <text x="1227" y="283">福島</text>
+  </g>
+  <g id="新潟" class="prefecture" data-level={levelFor('新潟')} role="group" aria-label={titleFor('新潟')}>
+    <title>{titleFor('新潟')}</title>
+    <polygon points="1157.6,210.4 1157.6,311.4 1051.6,311.4 1051.6,276.5 1148.5,210.4" />
+    <polygon points="1071.5,221.4 1044.5,241.4 1025,241.4 1051.8,221.4" />
+    <text x="1106" y="278">新潟</text>
+  </g>
+  <g id="富山" class="prefecture" data-level={levelFor('富山')} role="group" aria-label={titleFor('富山')}>
+    <title>{titleFor('富山')}</title>
+    <polygon points="1051.6,276.5 1051.6,360.4 967.6,360.4 967.6,324.4 1000.9,324.4" />
+    <text x="1013" y="340">富山</text>
+  </g>
+  <g id="石川" class="prefecture" data-level={levelFor('石川')} role="group" aria-label={titleFor('石川')}>
+    <title>{titleFor('石川')}</title>
+    <polygon points="967.6,291.4 967.6,373.4 882.6,373.4 882.6,368.4 926.6,339.6 926.6,291.4" />
+    <text x="938" y="348">石川</text>
+  </g>
+  <g id="福井" class="prefecture" data-level={levelFor('福井')} role="group" aria-label={titleFor('福井')}>
+    <title>{titleFor('福井')}</title>
+    <polygon points="967.6,373.4 967.6,424.4 845.6,424.4 845.6,408.4 882.6,408.4 882.6,373.4" />
+    <text x="920" y="407">福井</text>
+  </g>
+  <g id="群馬" class="prefecture" data-level={levelFor('群馬')} role="group" aria-label={titleFor('群馬')}>
+    <title>{titleFor('群馬')}</title>
+    <rect x="1108.6" y="311.4" width="66" height="70" />
+    <text x="1141" y="352">群馬</text>
+  </g>
+  <g id="栃木" class="prefecture" data-level={levelFor('栃木')} role="group" aria-label={titleFor('栃木')}>
+    <title>{titleFor('栃木')}</title>
+    <rect x="1174.6" y="311.4" width="64" height="70" />
+    <text x="1207" y="352">栃木</text>
+  </g>
+  <g id="茨城" class="prefecture" data-level={levelFor('茨城')} role="group" aria-label={titleFor('茨城')}>
+    <title>{titleFor('茨城')}</title>
+    <polygon points="1309.6,393.6 1309.6,400.4 1238.6,400.4 1238.6,311.4 1296.6,311.4 1296.6,381.7" />
+    <text x="1269" y="357">茨城</text>
+  </g>
+  <g id="埼玉" class="prefecture" data-level={levelFor('埼玉')} role="group" aria-label={titleFor('埼玉')}>
+    <title>{titleFor('埼玉')}</title>
+    <rect x="1108.6" y="381.4" width="130" height="37" />
+    <text x="1174" y="407">埼玉</text>
+  </g>
+  <g id="千葉" class="prefecture" data-level={levelFor('千葉')} role="group" aria-label={titleFor('千葉')}>
+    <title>{titleFor('千葉')}</title>
+    <polygon points="1309.6,400.4 1309.6,507.4 1257.6,507.4 1257.6,458.4 1238.6,458.4 1238.6,400.4" />
+    <text x="1277" y="445">千葉</text>
+  </g>
+  <g id="東京" class="prefecture" data-level={levelFor('東京')} role="group" aria-label={titleFor('東京')}>
+    <title>{titleFor('東京')}</title>
+    <rect x="1143.6" y="418.4" width="95" height="40" />
+    <text x="1191" y="446">東京</text>
+  </g>
+  <g id="神奈川" class="prefecture" data-level={levelFor('神奈川')} role="group" aria-label={titleFor('神奈川')}>
+    <title>{titleFor('神奈川')}</title>
+    <rect x="1143.6" y="458.4" width="82" height="51" />
+    <text class="small-label" x="1185" y="490">神奈川</text>
+  </g>
+  <g id="山梨" class="prefecture" data-level={levelFor('山梨')} role="group" aria-label={titleFor('山梨')}>
+    <title>{titleFor('山梨')}</title>
+    <rect x="1094.6" y="418.4" width="49" height="70" />
+    <text class="small-label" x="1119" y="458">山梨</text>
+  </g>
+  <g id="長野" class="prefecture" data-level={levelFor('長野')} role="group" aria-label={titleFor('長野')}>
+    <title>{titleFor('長野')}</title>
+    <polygon points="1108.6,311.4 1108.6,418.4 1094.6,418.4 1094.6,488.4 1024.6,488.4 1024.6,360.4 1051.6,360.4 1051.6,311.4" />
+    <text x="1068" y="410">長野</text>
+  </g>
+  <g id="岐阜" class="prefecture" data-level={levelFor('岐阜')} role="group" aria-label={titleFor('岐阜')}>
+    <title>{titleFor('岐阜')}</title>
+    <polygon points="1024.6,360.4 1024.6,488.4 955.6,488.4 955.6,424.4 967.6,424.4 967.6,360.4" />
+    <text x="992" y="435">岐阜</text>
+  </g>
+  <g id="静岡" class="prefecture" data-level={levelFor('静岡')} role="group" aria-label={titleFor('静岡')}>
+    <title>{titleFor('静岡')}</title>
+    <polygon points="1164.6,509.4 1164.6,548.4 1133.6,548.4 1133.6,512.5 1095.1,547.4 1045.6,547.4 1045.6,488.4 1143.6,488.4 1143.6,509.4" />
+    <text x="1095" y="530">靜岡</text>
+  </g>
+  <g id="愛知" class="prefecture" data-level={levelFor('愛知')} role="group" aria-label={titleFor('愛知')}>
+    <title>{titleFor('愛知')}</title>
+    <polygon points="1045.6,488.4 1045.6,547.4 971.6,547.4 971.6,517.4 955.6,517.4 955.6,488.4" />
+    <text x="1004" y="522">愛知</text>
+  </g>
+  <g id="三重" class="prefecture" data-level={levelFor('三重')} role="group" aria-label={titleFor('三重')}>
+    <title>{titleFor('三重')}</title>
+    <polygon points="955.6,488.4 955.6,517.4 942.6,517.4 942.6,616.4 903.6,616.4 903.6,488.4" />
+    <text x="926" y="557">三重</text>
+  </g>
+  <g id="滋賀" class="prefecture" data-level={levelFor('滋賀')} role="group" aria-label={titleFor('滋賀')}>
+    <title>{titleFor('滋賀')}</title>
+    <rect x="903.6" y="424.4" width="52" height="64" />
+    <text class="small-label" x="930" y="462">滋賀</text>
+  </g>
+  <g id="京都" class="prefecture" data-level={levelFor('京都')} role="group" aria-label={titleFor('京都')}>
+    <title>{titleFor('京都')}</title>
+    <polygon points="903.6,424.4 903.6,488.4 799.6,488.4 799.6,399.4 845.6,399.4 845.6,424.4" />
+    <text x="851" y="457">京都</text>
+  </g>
+  <g id="大阪" class="prefecture" data-level={levelFor('大阪')} role="group" aria-label={titleFor('大阪')}>
+    <title>{titleFor('大阪')}</title>
+    <polygon points="859.6,488.4 859.6,552.4 818.6,552.4 818.6,509.4 799.6,509.4 799.6,488.4" />
+    <text class="small-label" x="833" y="520">大阪</text>
+  </g>
+  <g id="兵庫" class="prefecture" data-level={levelFor('兵庫')} role="group" aria-label={titleFor('兵庫')}>
+    <title>{titleFor('兵庫')}</title>
+    <rect x="730.6" y="399.4" width="69" height="110" />
+    <rect x="782.6" y="519.4" width="22" height="21" />
+    <text x="765" y="459">兵庫</text>
+  </g>
+  <g id="奈良" class="prefecture" data-level={levelFor('奈良')} role="group" aria-label={titleFor('奈良')}>
+    <title>{titleFor('奈良')}</title>
+    <rect x="859.6" y="488.4" width="44" height="91" />
+    <text class="small-label" x="882" y="535">奈良</text>
+  </g>
+  <g id="和歌山" class="prefecture" data-level={levelFor('和歌山')} role="group" aria-label={titleFor('和歌山')}>
+    <title>{titleFor('和歌山')}</title>
+    <polygon points="903.6,579.4 903.6,616.4 818.6,616.4 818.6,552.4 859.6,552.4 859.6,579.4" />
+    <text class="small-label" x="857" y="600">和歌山</text>
+  </g>
+  <g id="鳥取" class="prefecture" data-level={levelFor('鳥取')} role="group" aria-label={titleFor('鳥取')}>
+    <title>{titleFor('鳥取')}</title>
+    <rect x="663.6" y="399.4" width="67" height="49" />
+    <text x="697" y="431">鳥取</text>
+  </g>
+  <g id="島根" class="prefecture" data-level={levelFor('島根')} role="group" aria-label={titleFor('島根')}>
+    <title>{titleFor('島根')}</title>
+    <polygon points="663.6,399.4 663.6,448.4 591.6,448.4 591.6,398.5 596.9,399.4" />
+    <text x="627" y="430">島根</text>
+  </g>
+  <g id="岡山" class="prefecture" data-level={levelFor('岡山')} role="group" aria-label={titleFor('岡山')}>
+    <title>{titleFor('岡山')}</title>
+    <rect x="663.6" y="448.4" width="67" height="61" />
+    <text x="697" y="484">岡山</text>
+  </g>
+  <g id="広島" class="prefecture" data-level={levelFor('広島')} role="group" aria-label={titleFor('広島')}>
+    <title>{titleFor('広島')}</title>
+    <rect x="591.6" y="448.4" width="72" height="61" />
+    <text x="628" y="484">廣島</text>
+  </g>
+  <g id="山口" class="prefecture" data-level={levelFor('山口')} role="group" aria-label={titleFor('山口')}>
+    <title>{titleFor('山口')}</title>
+    <polygon points="591.6,398.5 591.6,509.4 530.6,509.4 530.6,434.4" />
+    <text x="559" y="466">山口</text>
+  </g>
+  <g id="香川" class="prefecture" data-level={levelFor('香川')} role="group" aria-label={titleFor('香川')}>
+    <title>{titleFor('香川')}</title>
+    <rect x="680.6" y="541.4" width="90" height="32" />
+    <text class="small-label" x="725" y="564">香川</text>
+  </g>
+  <g id="徳島" class="prefecture" data-level={levelFor('徳島')} role="group" aria-label={titleFor('徳島')}>
+    <title>{titleFor('徳島')}</title>
+    <polygon points="770.6,573.4 770.6,627.5 680.6,608.1 680.6,573.4" />
+    <text x="726" y="597">德島</text>
+  </g>
+  <g id="愛媛" class="prefecture" data-level={levelFor('愛媛')} role="group" aria-label={titleFor('愛媛')}>
+    <title>{titleFor('愛媛')}</title>
+    <polygon points="680.6,563.4 680.6,613.4 565.8,613.4 563.4,567.5 638.6,536.2 638.6,563.4" />
+    <text x="625" y="586">愛媛</text>
+  </g>
+  <g id="高知" class="prefecture" data-level={levelFor('高知')} role="group" aria-label={titleFor('高知')}>
+    <title>{titleFor('高知')}</title>
+    <polygon points="770.6,627.5 770.6,662.4 730.6,662.4 711.1,641.4 667.5,641.4 646.9,662.4 565.9,662.4 565.8,613.4 680.6,613.4 680.6,608.1" />
+    <text x="650" y="646">高知</text>
+  </g>
+  <g id="福岡" class="prefecture" data-level={levelFor('福岡')} role="group" aria-label={titleFor('福岡')}>
+    <title>{titleFor('福岡')}</title>
+    <polygon points="521.6,479.4 521.6,505.4 473.6,505.4 473.6,560.4 410.6,560.4 410.6,542.4 428.2,542.4 427.9,479.4" />
+    <text x="463" y="526">福岡</text>
+  </g>
+  <g id="佐賀" class="prefecture" data-level={levelFor('佐賀')} role="group" aria-label={titleFor('佐賀')}>
+    <title>{titleFor('佐賀')}</title>
+    <polygon points="428.2,542.4 381.6,542.4 381.6,479.4 427.9,479.4" />
+    <text class="small-label" x="405" y="515">佐賀</text>
+  </g>
+  <g id="長崎" class="prefecture" data-level={levelFor('長崎')} role="group" aria-label={titleFor('長崎')}>
+    <title>{titleFor('長崎')}</title>
+    <polygon points="381.6,542.4 385.8,542.4 385.8,569.4 344.6,569.4 344.6,479.4 381.6,479.4" />
+    <text class="small-label" x="365" y="526">長崎</text>
+  </g>
+  <g id="熊本" class="prefecture" data-level={levelFor('熊本')} role="group" aria-label={titleFor('熊本')}>
+    <title>{titleFor('熊本')}</title>
+    <polygon points="473.6,560.4 473.6,642.4 391.6,642.4 391.6,628.8 410.6,614.3 410.6,560.4" />
+    <text x="435" y="601">熊本</text>
+  </g>
+  <g id="大分" class="prefecture" data-level={levelFor('大分')} role="group" aria-label={titleFor('大分')}>
+    <title>{titleFor('大分')}</title>
+    <rect x="473.6" y="505.4" width="48" height="69" />
+    <text class="small-label" x="498" y="544">大分</text>
+  </g>
+  <g id="宮崎" class="prefecture" data-level={levelFor('宮崎')} role="group" aria-label={titleFor('宮崎')}>
+    <title>{titleFor('宮崎')}</title>
+    <polygon points="521.6,574.4 521.6,583.8 514.6,595.2 514.6,660.4 498.2,660.4 473.6,660.4 473.6,574.4" />
+    <text class="small-label" x="494" y="620">宮崎</text>
+  </g>
+  <g id="鹿児島" class="prefecture" data-level={levelFor('鹿児島')} role="group" aria-label={titleFor('鹿児島')}>
+    <title>{titleFor('鹿児島')}</title>
+    <polygon points="514.6,660.4 514.6,684.8 476.2,720.4 463.6,720.4 463.6,684.4 427.6,684.4 427.6,704.4 391.6,704.4 391.6,642.4 473.6,642.4 473.6,660.4" />
+    <text class="small-label" x="450" y="676">鹿兒島</text>
+  </g>
+  <g id="沖縄" class="prefecture" data-level={levelFor('沖縄')} role="group" aria-label={titleFor('沖縄')}>
+    <title>{titleFor('沖縄')}</title>
+    <rect x="341.6" y="721.4" width="33" height="61" />
+    <text class="small-label vertical-label" x="358" y="744">沖繩</text>
+  </g>
+</svg>
+
+<style>
+  .japan-map {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 1.25rem;
+  }
+
+  .map-background {
+    fill: transparent;
+  }
+
+  .prefecture {
+    fill: url('#unvisited-pattern');
+    pointer-events: none;
+  }
+
+  .prefecture[data-level='1'] { fill: var(--japan-level-1, #ffe3d6); }
+  .prefecture[data-level='2'] { fill: var(--japan-level-2, #ffc1a5); }
+  .prefecture[data-level='3'] { fill: var(--japan-level-3, #ff9a6f); }
+  .prefecture[data-level='4'] { fill: var(--japan-level-4, #f66f41); }
+  .prefecture[data-level='5'] { fill: var(--japan-level-5, #c9461f); }
+
+  .prefecture > polygon,
+  .prefecture > rect {
+    fill: inherit;
+    stroke: #202832;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  text {
+    fill: #fff;
+    stroke: #202832;
+    stroke-width: 2px;
+    paint-order: stroke;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .small-label {
+    font-size: 14px;
+  }
+
+  .vertical-label {
+    writing-mode: vertical-rl;
+  }
+</style>

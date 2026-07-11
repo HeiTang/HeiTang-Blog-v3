@@ -1,0 +1,508 @@
+---
+import JapanPrefectureMap from '../../components/japan/JapanPrefectureMap.astro';
+import { japanLevelLabels, japanPrefectures } from '../../data/japan';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const title = '日本制縣圖：我的 47 都道府縣足跡';
+const description = '記錄在日本 47 都道府縣的通過、到訪、住宿與居住經驗。';
+const visitedCount = japanPrefectures.filter(prefecture => prefecture.level > 0).length;
+const stayedCount = japanPrefectures.filter(prefecture => prefecture.level >= 4).length;
+const livedCount = japanPrefectures.filter(prefecture => prefecture.level === 5).length;
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: title,
+    description,
+    url: 'https://purr.tw/japan/',
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: japanPrefectures.length,
+      itemListElement: japanPrefectures.map((prefecture, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: `${prefecture.name}：Level ${prefecture.level} ${japanLevelLabels[prefecture.level].label}`,
+      })),
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '首頁', item: 'https://purr.tw/' },
+      { '@type': 'ListItem', position: 2, name: '日本制縣圖', item: 'https://purr.tw/japan/' },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  currentPath="/japan"
+  image="/images/og/japan.png"
+  hasLanguageAlternate={false}
+  structuredData={structuredData}
+>
+  <article class="page-shell" data-pagefind-body>
+    <div class="intro content-shell">
+      <nav class="breadcrumb" aria-label="麵包屑">
+        <a href="/">首頁</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">日本制縣圖</span>
+      </nav>
+
+      <header class="page-header">
+        <p class="eyebrow">JAPAN PREFECTURE LOG</p>
+        <h1>日本制縣圖</h1>
+        <p>{description}</p>
+        <dl class="travel-stats" aria-label="日本旅行統計">
+          <div class="travel-stat travel-stat-primary">
+            <dt>已踏足</dt>
+            <dd><strong>{visitedCount}</strong><span>/ {japanPrefectures.length}</span></dd>
+          </div>
+          <div class="travel-stat">
+            <dt>住宿以上</dt>
+            <dd><strong>{stayedCount}</strong></dd>
+          </div>
+          <div class="travel-stat">
+            <dt>居住</dt>
+            <dd><strong>{livedCount}</strong></dd>
+          </div>
+        </dl>
+      </header>
+    </div>
+
+    <section class="island-stage" aria-label="漂浮的日本 47 都道府縣制縣圖">
+      <div class="island-map">
+        <JapanPrefectureMap />
+      </div>
+
+      <div class="legend">
+        <details class="legend-toggle">
+          <summary aria-controls="japan-level-legend">0–5 分級</summary>
+        </details>
+        <div id="japan-level-legend" class="legend-content" role="region" aria-label="Level 0 到 5 分級定義">
+          <ol class="legend-list">
+            {japanLevelLabels.map(item => (
+              <li>
+                <span class="level-swatch" data-level={item.level} aria-hidden="true"></span>
+                <span><strong>Level {item.level}　{item.label}</strong><small>{item.description}</small></span>
+              </li>
+            ))}
+          </ol>
+          <p class="method-note">分級看的是停留深度，不是景點數量；同一都道府縣只記最高等級。</p>
+          <p class="map-credit">
+            地圖來源：<a href="https://github.com/ukyouz/JapanEx" rel="external">JapanEx</a> ·
+            <a href="/licenses/japanex.txt">MIT License</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<script>
+  const legend = document.querySelector<HTMLElement>('.legend');
+  const legendToggle = legend?.querySelector<HTMLDetailsElement>('.legend-toggle');
+
+  if (legend && legendToggle) {
+    document.addEventListener('pointerdown', event => {
+      if (legendToggle.open && event.target instanceof Node && !legend.contains(event.target)) {
+        legendToggle.open = false;
+      }
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        legendToggle.open = false;
+      }
+    });
+  }
+</script>
+
+<style>
+  .page-shell {
+    --japan-level-1: #ffe3d6;
+    --japan-level-2: #ffc1a5;
+    --japan-level-3: #ff9a6f;
+    --japan-level-4: #f66f41;
+    --japan-level-5: #c9461f;
+    width: 100%;
+    padding: 7rem 0 5rem;
+  }
+
+  .content-shell {
+    width: min(1180px, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+
+  .breadcrumb {
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.875rem;
+  }
+
+  .breadcrumb a,
+  .map-credit a {
+    color: rgb(var(--color-text-accent));
+    text-underline-offset: 0.2em;
+  }
+
+  .page-header {
+    max-width: 820px;
+  }
+
+  .eyebrow {
+    margin: 0 0 0.75rem;
+    color: rgb(var(--color-text-accent));
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+  }
+
+  h1,
+  p {
+    margin-top: 0;
+  }
+
+  h1 {
+    margin-bottom: 0.8rem;
+    font-size: clamp(2.8rem, 6vw, 4.8rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+  }
+
+  .page-header > p:last-of-type {
+    color: rgb(var(--color-text-secondary));
+    font-size: clamp(1rem, 2.2vw, 1.15rem);
+    line-height: 1.75;
+  }
+
+  .travel-stats {
+    display: flex;
+    gap: clamp(1rem, 3vw, 1.75rem);
+    align-items: stretch;
+    width: fit-content;
+    margin: 1.5rem 0 0;
+  }
+
+  .travel-stat {
+    position: relative;
+    display: grid;
+    grid-template-rows: 0.75rem 1.8rem;
+    row-gap: 0.45rem;
+    min-width: 3.5rem;
+  }
+
+  .travel-stat + .travel-stat {
+    padding-left: clamp(1rem, 2vw, 1.4rem);
+  }
+
+  .travel-stat + .travel-stat::before {
+    position: absolute;
+    bottom: 0.1rem;
+    left: 0;
+    width: 1px;
+    height: 2.6rem;
+    background: rgb(var(--color-text-primary) / 0.1);
+    content: '';
+  }
+
+  .travel-stat dt {
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+
+  .travel-stat dd {
+    align-self: end;
+    margin: 0;
+    color: rgb(var(--color-text-primary));
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .travel-stat strong {
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  .travel-stat dd span {
+    margin-left: 0.2rem;
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.72rem;
+  }
+
+  .travel-stat-primary strong {
+    color: rgb(var(--color-text-accent));
+    font-size: 1.8rem;
+  }
+
+  .island-stage {
+    --island-center-x: 50%;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    min-height: clamp(440px, 67vw, 820px);
+    margin-top: clamp(-2.5rem, -3vw, -1rem);
+    overflow: hidden;
+    place-items: center;
+    background:
+      radial-gradient(ellipse at var(--island-center-x) 52%, rgba(66, 115, 145, 0.18) 0%, rgba(26, 53, 72, 0.08) 42%, transparent 70%),
+      radial-gradient(ellipse at var(--island-center-x) 58%, rgba(255, 140, 97, 0.06), transparent 48%);
+  }
+
+  .island-stage::after {
+    position: absolute;
+    z-index: -1;
+    bottom: 17%;
+    left: var(--island-center-x);
+    width: min(54vw, 690px);
+    height: clamp(34px, 6vw, 76px);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.64);
+    content: '';
+    filter: blur(28px);
+    transform: translateX(-50%);
+  }
+
+  .island-map {
+    width: min(1120px, 96vw);
+    filter:
+      drop-shadow(0 22px 18px rgba(0, 0, 0, 0.58))
+      drop-shadow(0 0 32px rgba(255, 140, 97, 0.08));
+  }
+
+  .legend {
+    position: absolute;
+    z-index: 2;
+    right: max(0.75rem, calc((100vw - 1180px) / 2));
+    bottom: clamp(0.75rem, 4vh, 2rem);
+    color: rgb(var(--color-text-secondary));
+  }
+
+  .legend summary {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.9rem;
+    border: 1px solid rgb(var(--color-text-primary) / 0.1);
+    border-radius: 999px;
+    background: rgb(var(--color-bg-medium) / 0.78);
+    backdrop-filter: blur(12px);
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    list-style: none;
+    transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+  }
+
+  .legend summary:hover,
+  .legend summary:focus-visible,
+  .legend-toggle[open] summary {
+    border-color: rgb(var(--color-text-accent) / 0.42);
+    color: rgb(var(--color-text-primary));
+    background: rgb(var(--color-bg-medium) / 0.94);
+  }
+
+  .legend summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .legend summary::after {
+    margin-left: 0.55rem;
+    content: '+';
+  }
+
+  .legend-toggle[open] summary::after {
+    content: '−';
+  }
+
+  .legend-content {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 0.65rem);
+    display: block;
+    width: min(440px, calc(100vw - 1.5rem));
+    max-height: min(70dvh, 520px);
+    overflow: auto;
+    padding: 1rem;
+    border: 1px solid rgb(var(--color-text-primary) / 0.1);
+    border-radius: 1rem;
+    background: rgb(var(--color-bg-medium) / 0.94);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    backdrop-filter: blur(16px);
+    transform: translateY(0.5rem);
+    transition: opacity 180ms ease, visibility 180ms ease, transform 180ms ease;
+  }
+
+  .legend-content::after {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 100%;
+    height: 0.65rem;
+    content: '';
+  }
+
+  .legend-toggle[open] + .legend-content {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .legend:hover .legend-content {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+  }
+
+  .legend-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .legend-list li {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .legend-list strong,
+  .legend-list small {
+    display: block;
+  }
+
+  .legend-list strong {
+    color: rgb(var(--color-text-primary));
+    font-size: 0.8rem;
+  }
+
+  .legend-list small,
+  .method-note {
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .level-swatch {
+    width: 1.5rem;
+    aspect-ratio: 1;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.38rem;
+  }
+
+  [data-level='0'] {
+    background: repeating-linear-gradient(45deg, #252b35 0 6px, #39404c 6px 12px);
+  }
+
+  [data-level='1'] { background: var(--japan-level-1); }
+  [data-level='2'] { background: var(--japan-level-2); }
+  [data-level='3'] { background: var(--japan-level-3); }
+  [data-level='4'] { background: var(--japan-level-4); }
+  [data-level='5'] { background: var(--japan-level-5); }
+
+  .method-note {
+    margin: 1rem 0 0;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    text-align: center;
+  }
+
+  .map-credit {
+    margin: 0.55rem 0 0;
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.68rem;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  @media (min-width: 760px) and (min-height: 640px) {
+    .page-shell {
+      position: relative;
+      padding-top: 0;
+    }
+
+    .intro {
+      position: absolute;
+      z-index: 1;
+      top: 7rem;
+      left: max(1rem, calc((100vw - 1180px) / 2));
+      width: min(25rem, 30vw);
+      margin: 0;
+    }
+
+    .page-header > p:last-of-type {
+      width: max-content;
+      white-space: nowrap;
+    }
+
+    .island-stage {
+      --island-center-x: calc(50% + min(17vw, 245px));
+      min-height: 100dvh;
+      margin-top: 0;
+      padding-left: min(34vw, 490px);
+    }
+
+    .island-map {
+      width: min(64vw, calc(100dvh - 8rem), 1120px);
+    }
+  }
+
+  @media (max-width: 680px) {
+    .page-shell {
+      padding-top: 5.75rem;
+    }
+
+    .content-shell {
+      width: min(100% - 1.25rem, 1180px);
+    }
+
+    .breadcrumb {
+      margin-bottom: 1.75rem;
+    }
+
+    .island-stage {
+      min-height: 430px;
+      margin-top: -1rem;
+    }
+
+    .island-map {
+      width: 100vw;
+    }
+
+    .legend-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 0.75rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .legend summary,
+    .legend-content {
+      transition: none;
+    }
+  }
+</style>

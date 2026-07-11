@@ -34,11 +34,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test public data decoders
+        run: npm test
+
       - name: Build with Astro
         run: npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INVITE_CODES_API_URL: ${{ vars.INVITE_CODES_API_URL }}
+
+      - name: Verify static SEO and public output
+        run: npm run check:seo
 
       - name: Run Pagefind
         run: npx pagefind --site dist

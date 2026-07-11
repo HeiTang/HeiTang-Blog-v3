@@ -13,39 +13,68 @@ export interface Props {
   description?: string;
   lang?: 'zh' | 'en';
   currentPath?: string;
+  image?: string;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+  hasLanguageAlternate?: boolean;
+  structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const { 
-  title = siteConfig.title, 
-  description = siteConfig.description,
+const {
+  title,
+  description,
   lang = 'zh',
-  currentPath = '/'
+  currentPath = '/',
+  image = '/images/og/default.png',
+  ogType = 'website',
+  noindex = false,
+  hasLanguageAlternate = true,
+  structuredData,
 } = Astro.props;
 
-const fullTitle = title === siteConfig.title ? title : `${title} | ${siteConfig.title}`;
+const siteTitle = lang === 'en' ? siteConfig.titleEn : siteConfig.title;
+const resolvedTitle = title ?? siteTitle;
+const resolvedDescription = description ?? (lang === 'en' ? siteConfig.descriptionEn : siteConfig.description);
+const fullTitle = resolvedTitle === siteTitle ? resolvedTitle : `${resolvedTitle} | ${siteTitle}`;
+const canonicalUrl = new URL(Astro.url.pathname, siteConfig.url).toString();
+const socialImageUrl = new URL(image, siteConfig.url).toString();
 ---
 
 <!doctype html>
 <html lang={lang} data-theme="elegant-cyber">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content={description} />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={resolvedDescription} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/png" href="/images/icon.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={siteConfig.url} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={resolvedDescription} />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'zh_TW'} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={fullTitle} />
     
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={siteConfig.url} />
-    <meta property="twitter:title" content={fullTitle} />
-    <meta property="twitter:description" content={description} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={resolvedDescription} />
+    <meta name="twitter:image" content={socialImageUrl} />
+
+    {structuredData && (
+      <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    )}
+    <slot name="head" />
     
     <title>{fullTitle}</title>
     
@@ -56,6 +85,12 @@ const fullTitle = title === siteConfig.title ? title : `${title} | ${siteConfig.
     </script>
   </head>
   <body class="flex flex-col min-h-screen bg-[rgb(var(--color-bg-dark))]">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[110] focus:rounded-lg focus:bg-black focus:px-4 focus:py-3 focus:text-white focus:ring-2 focus:ring-[rgb(var(--color-primary))]"
+    >
+      {lang === 'en' ? 'Skip to main content' : '跳至主要內容'}
+    </a>
     <!-- Aurora animated background -->
     <div class="aurora-bg" aria-hidden="true">
       <div class="aurora-orb"></div>
@@ -70,9 +105,9 @@ const fullTitle = title === siteConfig.title ? title : `${title} | ${siteConfig.
       <span class="intro-splash-word">HEITANG</span>
     </div>
     
-    <Header currentPath={currentPath} lang={lang} />
+    <Header currentPath={currentPath} lang={lang} hasLanguageAlternate={hasLanguageAlternate} />
     
-    <main class="flex-1 relative">
+    <main id="main-content" class="flex-1 relative" tabindex="-1">
       <slot />
     </main>
     

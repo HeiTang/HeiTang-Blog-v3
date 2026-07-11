@@ -49,6 +49,16 @@ const quickLinks = [
     desc: t.home.quickLinks.about.desc,
     icon: 'about',
   },
+  ...(lang === 'zh'
+    ? [
+        {
+          href: '/japan',
+          title: '日本制縣圖',
+          desc: '47 都道府縣的個人旅行足跡與等級。',
+          icon: 'japan',
+        },
+      ]
+    : []),
 ];
 
 const marqueeItems = [
@@ -211,6 +221,12 @@ const interestTags = lang === 'zh'
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <circle cx="12" cy="8" r="3" />
                   <path d="M5 20a7 7 0 0114 0" />
+                </svg>
+              )}
+              {link.icon === 'japan' && (
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2V6z" />
+                  <path d="M9 4v14M15 6v14" />
                 </svg>
               )}
             </div>
@@ -774,7 +790,7 @@ const interestTags = lang === 'zh'
 
   .experience-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 0.85rem;
   }
   .experience-card {
@@ -806,6 +822,7 @@ const interestTags = lang === 'zh'
   .card-style-1 { transform: rotate(-0.8deg); }
   .card-style-2 { transform: rotate(0.65deg); }
   .card-style-3 { transform: rotate(-0.45deg); }
+  .card-style-4 { transform: rotate(0.45deg); }
   .experience-icon {
     width: 2.25rem;
     height: 2.25rem;

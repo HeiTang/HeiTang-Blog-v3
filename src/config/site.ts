@@ -303,7 +303,13 @@ export const siteConfig = {
       { label: '文章', href: '/blog' },
       { label: '專案', href: '/projects' },
       { label: '邀請碼', href: '/invite-codes' },
-      { label: '關於', href: '/about' },
+      {
+        label: '關於',
+        children: [
+          { label: '關於我', href: '/about' },
+          { label: '日本制縣圖', href: '/japan' },
+        ],
+      },
     ],
     en: [
       { label: 'Home', href: '/en' },

@@ -9,6 +9,7 @@
 - **文章系統** — Markdown 文章、標籤篩選、Pagefind 全文搜尋
 - **GitHub 專案展示** — 置頂 repo + 白名單篩選，每天自動 rebuild 更新
 - **邀請碼頁面** — 整合 Google Sheets + GAS JSON API
+- **日本制縣圖** — 以 0～5 級呈現 47 都道府縣旅行紀錄
 - **雙語支援** — 繁體中文（`/`）+ English（`/en/`）
 - **RSS Feed** — `/rss.xml`
 - **Glassmorphism + Bento Grid** 設計風格（2025-2026 主流）
@@ -74,6 +75,19 @@ npx pagefind --site dist   # 建立搜尋索引
 | `INVITE_CODES_API_URL` | Google Apps Script JSON API 端點 | 邀請碼頁面需要 |
 
 在 GitHub Repository → **Settings → Secrets and variables → Actions** 中設定。
+
+## 🗾 日本制縣圖設定
+
+編輯 `src/data/japan.ts` 的 `japanPrefectureLevels`；未列出的都道府縣預設為 Level 0：
+
+```ts
+export const japanPrefectureLevels = {
+  東京: 3,
+  北海道: 4,
+} satisfies Partial<Record<PrefectureId, PrefectureLevel>>;
+```
+
+Level 定義固定為：0 未踏、1 通過、2 接地、3 到訪、4 住宿、5 居住。
 
 ## 🎫 邀請碼 GAS 設定
 
