@@ -35,9 +35,10 @@ for (const { route, image } of pages) {
 
 const concertsHtml = await readFile(new URL('concerts/index.html', dist), 'utf8');
 assert.doesNotMatch(concertsHtml, /notion-static\.com|secure\.notion-static\.com|X-Amz-/i);
-for (const match of concertsHtml.matchAll(/src="(\/images\/concert-posters\/[^"]+)"/g)) {
-  const posterUrl = match[1];
-  assert.ok(concertsHtml.includes('srcset="/images/concert-posters/'));
+for (const [imgTag, posterUrl] of concertsHtml.matchAll(
+  /<img[^>]*\ssrc="(\/images\/concert-posters\/[^"]+)"[^>]*>/g
+)) {
+  assert.ok(imgTag.includes('srcset="/images/concert-posters/'), `poster ${posterUrl} missing srcset`);
   await readFile(new URL(posterUrl.slice(1), dist));
 }
 

@@ -177,6 +177,7 @@ export function decodeConcertPage(page: unknown): Concert | null {
 
   const poster = getConcertPosterSource(page);
   const posterBase = poster ? `/images/concert-posters/${concertPosterBaseName(page.id)}` : undefined;
+  const url = urlValue(properties['網址']);
 
   return {
     id: page.id,
@@ -184,7 +185,7 @@ export function decodeConcertPage(page: unknown): Concert | null {
     startDate: date.start,
     ...(date.end ? { endDate: date.end } : {}),
     venue,
-    ...(urlValue(properties['網址']) ? { url: urlValue(properties['網址']) } : {}),
+    ...(url ? { url } : {}),
     ...(posterBase
       ? {
           imageUrl: `${posterBase}-960.webp`,

@@ -19,11 +19,14 @@ function formatShortDate(value: string): string {
   return `${month}.${day}`;
 }
 
-const dateLabel = concert.endDate && concert.endDate.slice(0, 10) !== concert.startDate.slice(0, 10)
-  ? `${formatDate(concert.startDate)} — ${formatDate(concert.endDate)}`
+const multiDayEnd = concert.endDate && concert.endDate.slice(0, 10) !== concert.startDate.slice(0, 10)
+  ? concert.endDate
+  : undefined;
+const dateLabel = multiDayEnd
+  ? `${formatDate(concert.startDate)} — ${formatDate(multiDayEnd)}`
   : formatDate(concert.startDate);
-const shortDate = concert.endDate && concert.endDate.slice(0, 10) !== concert.startDate.slice(0, 10)
-  ? `${formatShortDate(concert.startDate)}—${formatShortDate(concert.endDate)}`
+const shortDate = multiDayEnd
+  ? `${formatShortDate(concert.startDate)}—${formatShortDate(multiDayEnd)}`
   : formatShortDate(concert.startDate);
 const posterTitle = concert.name;
 const posterYear = concert.startDate.slice(0, 4);
