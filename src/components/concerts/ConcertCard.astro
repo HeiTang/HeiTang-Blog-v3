@@ -1,0 +1,75 @@
+---
+import type { Concert } from '../../services/concerts';
+
+interface Props {
+  concert: Concert;
+  future?: boolean;
+  index?: number;
+}
+
+const { concert, future = false, index = 0 } = Astro.props;
+
+function formatDate(value: string): string {
+  const [year, month, day] = value.slice(0, 10).split('-');
+  return `${year}.${month}.${day}`;
+}
+
+function formatShortDate(value: string): string {
+  const [, month, day] = value.slice(0, 10).split('-');
+  return `${month}.${day}`;
+}
+
+const dateLabel = concert.endDate && concert.endDate.slice(0, 10) !== concert.startDate.slice(0, 10)
+  ? `${formatDate(concert.startDate)} — ${formatDate(concert.endDate)}`
+  : formatDate(concert.startDate);
+const shortDate = concert.endDate && concert.endDate.slice(0, 10) !== concert.startDate.slice(0, 10)
+  ? `${formatShortDate(concert.startDate)}—${formatShortDate(concert.endDate)}`
+  : formatShortDate(concert.startDate);
+const posterTitle = concert.name;
+const posterYear = concert.startDate.slice(0, 4);
+---
+
+<li class:list={['concert-card', { 'is-future': future }]} data-timeline-entry>
+  <span class="timeline-node" aria-hidden="true"></span>
+
+  <time class="concert-date" datetime={concert.startDate} aria-label={dateLabel}>
+    {shortDate}
+  </time>
+
+  <div class="concert-body">
+    {future && <p class="concert-status">UPCOMING</p>}
+    <h3>{concert.name}</h3>
+    <p class="concert-meta">
+      <span>{concert.venue}</span>
+    </p>
+    {concert.url && (
+      <a class="concert-link" href={concert.url} target="_blank" rel="external noreferrer">
+        活動網站 ↗<span class="sr-only">（{concert.name}，開新分頁）</span>
+      </a>
+    )}
+  </div>
+
+  <figure
+    class:list={['concert-visual', { 'concert-visual-fallback': !concert.imageUrl }]}
+    data-poster={index % 6}
+  >
+    {concert.imageUrl ? (
+      <img
+        src={concert.imageUrl}
+        srcset={concert.imageSrcSet}
+        sizes="(max-width: 620px) 44vw, (max-width: 860px) 30vw, 260px"
+        alt={`${concert.name} 演唱會海報`}
+        width="960"
+        height="1280"
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <div class="concert-poster-fallback" aria-hidden="true">
+        <span>LIVE ARCHIVE / {posterYear}</span>
+        <strong>{posterTitle}</strong>
+        <small>{concert.venue}</small>
+      </div>
+    )}
+  </figure>
+</li>
