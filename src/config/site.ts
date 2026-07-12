@@ -308,6 +308,7 @@ export const siteConfig = {
         children: [
           { label: '關於我', href: '/about' },
           { label: '日本制縣圖', href: '/japan' },
+          { label: '演唱會足跡', href: '/concerts' },
         ],
       },
     ],

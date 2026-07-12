@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">演唱會足跡：我的現場音樂紀錄</title>
+  <desc id="desc">演唱會日期、場地與售票資訊的社群分享圖片</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f1419" />
+      <stop offset="1" stop-color="#1a1f2e" />
+    </linearGradient>
+    <radialGradient id="stage" cx="0" cy="0" r="1" gradientTransform="translate(950 180) rotate(90) scale(390)">
+      <stop stop-color="#9d7fe8" stop-opacity=".34" />
+      <stop offset=".58" stop-color="#ff8c61" stop-opacity=".12" />
+      <stop offset="1" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#ffffff" stroke-opacity=".035" />
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#grid)" />
+  <rect width="1200" height="630" fill="url(#stage)" />
+  <path d="M72 82H188" stroke="#ff8c61" stroke-width="8" stroke-linecap="round" />
+  <text x="72" y="194" fill="#ff8c61" font-family="JetBrains Mono, monospace" font-size="24" font-weight="600" letter-spacing="5">LIVE MUSIC ARCHIVE</text>
+  <text x="72" y="300" fill="#ffffff" font-family="Inter, Noto Sans TC, sans-serif" font-size="70" font-weight="700">演唱會足跡</text>
+  <text x="76" y="367" fill="#d1d5db" font-family="Inter, Noto Sans TC, sans-serif" font-size="30">我的現場音樂紀錄</text>
+  <text x="76" y="514" fill="#ffb4a2" font-family="JetBrains Mono, monospace" font-size="21">DATE · VENUE · TICKET</text>
+  <g transform="translate(700 164)" fill="#ff8c61">
+    <rect x="0" y="136" width="22" height="80" rx="11" opacity=".55" />
+    <rect x="42" y="96" width="22" height="160" rx="11" opacity=".68" />
+    <rect x="84" y="54" width="22" height="244" rx="11" opacity=".82" />
+    <rect x="126" y="12" width="22" height="328" rx="11" />
+    <rect x="168" y="74" width="22" height="204" rx="11" opacity=".87" />
+    <rect x="210" y="118" width="22" height="116" rx="11" opacity=".72" />
+    <rect x="252" y="84" width="22" height="184" rx="11" opacity=".8" />
+    <rect x="294" y="38" width="22" height="276" rx="11" opacity=".94" />
+    <rect x="336" y="105" width="22" height="142" rx="11" opacity=".7" />
+    <rect x="378" y="141" width="22" height="70" rx="11" opacity=".52" />
+  </g>
+  <circle cx="837" cy="176" r="8" fill="#fff" />
+  <circle cx="1005" cy="472" r="6" fill="#9d7fe8" />
+  <text x="1128" y="574" fill="#ffb4a2" font-family="JetBrains Mono, monospace" font-size="20" text-anchor="end">PURR.TW / CONCERTS</text>
+</svg>

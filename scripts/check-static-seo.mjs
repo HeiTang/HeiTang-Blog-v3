@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 const dist = new URL('../dist/', import.meta.url);
 const pages = [
   { route: 'japan', image: 'japan.png' },
+  { route: 'concerts', image: 'concerts.png' },
 ];
 
 for (const { route, image } of pages) {
@@ -22,7 +23,7 @@ for (const { route, image } of pages) {
   assert.ok(html.includes('"@type":"BreadcrumbList"'));
   assert.ok(!html.includes(`/en/${route}/`), `/${route}/ must not link to a missing translation`);
 
-  for (const href of ['/about', '/japan']) {
+  for (const href of ['/about', '/japan', '/concerts']) {
     assert.ok(html.includes(`href="${href}"`), `/${route}/ header must link to ${href}`);
   }
 
@@ -32,10 +33,24 @@ for (const { route, image } of pages) {
   assert.equal(png.readUInt32BE(20), 630);
 }
 
+const concertsHtml = await readFile(new URL('concerts/index.html', dist), 'utf8');
+assert.doesNotMatch(concertsHtml, /notion-static\.com|secure\.notion-static\.com|X-Amz-/i);
+for (const [imgTag, posterUrl] of concertsHtml.matchAll(
+  /<img[^>]*\ssrc="(\/images\/concert-posters\/[^"]+)"[^>]*>/g
+)) {
+  assert.ok(imgTag.includes('srcset="/images/concert-posters/'), `poster ${posterUrl} missing srcset`);
+  await readFile(new URL(posterUrl.slice(1), dist));
+}
+
+for (const privateField of ['付款方式', '付款者', '參與者', '單位票價', '實名制', '座位']) {
+  assert.ok(!concertsHtml.includes(privateField), `concert output leaked ${privateField}`);
+}
+
 const robots = await readFile(new URL('robots.txt', dist), 'utf8');
 assert.ok(robots.includes('Sitemap: https://purr.tw/sitemap-index.xml'));
 
 const sitemap = await readFile(new URL('sitemap-0.xml', dist), 'utf8');
 assert.ok(sitemap.includes('<loc>https://purr.tw/japan/</loc>'));
+assert.ok(sitemap.includes('<loc>https://purr.tw/concerts/</loc>'));
 
 console.log('Static SEO and public-output checks passed.');

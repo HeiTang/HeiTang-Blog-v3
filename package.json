@@ -6,7 +6,10 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "predev": "npm run sync:concert-posters",
     "dev": "astro dev",
+    "sync:concert-posters": "node --env-file-if-exists=.env --experimental-strip-types scripts/sync-concert-posters.ts",
+    "prebuild": "npm run sync:concert-posters",
     "build": "astro build",
     "test": "node --experimental-strip-types --test src/**/*.test.ts",
     "check:seo": "node scripts/check-static-seo.mjs",
@@ -21,6 +24,7 @@
     "@astrojs/sitemap": "^3.7.1",
     "@tailwindcss/typography": "^0.5.19",
     "autoprefixer": "^10.4.27",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.19"
   }
 }

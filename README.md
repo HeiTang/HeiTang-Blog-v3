@@ -10,6 +10,7 @@
 - **GitHub 專案展示** — 置頂 repo + 白名單篩選，每天自動 rebuild 更新
 - **邀請碼頁面** — 整合 Google Sheets + GAS JSON API
 - **日本制縣圖** — 以 0～5 級呈現 47 都道府縣旅行紀錄
+- **演唱會足跡** — 建置期同步 Notion，僅公開購票成功紀錄
 - **雙語支援** — 繁體中文（`/`）+ English（`/en/`）
 - **RSS Feed** — `/rss.xml`
 - **Glassmorphism + Bento Grid** 設計風格（2025-2026 主流）
@@ -73,6 +74,8 @@ npx pagefind --site dist   # 建立搜尋索引
 |------|------|------|
 | `GITHUB_TOKEN` | GitHub API Token（提高 rate limit，GraphQL pinned repos 需要） | 建議 |
 | `INVITE_CODES_API_URL` | Google Apps Script JSON API 端點 | 邀請碼頁面需要 |
+| `NOTION_TOKEN` | Notion internal integration token，設為 Actions Secret | 演唱會頁面需要 |
+| `NOTION_DATABASE_ID` | Notion Database 網址中的 32 字元 ID，設為 Actions Variable | 演唱會頁面需要 |
 
 在 GitHub Repository → **Settings → Secrets and variables → Actions** 中設定。
 
@@ -88,6 +91,39 @@ export const japanPrefectureLevels = {
 ```
 
 Level 定義固定為：0 未踏、1 通過、2 接地、3 到訪、4 住宿、5 居住。
+
+## 🎵 Notion 演唱會同步設定
+
+1. 建立 Notion internal integration，將「演唱會管理」database 分享給該 integration。
+    - Connection name：`Blog Concert Sync`
+    - Authentication method：`Access token`
+2. 將 token 寫入 GitHub Actions Secret `NOTION_TOKEN`。
+3. 複製 Database 網址中問號前的 32 字元 ID，寫入 GitHub Actions Variable `NOTION_DATABASE_ID`：
+
+    ```text
+    https://app.notion.com/p/{workspace}/{database_id}?v={view_id}
+    ```
+
+    建置時會自動取得 Database 底下的第一個 Data Source，不需要手動設定 Data Source ID。
+4. 必要欄位為 `Name`、`演出日期`、`演出地點`、`購票階段`；`購票階段` 必須是 Status 或 Select。
+5. 建立選填的 `海報` 欄位，類型必須是 Files & media；有多張檔案時只使用第一張。
+
+建置只查詢 `購票階段 = 購票成功`，且只要求以下公開欄位：
+
+```text
+Name, 演出日期, 演出地點, 網址, 購票階段, 海報
+```
+
+建置前會下載 `海報`、轉成 480×640 與 960×1280 WebP，並以 `/images/concert-posters/` 的同網域網址部署。Notion 的一小時臨時下載網址不會寫入 HTML。生成圖片不提交至 Git；CI 缺少 Notion 設定或海報同步失敗時會停止建置。
+
+本機驗證時複製 `.env.example` 為 `.env`，填入：
+
+```text
+NOTION_TOKEN=ntn_...
+NOTION_DATABASE_ID=1ae95d00bd038062af32deacd90ceaa5
+```
+
+執行 `npm run dev` 會先同步海報再啟動 Astro；`.env` 已被 Git 忽略，不要提交 token。
 
 ## 🎫 邀請碼 GAS 設定
 

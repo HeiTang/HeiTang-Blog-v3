@@ -57,6 +57,12 @@ const quickLinks = [
           desc: '47 都道府縣的個人旅行足跡與等級。',
           icon: 'japan',
         },
+        {
+          href: '/concerts',
+          title: '演唱會足跡',
+          desc: '即將到來與歷年參加過的演出紀錄。',
+          icon: 'concerts',
+        },
       ]
     : []),
 ];
@@ -227,6 +233,13 @@ const interestTags = lang === 'zh'
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2V6z" />
                   <path d="M9 4v14M15 6v14" />
+                </svg>
+              )}
+              {link.icon === 'concerts' && (
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M9 18V5l10-2v13" />
+                  <circle cx="6" cy="18" r="3" />
+                  <circle cx="16" cy="16" r="3" />
                 </svg>
               )}
             </div>
@@ -823,6 +836,7 @@ const interestTags = lang === 'zh'
   .card-style-2 { transform: rotate(0.65deg); }
   .card-style-3 { transform: rotate(-0.45deg); }
   .card-style-4 { transform: rotate(0.45deg); }
+  .card-style-5 { transform: rotate(-0.35deg); }
   .experience-icon {
     width: 2.25rem;
     height: 2.25rem;
