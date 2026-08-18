@@ -90,6 +90,17 @@ const interestTags = lang === 'zh'
 ---
 
 <BaseLayout title={title} currentPath={currentPath} lang={lang}>
+  {/*
+    DotGothic16 只給中文版 h1（.pixel-title）用，且只需要 t.home.name 那幾個字。
+    text= 從同一個值推導，改站名時字型子集會自動跟著變，不會漏字。
+  */}
+  {lang === 'zh' && (
+    <link
+      slot="head"
+      rel="stylesheet"
+      href={`https://fonts.googleapis.com/css2?family=DotGothic16&text=${encodeURIComponent(t.home.name)}&display=swap`}
+    />
+  )}
   <div class="immersive-home container mx-auto px-6 pt-24 pb-20 space-y-8">
     <div class="scroll-indicator" aria-hidden="true">
       <span class="scroll-indicator-label">{t.home.scrollHint}</span>

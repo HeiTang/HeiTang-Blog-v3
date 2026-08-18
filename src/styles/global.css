@@ -3,11 +3,7 @@
  * Theme system using CSS custom properties
  */
 
-@import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
-@import url('https://fonts.cdnfonts.com/css/nasalization');
-@import url('https://fonts.cdnfonts.com/css/neuropol');
-@import url('https://fonts.cdnfonts.com/css/changeling-neo');
-@import url('https://fonts.cdnfonts.com/css/all-round-gothic');
+/* 字型改由 BaseLayout.astro 的 <link> 載入，避免 @import 串行阻塞首屏 */
 
 @tailwind base;
 @tailwind components;
