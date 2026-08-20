@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "astro": "^6.0.5",
-    "japan-prefecture-map": "^0.1.2"
+    "japan-prefecture-map": "^0.2.0"
   },
   "devDependencies": {
     "@astrojs/rss": "^4.0.17",

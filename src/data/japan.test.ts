@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-import { japanLevelLabels, japanPrefectures, japanScore, japanStats } from './japan.ts';
+import { renderMap } from 'japan-prefecture-map/render';
+
+import { japanLevelLabels, japanPrefectureLevels, japanPrefectures, japanScore, japanStats } from './japan.ts';
 
 test('Japan dataset stays complete and levels stay within 0–5', () => {
   assert.equal(japanPrefectures.length, 47);
@@ -25,13 +27,17 @@ test('Japan dataset stays complete and levels stay within 0–5', () => {
   );
 });
 
-test('Japan page renders the package component with the personal levels', async () => {
+test('Japan page renders the SSR SVG with the personal levels', async () => {
   const source = await readFile(new URL('../pages/japan/index.astro', import.meta.url), 'utf8');
 
-  assert.match(source, /<japan-prefecture-map/);
-  assert.match(source, /levels=\{JSON\.stringify\(japanPrefectureLevels\)\}/);
-  assert.match(source, /import 'japan-prefecture-map'/);
+  assert.match(source, /import \{ mapStyles, renderMap \} from 'japan-prefecture-map\/render';/);
+  assert.match(source, /<style is:inline set:html=\{mapStyles\}><\/style>/);
+  assert.match(source, /set:html=\{renderMap\(japanPrefectureLevels, 'zh-TW'\)\}/);
   assert.match(source, /data-japan-score=\{japanScore\}/);
   assert.match(source, /japanScoreDigits\.map/);
+  assert.doesNotMatch(source, /<japan-prefecture-map/);
+  assert.doesNotMatch(source, /customElements\.whenDefined/);
   assert.doesNotMatch(source, /JapanPrefectureMap\.astro/);
+
+  assert.match(renderMap(japanPrefectureLevels, 'zh-TW'), /<svg class="japan-map"/);
 });

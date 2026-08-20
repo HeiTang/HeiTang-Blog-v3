@@ -6,6 +6,7 @@ import {
   japanScore,
   japanStats,
 } from '../../data/japan';
+import { mapStyles, renderMap } from 'japan-prefecture-map/render';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const title = `制縣等級 ${japanScore}：我的 47 都道府縣足跡`;
@@ -49,6 +50,8 @@ const structuredData = [
   hasLanguageAlternate={false}
   structuredData={structuredData}
 >
+  <style is:inline set:html={mapStyles}></style>
+
   <article class="page-shell" data-pagefind-body>
     <div class="intro content-shell">
       <nav class="breadcrumb" aria-label="麵包屑">
@@ -86,11 +89,7 @@ const structuredData = [
 
     <section class="island-stage" aria-label="漂浮的日本 47 都道府縣制縣圖">
       <div class="island-map">
-        <japan-prefecture-map
-          locale="zh-TW"
-          theme="dark"
-          levels={JSON.stringify(japanPrefectureLevels)}
-        ></japan-prefecture-map>
+        <div set:html={renderMap(japanPrefectureLevels, 'zh-TW')}></div>
       </div>
 
       <div class="legend">
@@ -118,19 +117,6 @@ const structuredData = [
 </BaseLayout>
 
 <script>
-  import 'japan-prefecture-map';
-
-  // 頁面自己有 h1 分數與統計、外掛式圖例，所以關掉套件內建的那一份。
-  // ponytail: 套件目前沒有隱藏 summary/legend 的屬性，先注入 shadow style；套件加上 API 後可刪掉這段。
-  void customElements.whenDefined('japan-prefecture-map').then(() => {
-    const map = document.querySelector('japan-prefecture-map');
-    const style = document.createElement('style');
-
-    style.textContent =
-      '.widget{overflow:visible;border:0;background:none}.summary,.legend{display:none}.map-stage{padding:0}';
-    map?.shadowRoot?.append(style);
-  });
-
   const score = document.querySelector<HTMLElement>('[data-japan-score]');
 
   if (score && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -404,18 +390,6 @@ const structuredData = [
     content: '';
     filter: blur(28px);
     transform: translateX(-50%);
-  }
-
-  japan-prefecture-map {
-    --jpm-surface: transparent;
-    --jpm-border: transparent;
-    --jpm-map-glow: none;
-    display: block;
-  }
-
-  japan-prefecture-map:not(:defined) {
-    aspect-ratio: 1;
-    visibility: hidden;
   }
 
   .island-map {
