@@ -13,7 +13,10 @@ test('homepage hero keeps contact and a motion-safe typewriter', async () => {
   assert.match(source, /const homeTitle = '黑糖不是炭';/);
   assert.match(source, /family=DotGothic16&text=\$\{titleGlyphs\}&display=swap/);
   assert.match(source, /font-family: 'DotGothic16', sans-serif;/);
-  assert.match(source, /const typewriterText = '嗨！我是一隻 Developer/);
+  assert.match(source, /const typewriterText = \[/);
+  assert.match(source, /const typewriterText = \[\s+'[^']+',/);
+  assert.match(source, /data-typewriter=\{JSON\.stringify\(typewriterText\)\}/);
+  assert.match(source, /textIndex = \(textIndex \+ 1\) % texts\.length;/);
   assert.match(source, /prefers-reduced-motion/);
   assert.match(source, /min-block-size/);
   assert.doesNotMatch(source, /class="eyebrow"/);

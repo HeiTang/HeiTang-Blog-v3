@@ -4,7 +4,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const homeTitle = '黑糖不是炭';
 const titleGlyphs = encodeURIComponent(homeTitle);
-const typewriterText = '嗨！我是一隻 Developer /ᐠ-˕-マⳊ';
+const typewriterText = [
+  '把零散的想法，慢慢做成真的能用的東西',
+  '橘貓不胖只是蓬鬆了點！',
+  '讓「每次都要做」變成「以後不用再做」',
+  '有些程式碼不是我寫的，是貓踩出來的 (#',
+  '寫些工具，讓每天會遇到的麻煩少一點',
+  '我這一生如履薄冰 ...',
+  '你說我能走到對岸嗎？'
+];
 const homeDescription = '把反覆遇到的麻煩，做成好用、可維護的工具。';
 const homeStructuredData = {
   '@context': 'https://schema.org',
@@ -82,10 +90,10 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
           fetchpriority="high"
         />
         <p class="typewriter-line">
-          <span class="sr-only">{typewriterText}</span>
-          <span class="typewriter-copy" data-typewriter={typewriterText} aria-hidden="true">{typewriterText}</span><span class="type-cursor" aria-hidden="true">▍</span>
+          <span class="sr-only">{typewriterText[0]}</span>
+          <span class="typewriter-copy" data-typewriter={JSON.stringify(typewriterText)} aria-hidden="true">{typewriterText[0]}</span><span class="type-cursor" aria-hidden="true">▍</span>
         </p>
-        <p class="role-line">獨立開發者 · 工具、自動化、工程筆記</p>
+        <p class="role-line">獨立開發者 · 後端 x 資料 x 自動化</p>
 
         <ul class="contact-list" aria-label="聯絡方式">
           <li>
@@ -235,14 +243,31 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
     const typewriter = document.querySelector<HTMLElement>('.home-contact [data-typewriter]');
 
     if (typewriter && !reduceMotion) {
-      const characters = Array.from(typewriter.dataset.typewriter ?? '');
-      let index = 0;
+      const texts = JSON.parse(typewriter.dataset.typewriter ?? '[]') as string[];
+      let textIndex = 0;
+      let characterIndex = 0;
+      let isDeleting = false;
       typewriter.textContent = '';
 
       const tick = () => {
-        index += 1;
-        typewriter.textContent = characters.slice(0, index).join('');
-        if (index < characters.length) window.setTimeout(tick, 58);
+        const characters = Array.from(texts[textIndex]);
+        characterIndex += isDeleting ? -1 : 1;
+        typewriter.textContent = characters.slice(0, characterIndex).join('');
+
+        if (!isDeleting && characterIndex === characters.length) {
+          isDeleting = true;
+          window.setTimeout(tick, 1_800);
+          return;
+        }
+
+        if (isDeleting && characterIndex === 0) {
+          isDeleting = false;
+          textIndex = (textIndex + 1) % texts.length;
+          window.setTimeout(tick, 320);
+          return;
+        }
+
+        window.setTimeout(tick, isDeleting ? 34 : 58);
       };
 
       window.setTimeout(tick, 320);
