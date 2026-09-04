@@ -17,6 +17,7 @@ export interface Props {
   ogType?: 'website' | 'article';
   noindex?: boolean;
   hasLanguageAlternate?: boolean;
+  hasPointerGlow?: boolean;
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
 
@@ -29,6 +30,7 @@ const {
   ogType = 'website',
   noindex = false,
   hasLanguageAlternate = true,
+  hasPointerGlow = true,
   structuredData,
 } = Astro.props;
 
@@ -94,7 +96,10 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
       document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
   </head>
-  <body class="flex flex-col min-h-screen bg-[rgb(var(--color-bg-dark))]">
+  <body
+    class="flex flex-col min-h-screen bg-[rgb(var(--color-bg-dark))]"
+    data-pointer-glow={hasPointerGlow ? undefined : 'off'}
+  >
     <a
       href="#main-content"
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[110] focus:rounded-lg focus:bg-black focus:px-4 focus:py-3 focus:text-white focus:ring-2 focus:ring-[rgb(var(--color-primary))]"
@@ -107,10 +112,10 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
       <div class="aurora-orb"></div>
       <div class="aurora-orb"></div>
     </div>
-    <!-- Immersive cosmic background (starfield + shockwave + comet cursor) -->
+    <!-- Immersive cosmic background (starfield + shockwave + optional pointer glow) -->
     <canvas class="cosmic-canvas" aria-hidden="true"></canvas>
     <div class="shockwave-layer" aria-hidden="true"></div>
-    <div class="comet-cursor" aria-hidden="true"></div>
+    {hasPointerGlow && <div class="comet-cursor" aria-hidden="true"></div>}
     
     <Header currentPath={currentPath} lang={lang} hasLanguageAlternate={hasLanguageAlternate} />
     
@@ -120,7 +125,7 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
 
     <Footer />
 
-    <!-- Immersive cosmic background runtime (starfield, shockwave, comet cursor) -->
+    <!-- Immersive cosmic background runtime (starfield, shockwave, optional pointer glow) -->
     <script is:inline>
       (function () {
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -129,17 +134,20 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
         const canvas = document.querySelector('.cosmic-canvas');
         const shockwaveLayer = document.querySelector('.shockwave-layer');
         const cometCursor = document.querySelector('.comet-cursor');
+        const pointerGlowEnabled = document.body.dataset.pointerGlow !== 'off';
 
         const pointer = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.45 };
 
-        window.addEventListener(
-          'pointermove',
-          (event) => {
-            pointer.x = event.clientX;
-            pointer.y = event.clientY;
-          },
-          { passive: true }
-        );
+        if (pointerGlowEnabled) {
+          window.addEventListener(
+            'pointermove',
+            (event) => {
+              pointer.x = event.clientX;
+              pointer.y = event.clientY;
+            },
+            { passive: true }
+          );
+        }
 
         if (canvas) {
           const ctx = canvas.getContext('2d');
@@ -171,21 +179,22 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
             };
 
             const drawNebula = () => {
-              const gx = Math.max(0, Math.min(1, pointer.x / width));
-              const gy = Math.max(0, Math.min(1, pointer.y / height));
-
-              const g1 = ctx.createRadialGradient(
-                gx * width,
-                gy * height,
-                20,
-                gx * width,
-                gy * height,
-                Math.max(width, height) * 0.6
-              );
-              g1.addColorStop(0, 'rgba(255,140,97,0.14)');
-              g1.addColorStop(1, 'rgba(255,140,97,0)');
-              ctx.fillStyle = g1;
-              ctx.fillRect(0, 0, width, height);
+              if (pointerGlowEnabled) {
+                const gx = Math.max(0, Math.min(1, pointer.x / width));
+                const gy = Math.max(0, Math.min(1, pointer.y / height));
+                const g1 = ctx.createRadialGradient(
+                  gx * width,
+                  gy * height,
+                  20,
+                  gx * width,
+                  gy * height,
+                  Math.max(width, height) * 0.6
+                );
+                g1.addColorStop(0, 'rgba(255,140,97,0.14)');
+                g1.addColorStop(1, 'rgba(255,140,97,0)');
+                ctx.fillStyle = g1;
+                ctx.fillRect(0, 0, width, height);
+              }
 
               const g2 = ctx.createRadialGradient(
                 width * 0.75,

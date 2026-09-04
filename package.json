@@ -11,7 +11,7 @@
     "sync:concert-posters": "node --env-file-if-exists=.env --experimental-strip-types scripts/sync-concert-posters.ts",
     "prebuild": "npm run sync:concert-posters",
     "build": "astro build",
-    "test": "node --experimental-strip-types --test src/**/*.test.ts",
+    "test": "node --experimental-strip-types --test",
     "check:seo": "node scripts/check-static-seo.mjs",
     "preview": "astro preview",
     "astro": "astro"
