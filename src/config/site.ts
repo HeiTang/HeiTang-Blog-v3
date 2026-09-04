@@ -16,6 +16,8 @@ export const siteConfig = {
   // Social links
   social: {
     github: 'https://github.com/HeiTang',
+    discord: 'https://discord.com/users/463332148968030208',
+    telegram: 'https://t.me/HeiTang',
     email: 'heitang@purr.tw',
   },
   

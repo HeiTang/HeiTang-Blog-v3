@@ -1,0 +1,938 @@
+---
+import { siteConfig } from '../../config/site';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const homeTitle = '黑糖不是炭';
+const titleGlyphs = encodeURIComponent(homeTitle);
+const typewriterText = [
+  '把零散的想法，慢慢做成真的能用的東西',
+  '橘貓不胖只是蓬鬆了點！',
+  '讓「每次都要做」變成「以後不用再做」',
+  '有些程式碼不是我寫的，是貓踩出來的 (#',
+  '寫些工具，讓每天會遇到的麻煩少一點',
+  '我這一生如履薄冰 ...',
+  '你說我能走到對岸嗎？'
+];
+const homeDescription = '把反覆遇到的麻煩，做成好用、可維護的工具。';
+const homeStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: homeTitle,
+  alternateName: siteConfig.title,
+  url: siteConfig.url,
+  description: homeDescription,
+  inLanguage: 'zh-Hant',
+};
+const projectStories = [
+  {
+    name: 'FX-Pulse',
+    title: 'FX-Pulse',
+    label: '資料 / 金融',
+    hook: '把三家信用卡匯率攤在同一張桌上，刷卡比價不必來回切頁。',
+    image: '/images/projects/fx-pulse/jpy-chart.png',
+  },
+  {
+    name: 'yannick-stock-checker',
+    title: '亞尼克 YTM 庫存查詢',
+    label: '搜尋 / 自動化',
+    hook: '從想買的商品反查還有庫存的站點，少一點無止盡的尋找。',
+    image: '/images/projects/yannick/detail.png',
+  },
+  {
+    name: 'MailCat',
+    title: 'MailCat',
+    label: '信箱 / 自動化',
+    hook: '把銀行信件收好、分類好，讓收件匣不再被塞滿。',
+    image: '/images/projects/mailcat/inbox.png',
+  },
+  {
+    name: 'ShortYou',
+    title: 'ShortYou',
+    label: '短網址 / Web',
+    hook: '一個短網址服務，也是一個關於權限與自架邊界的解決方案。',
+    image: '/images/projects/shortyou/home.png',
+  },
+] as const;
+const featuredProjectNames = new Set<string>(projectStories.map(({ name }) => name));
+const featuredProjects = projectStories.flatMap((story) => {
+  const project = siteConfig.projectsWhitelist.find(({ name }) => name === story.name);
+  return project ? [{ ...project, ...story }] : [];
+});
+const shelfProjects = siteConfig.projectsWhitelist
+  .filter(({ name }) => !featuredProjectNames.has(name))
+  .slice(0, 5);
+const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - featuredProjects.length, 0);
+---
+
+<BaseLayout
+  title={homeTitle}
+  description={homeDescription}
+  currentPath="/"
+  hasPointerGlow={false}
+  structuredData={homeStructuredData}
+>
+  <link
+    slot="head"
+    rel="stylesheet"
+    href={`https://fonts.googleapis.com/css2?family=DotGothic16&text=${titleGlyphs}&display=swap`}
+  />
+  <div class="home-contact" data-pagefind-body="true">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <p class="hero-kicker">BACKEND · TAIWAN</p>
+        <h1 id="hero-title">{homeTitle}</h1>
+        <img
+          class="avatar"
+          src="/images/profile.jpeg"
+          width="720"
+          height="719"
+          alt="黑糖的個人照片"
+          fetchpriority="high"
+        />
+        <p class="typewriter-line">
+          <span class="sr-only">{typewriterText[0]}</span>
+          <span class="typewriter-copy" data-typewriter={JSON.stringify(typewriterText)} aria-hidden="true">{typewriterText[0]}</span><span class="type-cursor" aria-hidden="true">▍</span>
+        </p>
+        <p class="role-line">獨立開發者 · 後端 x 資料 x 自動化</p>
+
+        <ul class="contact-list" aria-label="聯絡方式">
+          <li>
+            <a
+              class="contact-channel"
+              href={`mailto:${siteConfig.social.email}`}
+              aria-label="寄送電子郵件至 heitang@purr.tw"
+            >
+              <span class="contact-orb">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 12 13l9-5.5M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2Z" />
+                </svg>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="contact-channel"
+              href={siteConfig.social.telegram}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Telegram（開新分頁）"
+            >
+              <span class="contact-orb">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 3-7.4 17-3.7-7.1L3 9.4 21 3Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m9.9 12.9 3.7 0 3.6-3.5" />
+                </svg>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="contact-channel"
+              href={siteConfig.social.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub（開新分頁）"
+            >
+              <span class="contact-orb">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                </svg>
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="contact-channel"
+              href={siteConfig.social.discord}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Discord（開新分頁）"
+            >
+              <span class="contact-orb">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 7.5a8.2 8.2 0 0 1 10 0l2 8.2a1.6 1.6 0 0 1-2.4 1.7L14.9 16h-5.8l-1.7 1.4A1.6 1.6 0 0 1 5 15.7L7 7.5Z" />
+                  <circle cx="9.5" cy="12" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="14.5" cy="12" r="1" fill="currentColor" stroke="none" />
+                </svg>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="scroll-link" href="#work" aria-label="前往精選作品">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M8 2v10M4 8l4 4 4-4" />
+        </svg>
+      </a>
+    </section>
+
+    <section id="work" class="work" aria-labelledby="work-title">
+      <header class="work-lead">
+        <div>
+          <p class="work-kicker">SIDE PROJECTS · {String(featuredProjects.length).padStart(2, '0')} / ∞</p>
+          <h2 id="work-title">或許你會喜歡</h2>
+        </div>
+        <p class="work-intro">有些只是懶得一直重複做，有些是現成工具不太順手。</p>
+      </header>
+
+      <div class="project-wall">
+        {featuredProjects.map((project, index) => (
+          <a
+            class={`project-tile project-tile--${index + 1}`}
+            href="/projects"
+            aria-label={`到作品庫查看 ${project.title} 的完整介紹`}
+          >
+            <div class="project-visual">
+              <img src={project.image} alt={`${project.title} 的介面截圖`} loading="lazy" decoding="async" />
+              <span class="project-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+              <span class="project-label">{project.label}</span>
+            </div>
+            <div class="project-body">
+              <p class="project-meta">{project.label} · {project.period ?? '持續製作中'}</p>
+              <h3>{project.title}</h3>
+              <p>{project.hook}</p>
+              <div class="project-footer">
+                <span class="project-stack">{project.techStack?.slice(0, 2).join(' / ')}</span>
+                <span class="project-open" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M5 19 19 5M8 5h11v11" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <div class="project-shelf-area">
+        <div class="project-shelf-intro">
+          <p class="work-kicker">THE REST OF THE DESK</p>
+          <h3>不只四個。</h3>
+          <p>精選了 {featuredProjects.length} 個，另外還有 {remainingProjectCount} 個工具、資料集與半成品等著被打開。</p>
+        </div>
+        <ul class="project-shelf" aria-label="更多作品">
+          {shelfProjects.map((project, index) => (
+            <li>
+              <a href="/projects" aria-label={`到作品庫查看 ${project.name} 的完整介紹`}>
+                <span class="project-shelf-number" aria-hidden="true">{String(index + 5).padStart(2, '0')}</span>
+                <span class="project-shelf-copy">
+                  <strong>{project.name}</strong>
+                  <span>{project.techStack?.[0] ?? 'side project'}</span>
+                </span>
+                <svg class="project-shelf-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 19 19 5M8 5h11v11" />
+                </svg>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <a class="work-all" href="/projects">
+        打開全部 {siteConfig.projectsWhitelist.length} 個作品
+        <svg class="work-all-arrow" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 19 19 5M8 5h11v11" />
+        </svg>
+      </a>
+    </section>
+  </div>
+
+  <script>
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const typewriter = document.querySelector<HTMLElement>('.home-contact [data-typewriter]');
+
+    if (typewriter && !reduceMotion) {
+      const texts = JSON.parse(typewriter.dataset.typewriter ?? '[]') as string[];
+      let textIndex = 0;
+      let characterIndex = 0;
+      let isDeleting = false;
+      typewriter.textContent = '';
+
+      const tick = () => {
+        const characters = Array.from(texts[textIndex]);
+        characterIndex += isDeleting ? -1 : 1;
+        typewriter.textContent = characters.slice(0, characterIndex).join('');
+
+        if (!isDeleting && characterIndex === characters.length) {
+          isDeleting = true;
+          window.setTimeout(tick, 1_800);
+          return;
+        }
+
+        if (isDeleting && characterIndex === 0) {
+          isDeleting = false;
+          textIndex = (textIndex + 1) % texts.length;
+          window.setTimeout(tick, 320);
+          return;
+        }
+
+        window.setTimeout(tick, isDeleting ? 34 : 58);
+      };
+
+      window.setTimeout(tick, 320);
+    }
+  </script>
+</BaseLayout>
+
+<style>
+  :global(body:has(.home-contact) > header) {
+    border-color: transparent !important;
+  }
+
+  .home-contact {
+    margin: 0 auto;
+    max-width: 68rem;
+    padding: 0 0 7rem;
+  }
+
+  .hero {
+    --hero-accent: #e78242;
+    --hero-ink: #f5efe7;
+    --hero-line: #39332e;
+    --hero-muted: #afa59a;
+    align-items: center;
+    display: grid;
+    margin-top: 4.25rem;
+    min-height: calc(100svh - 4.25rem);
+    padding: 3rem 1.5rem 5rem;
+    position: relative;
+  }
+
+  .hero-content {
+    display: grid;
+    justify-items: center;
+    margin: 0 auto;
+    max-width: 42rem;
+    text-align: center;
+  }
+
+  .hero-kicker {
+    color: var(--hero-accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .avatar {
+    border: 1px solid var(--hero-line);
+    border-radius: 50%;
+    display: block;
+    height: clamp(8.75rem, 15vw, 11.5rem);
+    object-fit: cover;
+    width: clamp(8.75rem, 15vw, 11.5rem);
+  }
+
+  h1,
+  p {
+    margin-top: 0;
+  }
+
+  h1 {
+    color: var(--hero-ink);
+    font-family: 'DotGothic16', sans-serif;
+    font-size: clamp(2.15rem, 6vw, 4.6rem);
+    font-weight: 400;
+    letter-spacing: -0.07em;
+    line-height: 1.05;
+    margin: 0.8rem 0 1.85rem;
+  }
+
+  .typewriter-line {
+    align-items: center;
+    color: var(--hero-ink);
+    display: flex;
+    font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+    font-weight: 700;
+    justify-content: center;
+    line-height: 1.65;
+    margin: 1.75rem auto 0;
+    max-width: 35rem;
+    min-block-size: 3.3rem;
+    padding: 0 0.25rem;
+  }
+
+  .typewriter-copy { text-wrap: balance; }
+
+  .type-cursor {
+    animation: cursor-blink 780ms step-end infinite;
+    color: var(--hero-accent);
+    margin-left: 0.16em;
+  }
+
+  .role-line {
+    color: var(--hero-muted);
+    font-size: 0.83rem;
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+    margin: 0.4rem 0 1.7rem;
+  }
+
+  .contact-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.15rem;
+    justify-content: center;
+    list-style: none;
+    margin: 0 0 1.35rem;
+    padding: 0;
+  }
+
+  .contact-channel {
+    color: rgb(var(--color-text-secondary));
+    display: block;
+    text-decoration: none;
+  }
+
+  .contact-orb {
+    align-items: center;
+    background: rgb(var(--color-bg-medium) / 0.72);
+    border-radius: 999px;
+    color: rgb(var(--color-primary));
+    display: flex;
+    height: 3.5rem;
+    justify-content: center;
+    width: 3.5rem;
+  }
+
+  .contact-orb svg {
+    height: 1.25rem;
+    width: 1.25rem;
+  }
+
+  a.contact-channel .contact-orb {
+    transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+  }
+
+  a.contact-channel:hover .contact-orb,
+  a.contact-channel:focus-visible .contact-orb {
+    background: rgb(var(--color-primary));
+    color: rgb(var(--color-bg-dark));
+    transform: translateY(-0.2rem);
+  }
+
+  .scroll-link {
+    align-items: center;
+    bottom: 0.85rem;
+    color: var(--hero-accent);
+    display: flex;
+    height: 2.75rem;
+    inset-inline-start: 50%;
+    justify-content: center;
+    position: absolute;
+    text-decoration: none;
+    transform: translateX(-50%);
+    transition: color 180ms ease, opacity 180ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    width: 2.75rem;
+  }
+
+  .scroll-link svg {
+    fill: none;
+    height: 1.25rem;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+    width: 1.25rem;
+  }
+
+  .scroll-link:is(:hover, :focus-visible) {
+    color: rgb(var(--color-primary));
+    transform: translate(-50%, 0.2rem);
+  }
+
+  .scroll-link:focus-visible {
+    outline: 2px solid rgb(var(--color-primary));
+    outline-offset: 0.35rem;
+  }
+
+  .work {
+    margin: clamp(4.5rem, 12vw, 9rem) auto 0;
+    max-width: 58rem;
+    width: calc(100% - 3rem);
+  }
+
+  .work-lead {
+    align-items: end;
+    display: grid;
+    gap: 1.5rem 3rem;
+    grid-template-columns: minmax(0, 1.05fr) minmax(16rem, 0.95fr);
+    margin-bottom: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .work-kicker {
+    color: var(--hero-accent);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+    margin: 0 0 0.75rem;
+  }
+
+  .work h2 {
+    color: rgb(var(--color-text-primary));
+    font-size: clamp(2.4rem, 5vw, 4.6rem);
+    letter-spacing: -0.075em;
+    line-height: 0.98;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .work-intro {
+    color: rgb(var(--color-text-secondary));
+    font-size: clamp(0.95rem, 1.8vw, 1.05rem);
+    line-height: 1.8;
+    margin: 0;
+    max-width: 31rem;
+  }
+
+  .project-wall {
+    display: grid;
+    gap: clamp(1rem, 1.6vw, 1.35rem);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .project-tile {
+    background: rgb(var(--color-bg-light));
+    border-radius: clamp(0.85rem, 1.5vw, 1.25rem);
+    box-shadow:
+      0 1.25rem 3rem rgb(var(--color-bg-dark) / 0.52),
+      0 0.25rem 0.65rem rgb(var(--color-text-primary) / 0.04);
+    color: rgb(var(--color-text-primary));
+    display: grid;
+    grid-template-rows: minmax(9.5rem, 1fr) auto;
+    isolation: isolate;
+    min-height: 17rem;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+    transition: background 220ms ease, box-shadow 220ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .project-tile--1 {
+    grid-column: span 7;
+    grid-row: span 2;
+    grid-template-rows: minmax(20rem, 1fr) auto;
+    min-height: 35rem;
+  }
+
+  .project-tile--2,
+  .project-tile--3 {
+    grid-column: span 5;
+  }
+
+  .project-tile--4 {
+    grid-column: span 12;
+    grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.85fr);
+    grid-template-rows: none;
+    min-height: 19rem;
+  }
+
+  .project-visual {
+    background: rgb(var(--color-bg-dark));
+    min-height: 9.5rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .project-visual::after {
+    background: linear-gradient(180deg, transparent 30%, rgb(var(--color-bg-dark) / 0.34));
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .project-visual img {
+    display: block;
+    height: 100%;
+    inset: 0;
+    object-fit: cover;
+    position: absolute;
+    transition: filter 260ms ease, transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    width: 100%;
+  }
+
+  .project-number,
+  .project-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    position: absolute;
+    z-index: 1;
+  }
+
+  .project-number {
+    background: rgb(var(--color-bg-dark) / 0.62);
+    color: rgb(var(--color-text-primary));
+    inset: 0.8rem auto auto 0.8rem;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .project-label {
+    background: rgb(var(--color-primary));
+    color: rgb(var(--color-bg-dark));
+    inset: auto 0.8rem 0.8rem auto;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .project-body {
+    background: rgb(var(--color-bg-light));
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: clamp(1.15rem, 2.5vw, 1.75rem);
+    position: relative;
+  }
+
+  .project-body::before {
+    background: rgb(var(--color-primary));
+    content: '';
+    height: 0.2rem;
+    inset: 0 0 auto;
+    position: absolute;
+  }
+
+  .project-tile--4 .project-body::before {
+    height: auto;
+    inset: 0 auto 0 0;
+    width: 0.2rem;
+  }
+
+  .project-meta {
+    color: var(--hero-accent);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    line-height: 1.5;
+    margin: 0 0 0.7rem;
+  }
+
+  .project-body h3 {
+    color: rgb(var(--color-text-primary));
+    font-size: clamp(1.2rem, 1.9vw, 1.8rem);
+    letter-spacing: -0.055em;
+    line-height: 1;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .project-tile--2 .project-body h3 {
+    white-space: nowrap;
+  }
+
+  .project-body > p:not(.project-meta) {
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin: 0.8rem 0 1.25rem;
+  }
+
+  .project-footer {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+
+  .project-stack {
+    color: rgb(var(--color-text-secondary));
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+
+  .project-open {
+    align-items: center;
+    background: rgb(var(--color-primary) / 0.14);
+    color: rgb(var(--color-primary));
+    display: flex;
+    flex: 0 0 auto;
+    height: 2.5rem;
+    justify-content: center;
+    transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+    width: 2.5rem;
+  }
+
+  .project-open svg,
+  .project-shelf-arrow {
+    fill: none;
+    height: 1.1rem;
+    stroke: currentColor;
+    stroke-linecap: square;
+    stroke-width: 1.5;
+    width: 1.1rem;
+  }
+
+  .project-tile:is(:hover, :focus-visible) {
+    background: rgb(var(--color-bg-light));
+    box-shadow:
+      0 1.6rem 3.4rem rgb(var(--color-bg-dark) / 0.58),
+      0 0.35rem 0.9rem rgb(var(--color-text-primary) / 0.06);
+    transform: translateY(-0.3rem);
+  }
+
+  .project-tile:is(:hover, :focus-visible) .project-visual img {
+    filter: saturate(1.1) contrast(1.03);
+    transform: scale(1.035);
+  }
+
+  .project-tile:is(:hover, :focus-visible) .project-open {
+    background: rgb(var(--color-primary));
+    color: rgb(var(--color-bg-dark));
+    transform: translate(0.15rem, -0.15rem);
+  }
+
+  .project-tile:focus-visible,
+  .project-shelf a:focus-visible,
+  .work-all:focus-visible {
+    outline: 2px solid rgb(var(--color-primary));
+    outline-offset: 0.35rem;
+  }
+
+  .project-shelf-area {
+    background: rgb(var(--color-bg-medium));
+    border-radius: clamp(0.85rem, 1.5vw, 1.25rem);
+    box-shadow: 0 1rem 2.5rem rgb(var(--color-bg-dark) / 0.36);
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    grid-template-columns: minmax(13rem, 0.7fr) minmax(0, 1.3fr);
+    margin-top: 1rem;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+  }
+
+  .project-shelf-intro h3 {
+    color: rgb(var(--color-text-primary));
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    letter-spacing: -0.06em;
+    line-height: 1;
+    margin: 0;
+  }
+
+  .project-shelf-intro > p:not(.work-kicker) {
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.9rem;
+    line-height: 1.75;
+    margin: 0.85rem 0 0;
+  }
+
+  .project-shelf {
+    display: grid;
+    gap: 0.65rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .project-shelf a {
+    align-items: center;
+    background: rgb(var(--color-bg-light));
+    border-radius: 0.75rem;
+    box-shadow: 0 0.7rem 1.5rem rgb(var(--color-bg-dark) / 0.24);
+    color: rgb(var(--color-text-primary));
+    display: grid;
+    gap: 0.7rem;
+    grid-template-columns: 1.75rem minmax(0, 1fr) 1rem;
+    min-height: 4.6rem;
+    overflow: hidden;
+    padding: 0.8rem 0.9rem;
+    position: relative;
+    text-decoration: none;
+    transition: background 180ms ease, transform 180ms ease;
+  }
+
+  .project-shelf a::before {
+    background: rgb(var(--color-primary));
+    content: '';
+    height: 0.18rem;
+    inset: 0 auto auto 0;
+    position: absolute;
+    transition: width 180ms ease;
+    width: 0;
+  }
+
+  .project-shelf a:is(:hover, :focus-visible) {
+    background: rgb(var(--color-primary) / 0.1);
+    transform: translateY(-0.15rem);
+  }
+
+  .project-shelf a:is(:hover, :focus-visible)::before {
+    width: 100%;
+  }
+
+  .project-shelf-number,
+  .project-shelf-copy > span {
+    color: rgb(var(--color-text-secondary));
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+
+  .project-shelf-copy {
+    display: grid;
+    gap: 0.22rem;
+    min-width: 0;
+  }
+
+  .project-shelf-copy strong {
+    font-size: 0.9rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .project-shelf-arrow {
+    color: rgb(var(--color-primary));
+    transition: transform 180ms ease;
+  }
+
+  .project-shelf a:is(:hover, :focus-visible) .project-shelf-arrow {
+    transform: translate(0.12rem, -0.12rem);
+  }
+
+  .work-all {
+    align-items: center;
+    color: rgb(var(--color-text-primary));
+    display: inline-flex;
+    font-size: 0.95rem;
+    font-weight: 700;
+    gap: 0.35rem;
+    margin-top: 1.75rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0;
+    text-decoration-color: rgb(var(--color-primary));
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.38rem;
+  }
+
+  .work-all-arrow {
+    fill: none;
+    height: 1rem;
+    stroke: rgb(var(--color-primary));
+    stroke-linecap: square;
+    stroke-width: 1.8;
+    width: 1rem;
+  }
+
+  @keyframes cursor-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .work-lead,
+    .project-shelf-area {
+      grid-template-columns: 1fr;
+    }
+
+    .project-wall {
+      grid-template-columns: 1fr;
+    }
+
+    .project-tile--1,
+    .project-tile--2,
+    .project-tile--3,
+    .project-tile--4 {
+      grid-column: 1;
+      grid-row: auto;
+      min-height: 0;
+    }
+
+    .project-tile--1,
+    .project-tile--2,
+    .project-tile--3,
+    .project-tile--4 {
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(14rem, 18rem) auto;
+    }
+
+    .project-tile--4 .project-body::before {
+      height: 0.2rem;
+      inset: 0 0 auto;
+      width: auto;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .hero {
+      padding: 2.5rem 1rem 5rem;
+    }
+
+    h1 {
+      margin-bottom: 1.5rem;
+    }
+
+    .typewriter-line {
+      min-block-size: 4.95rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .home-contact {
+      padding: 0 0 5rem;
+    }
+
+    .contact-orb {
+      height: 3rem;
+      width: 3rem;
+    }
+
+    .work {
+      margin-top: 3.75rem;
+      width: calc(100% - 2rem);
+    }
+
+    .work h2 {
+      font-size: clamp(2.1rem, 11vw, 3rem);
+    }
+
+    .project-wall {
+      gap: 0.8rem;
+    }
+
+    .project-visual {
+      min-height: 12rem;
+    }
+
+    .project-shelf-area {
+      gap: 1.25rem;
+      margin-top: 0.8rem;
+      padding: 1.15rem;
+    }
+
+    .project-shelf {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a.contact-channel .contact-orb,
+    .project-tile,
+    .project-visual img,
+    .project-open,
+    .project-shelf a,
+    .project-shelf a::before,
+    .project-shelf-arrow {
+      transition: none;
+    }
+
+    .project-tile:is(:hover, :focus-visible),
+    .project-shelf a:is(:hover, :focus-visible),
+    .project-tile:is(:hover, :focus-visible) .project-visual img,
+    .project-tile:is(:hover, :focus-visible) .project-open,
+    .project-shelf a:is(:hover, :focus-visible) .project-shelf-arrow {
+      transform: none;
+    }
+
+    .type-cursor {
+      animation: none;
+      display: none;
+    }
+  }
+</style>
