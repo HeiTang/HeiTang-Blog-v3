@@ -301,7 +301,6 @@ export const siteConfig = {
   // Navigation
   nav: {
     zh: [
-      { label: '首頁', href: '/' },
       { label: '文章', href: '/blog' },
       { label: '專案', href: '/projects' },
       { label: '邀請碼', href: '/invite-codes' },
@@ -315,7 +314,6 @@ export const siteConfig = {
       },
     ],
     en: [
-      { label: 'Home', href: '/en' },
       { label: 'Blog', href: '/en/blog' },
       { label: 'Projects', href: '/en/projects' },
       { label: 'Invite Codes', href: '/en/invite-codes' },
