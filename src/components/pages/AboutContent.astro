@@ -1,41 +1,33 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { useTranslations, localePath } from '../../i18n';
-import type { SupportedLang } from '../../config/site';
-
-interface Props {
-  lang: SupportedLang;
-}
-const { lang } = Astro.props;
-const t = useTranslations(lang);
-const currentPath = localePath('/about', lang);
+import { copy } from '../../config/copy';
 
 const skillColors = ['primary', 'accent', 'secondary'];
 ---
 
-<BaseLayout title={t.about.title} currentPath={currentPath} lang={lang}>
+<BaseLayout title={copy.about.title} currentPath="/about">
   <div class="container mx-auto px-6 py-24">
     <div class="max-w-2xl mx-auto space-y-8">
 
       <h1 class="font-display text-4xl font-bold text-[rgb(var(--color-text-primary))]">
-        {t.about.heading}
+        {copy.about.heading}
       </h1>
 
       <!-- Profile Card -->
       <div class="glass p-8 rounded-2xl">
         <div class="flex items-center gap-6 mb-6">
           <div class="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border-2 border-[rgb(var(--color-primary))]">
-            <img src="/images/profile.jpeg" alt={t.about.name} class="w-full h-full object-cover" />
+            <img src="/images/profile.jpeg" alt={copy.about.name} class="w-full h-full object-cover" />
           </div>
           <div>
-            <h2 class="text-2xl font-bold text-[rgb(var(--color-text-primary))] mb-1">{t.about.name}</h2>
-            <p class="text-[rgb(var(--color-text-secondary))]">{t.about.tagline}</p>
+            <h2 class="text-2xl font-bold text-[rgb(var(--color-text-primary))] mb-1">{copy.about.name}</h2>
+            <p class="text-[rgb(var(--color-text-secondary))]">{copy.about.tagline}</p>
           </div>
         </div>
         <div class="space-y-3 text-[rgb(var(--color-text-secondary))] leading-relaxed">
-          <p>{t.about.bio1}</p>
-          <p>{t.about.bio2}</p>
-          <p class="text-[rgb(var(--color-primary))] font-semibold">{t.about.bio3}</p>
+          <p>{copy.about.bio1}</p>
+          <p>{copy.about.bio2}</p>
+          <p class="text-[rgb(var(--color-primary))] font-semibold">{copy.about.bio3}</p>
         </div>
       </div>
 
@@ -52,10 +44,10 @@ const skillColors = ['primary', 'accent', 'secondary'];
           >
             <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
           </svg>
-          {t.about.skillsTitle}
+          {copy.about.skillsTitle}
         </h3>
         <div class="space-y-6">
-          {t.about.skillGroups.map((group, i) => (
+          {copy.about.skillGroups.map((group, i) => (
             <div>
               <p class="text-xs font-semibold uppercase tracking-widest text-[rgb(var(--color-text-secondary))] mb-3">
                 {group.label}

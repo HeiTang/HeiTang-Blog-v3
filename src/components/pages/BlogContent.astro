@@ -3,21 +3,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostCard from '../blog/PostCard.astro';
 import { getCollection } from 'astro:content';
 import { getReadingTime } from '../../utils/reading-time';
-import { useTranslations, localePath } from '../../i18n';
-import type { SupportedLang } from '../../config/site';
+import { copy } from '../../config/copy';
 
-interface Props {
-  lang: SupportedLang;
-}
-const { lang } = Astro.props;
-const t = useTranslations(lang);
-const currentPath = localePath('/blog', lang);
-
-const allPosts = await getCollection('blog', ({ data }) => {
-  if (data.draft) return false;
-  if (lang === 'zh') return data.lang === 'zh';
-  return true;
-});
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 const posts = allPosts
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .map(p => ({ ...p, readingTime: getReadingTime(p.body ?? '') }));
@@ -25,15 +13,15 @@ const posts = allPosts
 const allTags = [...new Set(posts.flatMap(p => p.data.tags))].sort();
 ---
 
-<BaseLayout title={t.blog.title} currentPath={currentPath} lang={lang}>
+<BaseLayout title={copy.blog.title} currentPath="/blog">
   <div class="container mx-auto px-6 py-24">
     <!-- Page header -->
     <div class="mb-10">
       <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
-        📝 {t.blog.title}
+        📝 {copy.blog.title}
       </h1>
       <p class="text-[rgb(var(--color-text-secondary))]">
-        {posts.length} {t.blog.articleCount}
+        {posts.length} {copy.blog.articleCount}
       </p>
     </div>
 
@@ -45,7 +33,7 @@ const allTags = [...new Set(posts.flatMap(p => p.data.tags))].sort();
     <!-- Tag filter -->
     {allTags.length > 0 && (
       <div class="flex flex-wrap gap-2 mb-8">
-        <button class="tag-badge tag-filter active" data-tag="all">{t.blog.allTags}</button>
+        <button class="tag-badge tag-filter active" data-tag="all">{copy.blog.allTags}</button>
         {allTags.map(tag => (
           <button class="tag-badge tag-filter" data-tag={tag}>{tag}</button>
         ))}
@@ -55,7 +43,7 @@ const allTags = [...new Set(posts.flatMap(p => p.data.tags))].sort();
     <!-- Posts grid -->
     {posts.length === 0 ? (
       <div class="glass p-12 rounded-2xl text-center">
-        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{t.blog.emptyState}</p>
+        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{copy.blog.emptyState}</p>
       </div>
     ) : (
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="posts-grid">
@@ -63,12 +51,11 @@ const allTags = [...new Set(posts.flatMap(p => p.data.tags))].sort();
           <div class="post-item card-interactive rounded-3xl border border-white/[0.08] overflow-hidden" style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));" data-tags={post.data.tags.join(',')}>
             <PostCard
               slug={post.id}
-              title={lang === 'en' ? (post.data.titleEn ?? post.data.title) : post.data.title}
-              description={lang === 'en' ? (post.data.descriptionEn ?? post.data.description) : post.data.description}
+              title={post.data.title}
+              description={post.data.description}
               pubDate={post.data.pubDate}
               tags={post.data.tags}
               readingTime={post.readingTime}
-              lang={lang}
             />
           </div>
         ))}

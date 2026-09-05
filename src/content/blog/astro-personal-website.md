@@ -4,7 +4,6 @@ description: '深入探索 Astro 框架的靜態生成能力，以及如何結�
 pubDate: 2026-01-15
 author: HeiTang
 tags: ['Astro', 'Web Dev', '前端']
-lang: zh
 ---
 
 ## 為什麼選擇 Astro？

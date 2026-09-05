@@ -3,16 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectCard from '../projects/ProjectCard.astro';
 import ProjectModal from '../projects/ProjectModal.astro';
 import { fetchPinnedRepos, fetchPublicRepos } from '../../services/github';
-import { useTranslations, localePath } from '../../i18n';
+import { copy } from '../../config/copy';
 import { siteConfig } from '../../config/site';
-import type { SupportedLang } from '../../config/site';
-
-interface Props {
-  lang: SupportedLang;
-}
-const { lang } = Astro.props;
-const t = useTranslations(lang);
-const currentPath = localePath('/projects', lang);
 
 const [pinnedRepos, publicRepos] = await Promise.all([
   fetchPinnedRepos(),
@@ -78,18 +70,18 @@ const sortedTags = Object.entries(tagCount)
   .map(([tag]) => tag);
 ---
 
-<BaseLayout title={t.projects.title} currentPath={currentPath} lang={lang}>
+<BaseLayout title={copy.projects.title} currentPath="/projects">
   <div class="container mx-auto px-6 py-24">
     <!-- Page header -->
     <div class="mb-8">
       <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
-        🚀 {t.projects.title}
+        🚀 {copy.projects.title}
       </h1>
       <p class="text-[rgb(var(--color-text-secondary))]">
         <a href="https://github.com/HeiTang" target="_blank" rel="noopener noreferrer"
           class="heitang-brand-font tracking-[0.14em] hover:text-[rgb(var(--color-primary))] transition-colors">
           HEITANG
-        </a>{t.projects.subtitle}
+        </a>{copy.projects.subtitle}
       </p>
     </div>
 
@@ -102,7 +94,7 @@ const sortedTags = Object.entries(tagCount)
               class="tag-tab active flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium"
               data-tag="__all__"
             >
-              {t.projects.allFilter}
+              {copy.projects.allFilter}
               <span class="ml-1.5 text-xs opacity-70">({allRepos.length})</span>
             </button>
             {sortedTags.map(tag => (
@@ -186,12 +178,12 @@ const sortedTags = Object.entries(tagCount)
 
     <!-- Empty state -->
     <div id="projects-empty" class="hidden glass p-12 rounded-2xl text-center">
-      <p class="text-[rgb(var(--color-text-secondary))] text-lg">{t.projects.noMatchingProjects}</p>
+      <p class="text-[rgb(var(--color-text-secondary))] text-lg">{copy.projects.noMatchingProjects}</p>
     </div>
 
     {pinnedRepos.length === 0 && whitelistRepos.length === 0 && (
       <div class="glass p-12 rounded-2xl text-center">
-        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{t.projects.noRepos}</p>
+        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{copy.projects.noRepos}</p>
       </div>
     )}
   </div>

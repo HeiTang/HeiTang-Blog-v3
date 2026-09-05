@@ -4,7 +4,6 @@ description: '從零開始設定 GitHub Actions 自動部署 Astro 靜態網站�
 pubDate: 2026-02-10
 author: HeiTang
 tags: ['GitHub', 'DevOps', 'CI/CD']
-lang: zh
 ---
 
 ## 前置準備

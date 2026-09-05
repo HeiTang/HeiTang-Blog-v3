@@ -8,7 +8,9 @@ import autoprefixer from 'autoprefixer';
 export default defineConfig({
   site: 'https://purr.tw',
   integrations: [
-    sitemap(),
+    sitemap({
+      filter: (page) => !new URL(page).pathname.startsWith('/en'),
+    }),
   ],
   output: 'static',
   build: {
