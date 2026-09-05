@@ -297,7 +297,6 @@ export const siteConfig = {
 
   // Navigation
   nav: [
-    { label: '首頁', href: '/' },
     { label: '文章', href: '/blog' },
     { label: '專案', href: '/projects' },
     { label: '邀請碼', href: '/invite-codes' },

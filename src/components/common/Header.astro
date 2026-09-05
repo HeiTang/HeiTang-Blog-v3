@@ -13,17 +13,21 @@ const { currentPath = '/' } = Astro.props;
 const navItems = siteConfig.nav;
 ---
 
-<header class="fixed top-0 left-0 right-0 z-40 border-b border-white/10" style="background: rgba(15,15,15,0.8); backdrop-filter: blur(12px);">
+<header class="site-header fixed top-0 left-0 right-0 z-40 border-b">
   <nav class="container mx-auto px-6 py-4">
     <div class="relative flex items-center justify-between">
       <!-- Logo -->
-      <a href="/" class="flex items-center gap-3 group">
+      <a
+        href="/"
+        aria-label="回到首頁"
+        class="flex items-center gap-3 group"
+      >
         <div class="w-9 h-9 flex items-center justify-center rounded-xl overflow-hidden transition-all
           group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(255,140,97,0.6)]">
           <img src="/images/icon.png" alt="Logo" class="w-full h-full object-contain" />
         </div>
-        <span class="font-semibold text-base text-white/90 group-hover:text-white transition-colors">
-          {siteConfig.title}
+        <span class="site-brand heitang-brand-font text-[0.95rem] font-bold tracking-[0.16em] text-[rgb(var(--color-primary))] transition-colors group-hover:text-white">
+          HEITANG
         </span>
       </a>
 
@@ -35,7 +39,7 @@ const navItems = siteConfig.nav;
               <details class="nav-dropdown-toggle" data-nav-dropdown>
                 <summary
                   class:list={[
-                    "nav-link nav-dropdown-summary group relative flex items-center gap-1 text-sm font-medium transition-all duration-200 pb-0.5",
+                    "nav-link nav-dropdown-summary group relative flex h-9 items-center gap-1 text-sm font-medium leading-none transition-all duration-200",
                     item.children.some(child => currentPath === child.href)
                       ? "nav-link--active text-white"
                       : "text-white/60 hover:text-white"
@@ -47,7 +51,7 @@ const navItems = siteConfig.nav;
                     <path d="m5 7.5 5 5 5-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
                   </svg>
                   <span class:list={[
-                    "absolute bottom-0 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
+                    "absolute bottom-1.5 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
                     item.children.some(child => currentPath === child.href)
                       ? "scale-x-100"
                       : "scale-x-0 group-hover:scale-x-100"
@@ -78,7 +82,7 @@ const navItems = siteConfig.nav;
                 href={item.href}
                 aria-current={currentPath === item.href ? 'page' : undefined}
                 class:list={[
-                  "nav-link group relative text-sm font-medium transition-all duration-200 pb-0.5",
+                  "nav-link group relative inline-flex h-9 items-center text-sm font-medium leading-none transition-all duration-200",
                   currentPath === item.href
                     ? "nav-link--active text-white"
                     : "text-white/60 hover:text-white"
@@ -86,7 +90,7 @@ const navItems = siteConfig.nav;
               >
                 {item.label}
                 <span class:list={[
-                  "absolute bottom-0 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
+                  "absolute bottom-1.5 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
                   currentPath === item.href ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                 ]}></span>
               </a>
@@ -170,6 +174,22 @@ const navItems = siteConfig.nav;
 </header>
 
 <style>
+  .site-header {
+    border-color: rgb(var(--color-primary) / 0.16);
+    background: linear-gradient(
+      180deg,
+      rgb(var(--color-bg-dark) / 0.9),
+      rgb(var(--color-bg-dark) / 0.68)
+    );
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.16);
+    backdrop-filter: blur(18px) saturate(125%);
+    -webkit-backdrop-filter: blur(18px) saturate(125%);
+  }
+
+  .site-brand {
+    text-shadow: 0 0 12px rgb(var(--color-primary) / 0.38);
+  }
+
   .nav-link:hover {
     text-shadow:
       0 0 8px rgba(var(--color-primary) / 0.9),
