@@ -11,7 +11,7 @@ test('homepage hero keeps contact and a motion-safe typewriter', async () => {
   ]);
 
   assert.match(source, /const homeTitle = '黑糖不是炭';/);
-  assert.match(source, /family=DotGothic16&text=\$\{titleGlyphs\}&display=swap/);
+  assert.doesNotMatch(source, /fonts\.googleapis\.com\/css2/);
   assert.match(source, /font-family: 'DotGothic16', sans-serif;/);
   assert.match(source, /const typewriterText = \[/);
   assert.match(source, /const typewriterText = \[\s+'[^']+',/);

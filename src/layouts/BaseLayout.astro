@@ -8,15 +8,6 @@ import Header from '../components/common/Header.astro';
 import Footer from '../components/common/Footer.astro';
 import '../styles/global.css';
 
-const fontFamilyQueries = {
-  inter: 'Inter:wght@400;500;600;700',
-  'noto-sans-tc': 'Noto+Sans+TC:wght@400;500;700',
-  'jetbrains-mono': 'JetBrains+Mono:wght@400;600',
-  orbitron: 'Orbitron:wght@500;700;900',
-} as const;
-
-export type FontFamily = keyof typeof fontFamilyQueries;
-
 export interface Props {
   title?: string;
   description?: string;
@@ -26,7 +17,6 @@ export interface Props {
   noindex?: boolean;
   hasPointerGlow?: boolean;
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
-  fontFamilies?: FontFamily[];
 }
 
 const {
@@ -38,7 +28,6 @@ const {
   noindex = false,
   hasPointerGlow = true,
   structuredData,
-  fontFamilies = [],
 } = Astro.props;
 
 const siteTitle = siteConfig.title;
@@ -47,10 +36,6 @@ const resolvedDescription = description ?? siteConfig.description;
 const fullTitle = resolvedTitle === siteTitle ? resolvedTitle : `${resolvedTitle} | ${siteTitle}`;
 const canonicalUrl = new URL(Astro.url.pathname, siteConfig.url).toString();
 const socialImageUrl = new URL(image, siteConfig.url).toString();
-const googleFontFamilies: FontFamily[] = Array.from(new Set(['inter', 'noto-sans-tc', ...fontFamilies]));
-const googleFontsHref = `https://fonts.googleapis.com/css2?${googleFontFamilies
-  .map((family) => `family=${fontFamilyQueries[family]}`)
-  .join('&')}&display=swap`;
 ---
 
 <!doctype html>
@@ -60,10 +45,6 @@ const googleFontsHref = `https://fonts.googleapis.com/css2?${googleFontFamilies
     <meta name="description" content={resolvedDescription} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- 字型：以 <link> 平行載入，取代 global.css 裡的串行 @import -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href={googleFontsHref} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/png" href="/images/icon.png" />
