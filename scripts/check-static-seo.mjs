@@ -2,10 +2,26 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const dist = new URL('../dist/', import.meta.url);
+const legacyEnglishRedirects = [
+  ['en/index.html', '/'],
+  ['en/about/index.html', '/about'],
+  ['en/blog/index.html', '/blog'],
+  ['en/projects/index.html', '/projects'],
+  ['en/invite-codes/index.html', '/invite-codes'],
+];
 const pages = [
   { route: 'japan', image: 'japan.png' },
   { route: 'concerts', image: 'concerts.png' },
 ];
+
+for (const [file, destination] of legacyEnglishRedirects) {
+  const html = await readFile(new URL(file, dist), 'utf8');
+  assert.ok(
+    html.includes(`<meta http-equiv="refresh" content="0;url=${destination}">`),
+    `/${file} must redirect to ${destination}`
+  );
+  assert.ok(html.includes('<meta name="robots" content="noindex">'), `/${file} must not be indexed`);
+}
 
 for (const { route, image } of pages) {
   const html = await readFile(new URL(`${route}/index.html`, dist), 'utf8');
@@ -21,7 +37,7 @@ for (const { route, image } of pages) {
   assert.ok(html.includes('<script type="application/ld+json">'));
   assert.ok(html.includes('"@type":"CollectionPage"'));
   assert.ok(html.includes('"@type":"BreadcrumbList"'));
-  assert.ok(!html.includes(`/en/${route}/`), `/${route}/ must not link to a missing translation`);
+  assert.ok(!html.includes(`/en/${route}/`), `/${route}/ must not link to an English route`);
 
   for (const href of ['/about', '/japan', '/concerts']) {
     assert.ok(html.includes(`href="${href}"`), `/${route}/ header must link to ${href}`);
@@ -49,8 +65,14 @@ for (const privateField of ['付款方式', '付款者', '參與者', '單位票
 const robots = await readFile(new URL('robots.txt', dist), 'utf8');
 assert.ok(robots.includes('Sitemap: https://purr.tw/sitemap-index.xml'));
 
+const homeHtml = await readFile(new URL('index.html', dist), 'utf8');
+assert.match(homeHtml, /<html lang="zh-Hant"/);
+assert.ok(homeHtml.includes('<meta property="og:locale" content="zh_TW">'));
+assert.doesNotMatch(homeHtml, /href="\/en(?:\/|")/);
+
 const sitemap = await readFile(new URL('sitemap-0.xml', dist), 'utf8');
 assert.ok(sitemap.includes('<loc>https://purr.tw/japan/</loc>'));
 assert.ok(sitemap.includes('<loc>https://purr.tw/concerts/</loc>'));
+assert.doesNotMatch(sitemap, /https:\/\/purr\.tw\/en(?:\/|<)/);
 
 console.log('Static SEO and public-output checks passed.');

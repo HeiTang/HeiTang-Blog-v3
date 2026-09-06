@@ -1,9 +1,7 @@
 /** Blog post metadata (mirrors content/config.ts schema) */
 export interface PostMeta {
   title: string;
-  titleEn?: string;
   description: string;
-  descriptionEn?: string;
   pubDate: Date;
   updatedDate?: Date;
   author: string;
@@ -11,7 +9,6 @@ export interface PostMeta {
   cover?: string;
   coverAlt?: string;
   draft: boolean;
-  lang: 'zh' | 'en';
 }
 
 export interface Post {

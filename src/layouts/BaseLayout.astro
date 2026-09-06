@@ -11,12 +11,10 @@ import '../styles/global.css';
 export interface Props {
   title?: string;
   description?: string;
-  lang?: 'zh' | 'en';
   currentPath?: string;
   image?: string;
   ogType?: 'website' | 'article';
   noindex?: boolean;
-  hasLanguageAlternate?: boolean;
   hasPointerGlow?: boolean;
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
@@ -24,26 +22,24 @@ export interface Props {
 const {
   title,
   description,
-  lang = 'zh',
   currentPath = '/',
   image = '/images/og/default.png',
   ogType = 'website',
   noindex = false,
-  hasLanguageAlternate = true,
   hasPointerGlow = true,
   structuredData,
 } = Astro.props;
 
-const siteTitle = lang === 'en' ? siteConfig.titleEn : siteConfig.title;
+const siteTitle = siteConfig.title;
 const resolvedTitle = title ?? siteTitle;
-const resolvedDescription = description ?? (lang === 'en' ? siteConfig.descriptionEn : siteConfig.description);
+const resolvedDescription = description ?? siteConfig.description;
 const fullTitle = resolvedTitle === siteTitle ? resolvedTitle : `${resolvedTitle} | ${siteTitle}`;
 const canonicalUrl = new URL(Astro.url.pathname, siteConfig.url).toString();
 const socialImageUrl = new URL(image, siteConfig.url).toString();
 ---
 
 <!doctype html>
-<html lang={lang} data-theme="elegant-cyber">
+<html lang="zh-Hant" data-theme="elegant-cyber">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={resolvedDescription} />
@@ -70,7 +66,7 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={resolvedDescription} />
     <meta property="og:site_name" content={siteTitle} />
-    <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'zh_TW'} />
+    <meta property="og:locale" content="zh_TW" />
     <meta property="og:image" content={socialImageUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -104,7 +100,7 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
       href="#main-content"
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[110] focus:rounded-lg focus:bg-black focus:px-4 focus:py-3 focus:text-white focus:ring-2 focus:ring-[rgb(var(--color-primary))]"
     >
-      {lang === 'en' ? 'Skip to main content' : '跳至主要內容'}
+      跳至主要內容
     </a>
     <!-- Aurora animated background -->
     <div class="aurora-bg" aria-hidden="true">
@@ -117,7 +113,7 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
     <div class="shockwave-layer" aria-hidden="true"></div>
     {hasPointerGlow && <div class="comet-cursor" aria-hidden="true"></div>}
     
-    <Header currentPath={currentPath} lang={lang} hasLanguageAlternate={hasLanguageAlternate} />
+    <Header currentPath={currentPath} />
     
     <main id="main-content" class="flex-1 relative" tabindex="-1">
       <slot />

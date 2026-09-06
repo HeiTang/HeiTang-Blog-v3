@@ -6,9 +6,7 @@ import type { ProjectMeta } from '../types/projects';
 
 export const siteConfig = {
   title: '黑糖ㄉ貓窩',
-  titleEn: "HeiTang's Den",
   description: '你好！我是黑糖，是一位軟體工程師，出沒於資訊社群，歡迎捕捉！喜愛寫程式來解決生活中繁瑣的事。',
-  descriptionEn: 'Hello! I am HeiTang, a software engineer who loves to write code to solve everyday problems. You can often find me in tech communities, so feel free to catch me there!',
   author: 'HeiTang',
   url: 'https://purr.tw',
   domain: 'purr.tw',
@@ -23,7 +21,6 @@ export const siteConfig = {
   
   // Features
   features: {
-    i18n: true,
     darkMode: true,
     search: true,
     rss: true,
@@ -299,35 +296,17 @@ export const siteConfig = {
   ] as ProjectMeta[],
 
   // Navigation
-  nav: {
-    zh: [
-      { label: '首頁', href: '/' },
-      { label: '文章', href: '/blog' },
-      { label: '專案', href: '/projects' },
-      { label: '邀請碼', href: '/invite-codes' },
-      {
-        label: '關於',
-        children: [
-          { label: '關於我', href: '/about' },
-          { label: '日本制縣圖', href: '/japan' },
-          { label: '演唱會足跡', href: '/concerts' },
-        ],
-      },
-    ],
-    en: [
-      { label: 'Home', href: '/en' },
-      { label: 'Blog', href: '/en/blog' },
-      { label: 'Projects', href: '/en/projects' },
-      { label: 'Invite Codes', href: '/en/invite-codes' },
-      { label: 'About', href: '/en/about' },
-    ],
-  },
-  
-  // Default language
-  defaultLang: 'zh' as const,
-  
-  // Supported languages
-  supportedLangs: ['zh', 'en'] as const,
+  nav: [
+    { label: '文章', href: '/blog' },
+    { label: '專案', href: '/projects' },
+    { label: '邀請碼', href: '/invite-codes' },
+    {
+      label: '關於',
+      children: [
+        { label: '關於我', href: '/about' },
+        { label: '日本制縣圖', href: '/japan' },
+        { label: '演唱會足跡', href: '/concerts' },
+      ],
+    },
+  ],
 } as const;
-
-export type SupportedLang = typeof siteConfig.supportedLangs[number];

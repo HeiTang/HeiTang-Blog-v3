@@ -4,7 +4,6 @@ description: '利用 Google Sheets + GAS 建立一個免費的 JSON API，用於
 pubDate: 2026-03-01
 author: HeiTang
 tags: ['Google Apps Script', 'API', 'Google Sheets']
-lang: zh
 ---
 
 ## 為什麼用 Google Sheets 當資料庫？

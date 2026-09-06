@@ -4,41 +4,42 @@
  * Following SOLID principles: Single Responsibility
  */
 import { siteConfig } from '../../config/site';
-import LanguageSwitcher from './LanguageSwitcher.astro';
 
 export interface Props {
   currentPath?: string;
-  lang?: 'zh' | 'en';
-  hasLanguageAlternate?: boolean;
 }
 
-const { currentPath = '/', lang = 'zh', hasLanguageAlternate = true } = Astro.props;
-const navItems = siteConfig.nav[lang];
+const { currentPath = '/' } = Astro.props;
+const navItems = siteConfig.nav;
 ---
 
-<header class="fixed top-0 left-0 right-0 z-40 border-b border-white/10" style="background: rgba(15,15,15,0.8); backdrop-filter: blur(12px);">
+<header class="site-header fixed top-0 left-0 right-0 z-40 border-b">
   <nav class="container mx-auto px-6 py-4">
-    <div class="flex items-center justify-between">
+    <div class="relative flex items-center justify-between">
       <!-- Logo -->
-      <a href={lang === 'en' ? '/en' : '/'} class="flex items-center gap-3 group">
+      <a
+        href="/"
+        aria-label="回到首頁"
+        class="flex items-center gap-3 group"
+      >
         <div class="w-9 h-9 flex items-center justify-center rounded-xl overflow-hidden transition-all
           group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(255,140,97,0.6)]">
           <img src="/images/icon.png" alt="Logo" class="w-full h-full object-contain" />
         </div>
-        <span class="font-semibold text-base text-white/90 group-hover:text-white transition-colors">
-          {lang === 'zh' ? siteConfig.title : siteConfig.titleEn}
+        <span class="site-brand heitang-brand-font text-[0.95rem] font-bold tracking-[0.16em] text-[rgb(var(--color-primary))] transition-colors group-hover:text-white">
+          HEITANG
         </span>
       </a>
 
       <!-- Navigation Links -->
-      <ul class="hidden md:flex items-center gap-8">
+      <ul class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
         {navItems.map((item, index) => (
           'children' in item ? (
             <li class="nav-dropdown" data-nav-group>
               <details class="nav-dropdown-toggle" data-nav-dropdown>
                 <summary
                   class:list={[
-                    "nav-link nav-dropdown-summary group relative flex items-center gap-1 text-sm font-medium transition-all duration-200 pb-0.5",
+                    "nav-link nav-dropdown-summary group relative flex h-9 items-center gap-1 text-sm font-medium leading-none transition-all duration-200",
                     item.children.some(child => currentPath === child.href)
                       ? "nav-link--active text-white"
                       : "text-white/60 hover:text-white"
@@ -50,7 +51,7 @@ const navItems = siteConfig.nav[lang];
                     <path d="m5 7.5 5 5 5-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
                   </svg>
                   <span class:list={[
-                    "absolute bottom-0 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
+                    "absolute bottom-1.5 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
                     item.children.some(child => currentPath === child.href)
                       ? "scale-x-100"
                       : "scale-x-0 group-hover:scale-x-100"
@@ -81,7 +82,7 @@ const navItems = siteConfig.nav[lang];
                 href={item.href}
                 aria-current={currentPath === item.href ? 'page' : undefined}
                 class:list={[
-                  "nav-link group relative text-sm font-medium transition-all duration-200 pb-0.5",
+                  "nav-link group relative inline-flex h-9 items-center text-sm font-medium leading-none transition-all duration-200",
                   currentPath === item.href
                     ? "nav-link--active text-white"
                     : "text-white/60 hover:text-white"
@@ -89,7 +90,7 @@ const navItems = siteConfig.nav[lang];
               >
                 {item.label}
                 <span class:list={[
-                  "absolute bottom-0 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
+                  "absolute bottom-1.5 left-0 w-full h-px bg-[rgb(var(--color-primary))] transform transition-transform duration-300 origin-left",
                   currentPath === item.href ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                 ]}></span>
               </a>
@@ -98,22 +99,30 @@ const navItems = siteConfig.nav[lang];
         ))}
       </ul>
 
-      <!-- Language Switch + Mobile Button -->
-      <div class="flex items-center gap-3">
-        {hasLanguageAlternate && <LanguageSwitcher />}
+      <a
+        href={siteConfig.social.github}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="GitHub（開新分頁）"
+        class="header-github hidden h-9 w-9 items-center justify-center rounded-full transition-all duration-200 md:inline-flex"
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+        </svg>
+      </a>
 
-        <button
-          id="mobile-menu-btn"
-          class="flex h-11 w-11 items-center justify-center text-white md:hidden"
-          aria-label="Toggle menu"
-          aria-controls="mobile-menu"
-          aria-expanded="false"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
-      </div>
+      <!-- Mobile Button -->
+      <button
+        id="mobile-menu-btn"
+        class="flex h-11 w-11 items-center justify-center text-white md:hidden"
+        aria-label="開啟選單"
+        aria-controls="mobile-menu"
+        aria-expanded="false"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
     </div>
 
     <!-- Mobile Menu -->
@@ -177,6 +186,51 @@ const navItems = siteConfig.nav[lang];
 </header>
 
 <style>
+  .site-header {
+    border-color: rgb(var(--color-primary) / 0.16);
+    background: linear-gradient(
+      180deg,
+      rgb(var(--color-bg-dark) / 0.9),
+      rgb(var(--color-bg-dark) / 0.68)
+    );
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.16);
+    backdrop-filter: blur(18px) saturate(125%);
+    -webkit-backdrop-filter: blur(18px) saturate(125%);
+  }
+
+  .site-brand {
+    text-shadow: 0 0 12px rgb(var(--color-primary) / 0.38);
+  }
+
+  .nav-link,
+  .nav-dropdown-link,
+  .mobile-nav-dropdown-summary,
+  .mobile-nav-dropdown-link,
+  #mobile-menu > ul > li > a {
+    font-family: 'Genki Gothic TW Nav', 'Noto Sans TC', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.065em;
+  }
+
+  .header-github {
+    color: rgb(var(--color-text-secondary));
+  }
+
+  .header-github svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .header-github:hover {
+    color: white;
+    filter: drop-shadow(0 0 8px rgb(var(--color-primary) / 0.55));
+  }
+
+  .header-github:focus-visible {
+    outline: 2px solid rgb(var(--color-primary));
+    outline-offset: 3px;
+  }
+
   .nav-link:hover {
     text-shadow:
       0 0 8px rgba(var(--color-primary) / 0.9),

@@ -2,16 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import InviteCodeCard from '../invite-codes/InviteCodeCard.astro';
 import { fetchInviteCodes, extractGroups, groupByGroup } from '../../services/inviteCodes';
-import { useTranslations, localePath } from '../../i18n';
+import { copy } from '../../config/copy';
 import { formatDate } from '../../utils/date';
-import type { SupportedLang } from '../../config/site';
-
-interface Props {
-  lang: SupportedLang;
-}
-const { lang } = Astro.props;
-const t = useTranslations(lang);
-const currentPath = localePath('/invite-codes', lang);
 
 const { codes, updatedAt } = await fetchInviteCodes();
 const groups = extractGroups(codes);
@@ -19,7 +11,7 @@ const groupedCodes = groupByGroup(codes, groups);
 const sectionKeys = Object.keys(groupedCodes);
 ---
 
-<BaseLayout title={t.inviteCodes.title} currentPath={currentPath} lang={lang}>
+<BaseLayout title={copy.inviteCodes.title} currentPath="/invite-codes">
   <div class="container mx-auto px-6 py-24">
 
     <!-- SVG filter for Liquid Glass refraction (hidden, referenced by CSS backdrop-filter) -->
@@ -49,23 +41,23 @@ const sectionKeys = Object.keys(groupedCodes);
     <!-- Page header -->
     <div class="mb-8">
       <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
-        🎫 {t.inviteCodes.title}
+        🎫 {copy.inviteCodes.title}
       </h1>
       <p class="text-[rgb(var(--color-text-secondary))] mb-2">
-        {t.inviteCodes.description}
+        {copy.inviteCodes.description}
       </p>
       <p class="text-xs text-[rgb(var(--color-text-secondary))]">
-        {t.inviteCodes.lastUpdated}：{formatDate(updatedAt, lang)}
+        {copy.inviteCodes.lastUpdated}：{formatDate(updatedAt)}
       </p>
     </div>
 
     {codes.length === 0 ? (
       <div class="glass p-12 rounded-2xl text-center">
-        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{t.inviteCodes.noData}</p>
+        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{copy.inviteCodes.noData}</p>
         <p class="text-[rgb(var(--color-text-secondary))] text-sm mt-3">
           {import.meta.env.INVITE_CODES_API_URL
-            ? t.inviteCodes.loadError
-            : t.inviteCodes.noApiUrl}
+            ? copy.inviteCodes.loadError
+            : copy.inviteCodes.noApiUrl}
         </p>
       </div>
     ) : (
@@ -82,7 +74,7 @@ const sectionKeys = Object.keys(groupedCodes);
                     transition-all duration-200 whitespace-nowrap"
                   data-tag="__all__"
                 >
-                  {t.inviteCodes.allFilter}
+                  {copy.inviteCodes.allFilter}
                   <span class="ml-1.5 text-xs opacity-70">({codes.length})</span>
                 </button>
                 {sectionKeys.map(tag => (
