@@ -5,7 +5,7 @@ interface SkillGroup {
 
 interface SiteCopy {
   blog: { title: string; allTags: string; articleCount: string; emptyState: string; readingTime: string; publishedOn: string; updatedOn: string };
-  projects: { title: string; subtitle: string; noRepos: string; noMatchingProjects: string; allFilter: string };
+  projects: { title: string; noRepos: string; noMatchingProjects: string; allFilter: string };
   inviteCodes: { title: string; description: string; noData: string; lastUpdated: string; allFilter: string; loadError: string; noApiUrl: string };
   about: { title: string; heading: string; name: string; tagline: string; bio1: string; bio2: string; bio3: string; skillsTitle: string; skillGroups: SkillGroup[] };
   error: { notFound: string; desc: string; goHome: string };
@@ -23,7 +23,6 @@ export const copy: SiteCopy = {
   },
   projects: {
     title: 'GitHub 專案',
-    subtitle: ' 的 GitHub 專案 — 點擊卡片查看詳情',
     noRepos: '暫無公開專案',
     noMatchingProjects: '沒有符合的專案',
     allFilter: '全部',
