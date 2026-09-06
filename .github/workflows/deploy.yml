@@ -45,6 +45,9 @@ jobs:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}
 
+      - name: Verify font subset coverage
+        run: npm run check:font-subsets
+
       - name: Verify static SEO and public output
         run: npm run check:seo
 
