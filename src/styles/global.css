@@ -6,6 +6,14 @@
 /* 字型同源託管，避免 CSS → 第三方 stylesheet → font 的串行發現。 */
 
 @font-face {
+  font-family: 'Nasalization Rg';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/nasalization-latin.woff') format('woff');
+}
+
+@font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 400 700;
@@ -80,7 +88,7 @@
     
     --glow-intensity: 0.3;
     --border-radius: 1.5rem;
-    --font-heitang-brand: 'Inter', 'Noto Sans TC', sans-serif;
+    --font-heitang-brand: 'Nasalization Rg', 'Inter', 'Noto Sans TC', sans-serif;
 
     /* Bento Grid */
     --bento-gap: 1rem;

@@ -3,15 +3,19 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 test('homepage hero keeps contact and a motion-safe typewriter', async () => {
-  const [source, home, layout, site] = await Promise.all([
+  const [source, home, layout, site, global] = await Promise.all([
     readFile(new URL('./HomeHero.astro', import.meta.url), 'utf8'),
     readFile(new URL('../../pages/index.astro', import.meta.url), 'utf8'),
     readFile(new URL('../../layouts/BaseLayout.astro', import.meta.url), 'utf8'),
     readFile(new URL('../../config/site.ts', import.meta.url), 'utf8'),
+    readFile(new URL('../../styles/global.css', import.meta.url), 'utf8'),
   ]);
 
   assert.match(source, /const homeTitle = '黑糖不是炭';/);
   assert.doesNotMatch(source, /fonts\.googleapis\.com\/css2/);
+  assert.match(global, /font-family: 'Nasalization Rg';/);
+  assert.match(global, /nasalization-latin\.woff/);
+  assert.match(global, /--font-heitang-brand: 'Nasalization Rg', 'Inter', 'Noto Sans TC'/);
   assert.match(source, /font-family: 'DotGothic16', sans-serif;/);
   assert.match(source, /const typewriterText = \[/);
   assert.match(source, /const typewriterText = \[\s+'[^']+',/);
