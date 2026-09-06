@@ -10,7 +10,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/nasalization-latin.woff') format('woff');
+  /* ponytail: brand-only glyph subset; regenerate when the Header label changes. */
+  src: url('/fonts/nasalization-brand.woff') format('woff');
 }
 
 @font-face {
