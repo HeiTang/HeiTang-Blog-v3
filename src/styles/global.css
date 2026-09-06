@@ -5,6 +5,15 @@
 
 /* 字型改由 BaseLayout.astro 的 <link> 載入，避免 @import 串行阻塞首屏 */
 
+/* GenKiGothic2TW-B 的 Header 導覽子集；授權見 public/fonts/OFL-1.1.txt。 */
+@font-face {
+  font-family: 'Genki Gothic TW Nav';
+  src: url('/fonts/genki-gothic-tw-nav.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
