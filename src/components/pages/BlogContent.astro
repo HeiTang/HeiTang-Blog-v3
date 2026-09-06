@@ -13,7 +13,7 @@ const posts = allPosts
 const allTags = [...new Set(posts.flatMap(p => p.data.tags))].sort();
 ---
 
-<BaseLayout title={copy.blog.title} currentPath="/blog">
+<BaseLayout title={copy.blog.title} currentPath="/blog" fontFamilies={['orbitron']}>
   <div class="container mx-auto px-6 py-24">
     <!-- Page header -->
     <div class="mb-10">

@@ -39,7 +39,7 @@
     
     --glow-intensity: 0.3;
     --border-radius: 1.5rem;
-    --font-heitang-brand: 'Nasalization Rg', 'Nasalization', 'Orbitron', sans-serif;
+    --font-heitang-brand: 'Inter', 'Noto Sans TC', sans-serif;
 
     /* Bento Grid */
     --bento-gap: 1rem;
