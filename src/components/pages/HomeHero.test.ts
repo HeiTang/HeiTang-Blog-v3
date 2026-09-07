@@ -19,10 +19,17 @@ test('homepage hero keeps contact and a motion-safe typewriter', async () => {
   assert.match(source, /font-family: 'DotGothic16', sans-serif;/);
   assert.match(source, /const typewriterText = \[/);
   assert.match(source, /const typewriterText = \[\s+'[^']+',/);
+  assert.match(source, /const typewriterCompactText = \[\s+'橘貓不胖只是蓬鬆了點！'/);
+  assert.match(source, /data-typewriter-compact=\{JSON\.stringify\(typewriterCompactText\)\}/);
+  assert.match(source, /max-width: 360px/);
   assert.match(source, /data-typewriter=\{JSON\.stringify\(typewriterText\)\}/);
   assert.match(source, /textIndex = \(textIndex \+ 1\) % texts\.length;/);
   assert.match(source, /prefers-reduced-motion/);
-  assert.match(source, /min-block-size/);
+  assert.match(source, /block-size: 3\.3rem;/);
+  assert.match(source, /white-space: nowrap;/);
+  assert.match(source, /position: absolute;/);
+  assert.match(source, /document\.fonts\.load/);
+  assert.doesNotMatch(source, /typewriter\.textContent = ''/);
   assert.doesNotMatch(source, /class="eyebrow"/);
   assert.match(source, /margin-top: 4\.25rem;/);
   assert.match(source, /min-height: calc\(100svh - 4\.25rem\)/);
