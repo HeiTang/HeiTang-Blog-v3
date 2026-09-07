@@ -12,6 +12,13 @@ const typewriterText = [
   '我這一生如履薄冰 ...',
   '你說我能走到對岸嗎？'
 ];
+const typewriterCompactText = [
+  '橘貓不胖只是蓬鬆了點！',
+  '把想法做成能用的東西',
+  '程式碼是貓踩出來的 (#',
+  '讓每次都做變成以後不用做'
+];
+const typewriterInitialText = typewriterCompactText[0];
 const homeDescription = '把反覆遇到的麻煩，做成好用、可維護的工具。';
 const homeStructuredData = {
   '@context': 'https://schema.org',
@@ -85,8 +92,14 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
           fetchpriority="high"
         />
         <p class="typewriter-line">
-          <span class="sr-only">{typewriterText[0]}</span>
-          <span class="typewriter-copy" data-typewriter={JSON.stringify(typewriterText)} aria-hidden="true">{typewriterText[0]}</span><span class="type-cursor" aria-hidden="true">▍</span>
+          <span class="sr-only">{typewriterInitialText}</span>
+          <span class="typewriter-visual" aria-hidden="true">
+            <span
+              class="typewriter-copy"
+              data-typewriter={JSON.stringify(typewriterText)}
+              data-typewriter-compact={JSON.stringify(typewriterCompactText)}
+            >{typewriterInitialText}</span><span class="type-cursor">▍</span>
+          </span>
         </p>
         <p class="role-line">獨立開發者 · 後端 x 資料 x 自動化</p>
 
@@ -235,27 +248,53 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
 
   <script>
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const typewriter = document.querySelector<HTMLElement>('.home-contact [data-typewriter]');
+    const typewriterLine = document.querySelector<HTMLElement>('.home-contact .typewriter-line');
+    const typewriter = typewriterLine?.querySelector<HTMLElement>('[data-typewriter]');
+    const typewriterCursor = typewriterLine?.querySelector<HTMLElement>('.type-cursor');
 
-    if (typewriter && !reduceMotion) {
-      const texts = JSON.parse(typewriter.dataset.typewriter ?? '[]') as string[];
-      let textIndex = 0;
-      let characterIndex = 0;
-      let isDeleting = false;
-      typewriter.textContent = '';
+    if (typewriter && typewriterLine && typewriterCursor && !reduceMotion) {
+      const fullTexts = JSON.parse(typewriter.dataset.typewriter ?? '[]') as string[];
+      const compactTexts = JSON.parse(typewriter.dataset.typewriterCompact ?? '[]') as string[];
+      const texts = window.matchMedia('(max-width: 360px)').matches ? compactTexts : fullTexts;
+      const initialText = typewriter.textContent ?? texts[0];
+      let textIndex = Math.max(texts.indexOf(initialText), 0);
+      let characterIndex = Array.from(initialText).length;
+      let isDeleting = true;
+
+      const setCommonFontSize = async () => {
+        const lineStyle = getComputedStyle(typewriterLine);
+        const fontSize = Number.parseFloat(lineStyle.fontSize);
+        const font = `${lineStyle.fontStyle} ${lineStyle.fontWeight} ${fontSize}px ${lineStyle.fontFamily}`;
+
+        await document.fonts.load(font, texts.join(''));
+
+        const context = document.createElement('canvas').getContext('2d');
+        if (!context) return 0;
+
+        context.font = font;
+        const maxTextWidth = Math.max(...texts.map((text) => context.measureText(text).width));
+        const cursorStyle = getComputedStyle(typewriterCursor);
+        const cursorWidth = typewriterCursor.getBoundingClientRect().width + Number.parseFloat(cursorStyle.marginLeft);
+        const availableWidth = typewriterLine.clientWidth - Number.parseFloat(lineStyle.paddingLeft) - Number.parseFloat(lineStyle.paddingRight);
+        const measuredFontSize = fontSize * (availableWidth / (maxTextWidth + cursorWidth));
+        const commonFontSize = Math.max(16, Math.min(fontSize, measuredFontSize));
+
+        typewriterLine.style.fontSize = `${commonFontSize}px`;
+        return commonFontSize;
+      };
 
       const tick = () => {
         const characters = Array.from(texts[textIndex]);
         characterIndex += isDeleting ? -1 : 1;
         typewriter.textContent = characters.slice(0, characterIndex).join('');
 
-        if (!isDeleting && characterIndex === characters.length) {
+        if (!isDeleting && characterIndex >= characters.length) {
           isDeleting = true;
           window.setTimeout(tick, 1_800);
           return;
         }
 
-        if (isDeleting && characterIndex === 0) {
+        if (isDeleting && characterIndex <= 0) {
           isDeleting = false;
           textIndex = (textIndex + 1) % texts.length;
           window.setTimeout(tick, 320);
@@ -265,7 +304,7 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
         window.setTimeout(tick, isDeleting ? 34 : 58);
       };
 
-      window.setTimeout(tick, 320);
+      void setCommonFontSize().then(() => window.setTimeout(tick, 1_800));
     }
   </script>
 </BaseLayout>
@@ -296,6 +335,7 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
 
   .hero-content {
     display: grid;
+    inline-size: 100%;
     justify-items: center;
     margin: 0 auto;
     max-width: 42rem;
@@ -343,13 +383,24 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
     font-weight: 700;
     justify-content: center;
     line-height: 1.65;
+    inline-size: 100%;
     margin: 1.75rem auto 0;
     max-width: 35rem;
-    min-block-size: 3.3rem;
+    block-size: 3.3rem;
     padding: 0 0.25rem;
+    position: relative;
   }
 
-  .typewriter-copy { text-wrap: balance; }
+  .typewriter-visual {
+    align-items: center;
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    position: absolute;
+    white-space: nowrap;
+  }
+
+  .typewriter-copy { white-space: nowrap; }
 
   .type-cursor {
     animation: cursor-blink 780ms step-end infinite;
@@ -863,9 +914,6 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
       margin-bottom: 1.5rem;
     }
 
-    .typewriter-line {
-      min-block-size: 4.95rem;
-    }
   }
 
   @media (max-width: 640px) {
