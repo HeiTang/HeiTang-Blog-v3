@@ -13,6 +13,7 @@
     "build": "astro build",
     "test": "node --experimental-strip-types --test",
     "check:seo": "node scripts/check-static-seo.mjs",
+    "check:font-subsets": "node scripts/check-font-subsets.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

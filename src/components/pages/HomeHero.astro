@@ -3,7 +3,6 @@ import { siteConfig } from '../../config/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const homeTitle = '黑糖不是炭';
-const titleGlyphs = encodeURIComponent(homeTitle);
 const typewriterText = [
   '把零散的想法，慢慢做成真的能用的東西',
   '橘貓不胖只是蓬鬆了點！',
@@ -70,12 +69,8 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
   currentPath="/"
   hasPointerGlow={false}
   structuredData={homeStructuredData}
+  preloadFonts={['noto-sans-tc', 'dotgothic16']}
 >
-  <link
-    slot="head"
-    rel="stylesheet"
-    href={`https://fonts.googleapis.com/css2?family=DotGothic16&text=${titleGlyphs}&display=swap`}
-  />
   <div class="home-contact" data-pagefind-body="true">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-content">
