@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
 const dist = new URL('../dist/', import.meta.url);
 const site = new URL('https://purr.tw/');
@@ -84,7 +85,9 @@ for (const [file, destination] of legacyEnglishRedirects) {
 for (const { route, image } of pages) {
   const html = await readFile(new URL(`${route}/index.html`, dist), 'utf8');
   const canonical = `https://purr.tw/${route}/`;
-  const socialImage = `https://purr.tw/images/og/${image}`;
+  const socialImage = html.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
+  assert.ok(socialImage?.startsWith(`https://purr.tw/_astro/${route}.`), `${route}: missing imported OG image`);
+  assert.ok(html.includes(`<meta name="twitter:image" content="${socialImage}">`));
 
   assert.equal((html.match(/<h1(?:\s|>)/g) ?? []).length, 1, `/${route}/ must have one h1`);
   assert.match(html, /<meta name="description" content="[^"]+">/);
@@ -101,7 +104,8 @@ for (const { route, image } of pages) {
     assert.ok(html.includes(`href="${href}"`), `/${route}/ header must link to ${href}`);
   }
 
-  const png = await readFile(new URL(`images/og/${image}`, dist));
+  const png = await readFile(new URL(new URL(socialImage).pathname.slice(1), dist));
+  assert.deepEqual(png, await readFile(new URL(`../src/assets/og/${image}`, import.meta.url)));
   assert.equal(png.toString('ascii', 1, 4), 'PNG');
   assert.equal(png.readUInt32BE(16), 1200);
   assert.equal(png.readUInt32BE(20), 630);
@@ -124,6 +128,11 @@ const robots = await readFile(new URL('robots.txt', dist), 'utf8');
 assert.ok(robots.includes('Sitemap: https://purr.tw/sitemap-index.xml'));
 
 const homeHtml = await readFile(new URL('index.html', dist), 'utf8');
+const defaultSocialImage = homeHtml.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
+assert.ok(defaultSocialImage?.startsWith('https://purr.tw/_astro/default.'), 'home must use the imported default OG image');
+assert.ok(homeHtml.includes(`<meta name="twitter:image" content="${defaultSocialImage}">`));
+assert.deepEqual(await readFile(new URL(new URL(defaultSocialImage).pathname.slice(1), dist)),
+  await readFile(new URL('../src/assets/og/default.png', import.meta.url)));
 assert.match(homeHtml, /<html lang="zh-Hant"/);
 assert.ok(homeHtml.includes('<meta property="og:locale" content="zh_TW">'));
 assert.doesNotMatch(homeHtml, /href="\/en(?:\/|")/);
@@ -197,6 +206,60 @@ for (const [slug, targets] of [
   const html = await readFile(new URL(`blog/${slug}/index.html`, dist), 'utf8');
   const related = html.match(/<nav[^>]*data-related-posts[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? '';
   assert.deepEqual([...related.matchAll(/href="\/blog\/([^"/]+)\/"/g)].map(match => match[1]), targets);
+}
+
+// G7: the five priority pages must keep distinct, publicly available share images.
+for (const route of [
+  'blog/astro-personal-website',
+  'blog/github-actions-deploy',
+  'blog/google-sheets-json-api',
+  'projects',
+  'invite-codes',
+]) {
+  const html = await readFile(new URL(`${route}/index.html`, dist), 'utf8');
+  const url = html.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
+  assert.ok(url, `${route}: missing OG image`);
+  const asset = new URL(url);
+  assert.equal(asset.origin, site.origin);
+  const path = asset.pathname.slice(1);
+  assert.ok(path.startsWith(`_astro/${route.split('/').at(-1)}.`), `${route}: wrong imported OG image`);
+  assert.ok(html.includes(`<meta name="twitter:image" content="${url}">`), `${route}: wrong Twitter image`);
+  if (route.startsWith('blog/')) assert.ok(html.includes(`"image":"${url}"`), `${route}: missing schema image`);
+  const image = await readFile(new URL(path, dist));
+  const metadata = await sharp(image).metadata();
+  assert.equal(metadata.format, 'jpeg');
+  assert.equal(metadata.width, 1200);
+  assert.equal(metadata.height, 630);
+  assert.ok(image.length < 200_000, `${path}: exceeds 200 KB budget`);
+}
+
+const faviconPath = homeHtml.match(/<link rel="icon"[^>]*href="([^"]+)"/)?.[1];
+const logoPath = homeHtml.match(/<img src="([^" ]*\/logo-72\.[^" ]+\.webp)"/)?.[1];
+const stillPath = homeHtml.match(/media="\(prefers-reduced-motion: reduce\)" srcset="([^"]+)"/)?.[1];
+for (const [path, name, size, budget] of [
+  [faviconPath, 'favicon-32', 32, 3_000],
+  [logoPath, 'logo-72', 72, 32_000],
+  [stillPath, 'logo-72-still', 72, 8_000],
+]) {
+  assert.ok(path?.startsWith(`/_astro/${name}.`), `${name}: missing imported icon`);
+  const image = await readFile(new URL(path.slice(1), dist));
+  const metadata = await sharp(image).metadata();
+  assert.equal(metadata.format, path.endsWith('.webp') ? 'webp' : 'png');
+  assert.equal(metadata.width, size);
+  assert.equal(metadata.height, size);
+  assert.ok(image.length < budget, `${path}: exceeds icon size budget`);
+}
+const animatedIcon = await sharp(await readFile(new URL(logoPath.slice(1), dist)), { animated: true }).metadata();
+assert.equal(animatedIcon.pages, 20, 'Header logo must retain its animation');
+assert.equal(animatedIcon.loop, 0, 'Header logo must keep looping');
+assert.deepEqual(animatedIcon.delay, Array(20).fill(50), 'Header logo must retain its frame timings');
+for (const file of htmlFiles) {
+  const html = await readFile(new URL(file, dist), 'utf8');
+  if (!html.includes('class="site-header ')) continue;
+  assert.ok(html.includes(`sizes="32x32" href="${faviconPath}"`), `${file}: wrong favicon`);
+  assert.ok(html.includes(`src="${logoPath}"`), `${file}: wrong Header logo`);
+  assert.ok(html.includes(`media="(prefers-reduced-motion: reduce)" srcset="${stillPath}"`));
+  assert.doesNotMatch(html, /(?:href|src|content)="(?:https:\/\/purr\.tw)?(?:\/favicon\.(?:svg|ico)|\/images\/icon\.png|\/images\/og\/(?:concerts|default|japan)\.(?:png|svg))"/);
 }
 
 console.log('Static SEO and public-output checks passed.');

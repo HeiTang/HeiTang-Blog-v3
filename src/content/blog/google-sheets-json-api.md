@@ -1,5 +1,6 @@
 ---
 title: 'Google Apps Script 打造個人 JSON API'
+cover: '../../assets/og/google-sheets-json-api.jpg'
 description: '利用 Google Sheets + GAS 建立一個免費的 JSON API，用於管理邀請碼或任何表格資料，並整合到靜態網站中。'
 pubDate: 2026-03-01
 relatedPosts:
