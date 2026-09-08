@@ -99,8 +99,8 @@ const { title, description } = post;
         prose-em:text-[rgb(var(--color-text-secondary))]
         prose-li:text-[rgb(var(--color-text-secondary))] prose-li:leading-relaxed
         prose-ul:my-4 prose-ol:my-4
-        prose-code:text-[rgb(var(--color-accent))] prose-code:bg-white/[0.07] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
-        prose-pre:bg-white/[0.05] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl prose-pre:backdrop-blur-md prose-pre:my-6
+        prose-code:text-sm prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
+        prose-pre:border prose-pre:border-[var(--glass-border)] prose-pre:rounded-xl prose-pre:my-6
         prose-blockquote:border-l-4 prose-blockquote:border-[rgb(var(--color-primary))] prose-blockquote:bg-white/[0.03] prose-blockquote:rounded-r-lg prose-blockquote:px-6 prose-blockquote:py-4 prose-blockquote:text-[rgb(var(--color-text-secondary))] prose-blockquote:not-italic
         prose-hr:border-white/10
         prose-img:rounded-xl prose-img:border prose-img:border-white/10
@@ -113,3 +113,25 @@ const { title, description } = post;
     </article>
   </div>
 </BaseLayout>
+
+<style>
+  :global([data-theme="minimalist"]) article :global(a) {
+    color: rgb(var(--color-text-primary));
+    text-decoration: underline;
+  }
+
+  article :global(:not(pre) > code) {
+    color: rgb(var(--color-text-primary));
+    background: var(--glass-bg);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    overflow-wrap: anywhere;
+  }
+
+  /* Keep Shiki's foreground and background together, including plain code. */
+  article :global(pre > code) {
+    color: inherit;
+    background: transparent;
+    padding: 0;
+  }
+</style>
