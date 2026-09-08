@@ -6,6 +6,7 @@ export interface PostMeta {
   updatedDate?: Date;
   author: string;
   tags: string[];
+  relatedPosts?: string[];
   cover?: string;
   coverAlt?: string;
   draft: boolean;

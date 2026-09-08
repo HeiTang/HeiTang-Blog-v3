@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 
 const dist = new URL('../dist/', import.meta.url);
 const legacyEnglishRedirects = [
@@ -78,5 +78,67 @@ assert.doesNotMatch(sitemap, /<loc>https:\/\/purr\.tw\/sm\/<\/loc>/);
 
 const screenMessage = await readFile(new URL('sm/index.html', dist), 'utf8');
 assert.ok(screenMessage.includes('<meta name="robots" content="noindex, follow">'));
+
+const descriptions = [];
+for (const route of ['about', 'blog', 'projects', 'invite-codes']) {
+  const html = await readFile(new URL(`${route}/index.html`, dist), 'utf8');
+  const description = html.match(/<meta name="description" content="([^"]+)">/)?.[1];
+  assert.ok(description, `/${route}/ missing description`);
+  descriptions.push(description);
+  assert.ok(html.includes(`<meta property="og:description" content="${description}">`));
+  assert.ok(html.includes(`<meta name="twitter:description" content="${description}">`));
+  assert.notEqual(description, homeHtml.match(/<meta name="description" content="([^"]+)">/)?.[1]);
+}
+assert.equal(new Set(descriptions).size, descriptions.length, 'page descriptions must be unique');
+
+const escapeAttribute = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+const articleFiles = (await readdir(new URL('blog/', dist), { recursive: true }))
+  .filter(file => file.endsWith('/index.html'));
+assert.ok(articleFiles.length > 0, 'expected published articles');
+for (const file of articleFiles) {
+  const html = await readFile(new URL(`blog/${file}`, dist), 'utf8');
+  const canonical = html.match(/<link rel="canonical" href="([^"]+)">/)?.[1];
+  const schemas = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .flatMap(match => JSON.parse(match[1]));
+  const articles = schemas.filter(schema => schema['@type'] === 'BlogPosting');
+  assert.equal(articles.length, 1, `${file} must have one BlogPosting`);
+  const article = articles[0];
+  assert.equal(article['@context'], 'https://schema.org');
+  assert.equal(article.url, canonical);
+  assert.equal(article.mainEntityOfPage['@id'], canonical);
+  assert.ok(html.includes(`<meta property="og:description" content="${escapeAttribute(article.description)}">`));
+  assert.ok(html.includes(`<meta property="og:title" content="${escapeAttribute(article.headline)} | `));
+  assert.equal(article.author['@type'], 'Person');
+  assert.ok(article.author.name);
+  assert.ok(Number.isFinite(Date.parse(article.datePublished)));
+  assert.ok(html.includes(`<meta property="article:published_time" content="${article.datePublished}">`));
+  assert.equal(article.dateModified, html.match(/<meta property="article:modified_time" content="([^"]+)">/)?.[1]);
+  if (article.image) {
+    assert.match(article.image, /^https?:\/\//);
+    assert.ok(html.includes(`<meta property="og:image" content="${escapeAttribute(article.image)}">`));
+  }
+  assert.ok(html.includes('data-pagefind-body'));
+  const related = html.match(/<nav[^>]*data-related-posts[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+  if (related) {
+    const links = [...related.matchAll(/<a\b[^>]*\shref="(\/blog\/[^"?#]+\/)"[^>]*>([^<]+)<\/a>/g)];
+    assert.ok(links.length > 0, `${file} has an empty related posts section`);
+    assert.equal(new Set(links.map(link => link[1])).size, links.length);
+    for (const [, href] of links) {
+      assert.notEqual(new URL(href, canonical).href, canonical);
+      await readFile(new URL(`${href.slice(1)}index.html`, dist));
+    }
+  }
+}
+
+// Existing editorial choices must remain visible in the built article body.
+for (const [slug, targets] of [
+  ['astro-personal-website', ['github-actions-deploy']],
+  ['github-actions-deploy', ['astro-personal-website', 'google-sheets-json-api']],
+  ['google-sheets-json-api', ['github-actions-deploy']],
+]) {
+  const html = await readFile(new URL(`blog/${slug}/index.html`, dist), 'utf8');
+  const related = html.match(/<nav[^>]*data-related-posts[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? '';
+  assert.deepEqual([...related.matchAll(/href="\/blog\/([^"/]+)\/"/g)].map(match => match[1]), targets);
+}
 
 console.log('Static SEO and public-output checks passed.');

@@ -4,16 +4,17 @@ interface SkillGroup {
 }
 
 interface SiteCopy {
-  blog: { title: string; allTags: string; articleCount: string; emptyState: string; readingTime: string; publishedOn: string; updatedOn: string };
-  projects: { title: string; noRepos: string; noMatchingProjects: string; allFilter: string };
+  blog: { title: string; description: string; allTags: string; articleCount: string; emptyState: string; readingTime: string; publishedOn: string; updatedOn: string };
+  projects: { title: string; description: string; noRepos: string; noMatchingProjects: string; allFilter: string };
   inviteCodes: { title: string; description: string; noData: string; lastUpdated: string; allFilter: string; loadError: string; noApiUrl: string };
-  about: { title: string; heading: string; name: string; tagline: string; bio1: string; bio2: string; bio3: string; skillsTitle: string; skillGroups: SkillGroup[] };
+  about: { title: string; description: string; heading: string; name: string; tagline: string; bio1: string; bio2: string; bio3: string; skillsTitle: string; skillGroups: SkillGroup[] };
   error: { notFound: string; desc: string; goHome: string };
 }
 
 export const copy: SiteCopy = {
   blog: {
     title: '文章',
+    description: '黑糖的技術筆記，記錄程式開發、專案實作與自動化經驗，分享解決問題的過程與心得。',
     allTags: '全部',
     articleCount: '篇文章',
     emptyState: '✍️ 文章即將到來…',
@@ -23,6 +24,7 @@ export const copy: SiteCopy = {
   },
   projects: {
     title: 'GitHub 專案',
+    description: '瀏覽黑糖的 GitHub 專案與個人作品，包含網站、資料查詢與自動化工具，了解使用技術、功能與開發成果。',
     noRepos: '暫無公開專案',
     noMatchingProjects: '沒有符合的專案',
     allFilter: '全部',
@@ -38,6 +40,7 @@ export const copy: SiteCopy = {
   },
   about: {
     title: '關於我',
+    description: '認識黑糖，一位喜歡用程式解決生活瑣事的軟體工程師，了解我的前後端開發、自動化與 DevOps 技能。',
     heading: '關於黑糖',
     name: '黑糖不是炭',
     tagline: '程式通靈師',
