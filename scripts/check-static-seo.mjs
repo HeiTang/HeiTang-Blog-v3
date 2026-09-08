@@ -1,13 +1,71 @@
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
+import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const dist = new URL('../dist/', import.meta.url);
+const site = new URL('https://purr.tw/');
+const outputFiles = new Set((await readdir(dist, { recursive: true, withFileTypes: true }))
+  .filter(entry => entry.isFile())
+  .map(entry => relative(fileURLToPath(dist), join(entry.parentPath, entry.name))));
+const htmlFiles = [...outputFiles].filter(file => file.endsWith('.html'));
+const decodeAttribute = value => value.replace(/&(#x[\da-f]+|#\d+|amp|quot|apos|lt|gt);/gi, (entity, code) => {
+  if (code[0] === '#') {
+    const point = code[1].toLowerCase() === 'x' ? parseInt(code.slice(2), 16) : Number(code.slice(1));
+    return point > 0 && point <= 0x10ffff ? String.fromCodePoint(point) : '\ufffd';
+  }
+  return { amp: '&', quot: '"', apos: "'", lt: '<', gt: '>' }[code.toLowerCase()];
+});
+const attributes = tag => Object.fromEntries(
+  [...tag.matchAll(/\s([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)]
+    .map(([, name, double, single, unquoted]) => [name.toLowerCase(), decodeAttribute(double ?? single ?? unquoted)])
+);
+
+let internalLinks = 0;
+function checkPageLink(href, base, source) {
+  const url = new URL(href, base);
+  if (url.origin !== site.origin) return;
+  const file = decodeURIComponent(url.pathname.slice(1));
+  // Files such as RSS, licenses and downloads keep their actual names.
+  if (outputFiles.has(file) && file !== 'index.html' && !file.endsWith('/index.html')) return;
+  assert.ok(url.pathname.endsWith('/'), `${source}: ${href} must link directly to a trailing-slash page URL`);
+  internalLinks++;
+}
+
+for (const file of htmlFiles) {
+  const base = new URL(file.replace(/index\.html$/, ''), site);
+  const html = (await readFile(new URL(file, dist), 'utf8'))
+    .replace(/<!--[\s\S]*?-->|<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+  const tags = [...html.matchAll(/<[a-z][\w:-]*\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)];
+  for (const [tag] of tags) {
+    const attrs = attributes(tag);
+    if (/^<(a|area)\b/i.test(tag) && attrs.href !== undefined && !attrs.href.startsWith('#')) {
+      checkPageLink(attrs.href, base, file);
+    }
+    // Modal links are serialized in HTML before client-side rendering.
+    if (attrs['data-project']) {
+      const project = JSON.parse(attrs['data-project']);
+      for (const key of ['url', 'homepageUrl', 'blogPost']) {
+        if (project[key]) checkPageLink(project[key], base, `${file} project ${project.name}.${key}`);
+      }
+    }
+  }
+  const activeRoute = base.pathname.startsWith('/blog/') ? '/blog/' : base.pathname;
+  if (['/about/', '/blog/', '/projects/', '/invite-codes/', '/japan/', '/concerts/'].includes(activeRoute)) {
+    const currentLinks = tags.filter(([tag]) => /^<a\b/i.test(tag))
+      .map(([tag]) => attributes(tag)).filter(attrs => attrs['aria-current'] === 'page');
+    assert.equal(currentLinks.filter(attrs => attrs.href === activeRoute).length, 2,
+      `${file}: desktop and mobile navigation must retain the active page`);
+  }
+}
+console.log(`Trailing-slash checks passed: ${internalLinks} links across ${htmlFiles.length} HTML files.`);
+
 const legacyEnglishRedirects = [
   ['en/index.html', '/'],
-  ['en/about/index.html', '/about'],
-  ['en/blog/index.html', '/blog'],
-  ['en/projects/index.html', '/projects'],
-  ['en/invite-codes/index.html', '/invite-codes'],
+  ['en/about/index.html', '/about/'],
+  ['en/blog/index.html', '/blog/'],
+  ['en/projects/index.html', '/projects/'],
+  ['en/invite-codes/index.html', '/invite-codes/'],
 ];
 const pages = [
   { route: 'japan', image: 'japan.png' },
@@ -39,7 +97,7 @@ for (const { route, image } of pages) {
   assert.ok(html.includes('"@type":"BreadcrumbList"'));
   assert.ok(!html.includes(`/en/${route}/`), `/${route}/ must not link to an English route`);
 
-  for (const href of ['/about', '/japan', '/concerts']) {
+  for (const href of ['/about/', '/japan/', '/concerts/']) {
     assert.ok(html.includes(`href="${href}"`), `/${route}/ header must link to ${href}`);
   }
 
