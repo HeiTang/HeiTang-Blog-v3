@@ -95,11 +95,6 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
     
     <title>{fullTitle}</title>
     
-    <!-- Theme Switcher Script (runs before page load to prevent flash) -->
-    <script is:inline>
-      const savedTheme = localStorage.getItem('theme') || 'elegant-cyber';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
   </head>
   <body
     class="flex flex-col min-h-screen bg-[rgb(var(--color-bg-dark))]"
