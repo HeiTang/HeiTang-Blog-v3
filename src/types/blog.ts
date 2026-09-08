@@ -1,4 +1,6 @@
-/** Blog post metadata (mirrors content/config.ts schema) */
+import type { ImageMetadata } from 'astro';
+
+/** Blog post metadata (mirrors content.config.ts schema) */
 export interface PostMeta {
   title: string;
   description: string;
@@ -7,7 +9,7 @@ export interface PostMeta {
   author: string;
   tags: string[];
   relatedPosts?: string[];
-  cover?: string;
+  cover?: ImageMetadata;
   coverAlt?: string;
   draft: boolean;
 }

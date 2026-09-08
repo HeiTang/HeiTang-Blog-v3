@@ -1,5 +1,6 @@
 ---
 title: '用 Astro 建立高效能個人網站'
+cover: '../../assets/og/astro-personal-website.jpg'
 description: '深入探索 Astro 框架的靜態生成能力，以及如何結合 Glassmorphism 設計趨勢打造令人驚艷的個人網站。'
 pubDate: 2026-01-15
 relatedPosts:

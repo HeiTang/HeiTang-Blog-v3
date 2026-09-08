@@ -34,7 +34,7 @@ const structuredData = {
     name: post.author,
     ...(post.author === copy.about.name && { url: new URL('/about/', siteConfig.url).toString() }),
   },
-  ...(post.cover && { image: new URL(post.cover, siteConfig.url).toString() }),
+  ...(post.cover && { image: new URL(post.cover.src, siteConfig.url).toString() }),
 };
 ---
 
@@ -42,7 +42,7 @@ const structuredData = {
   title={title}
   description={description}
   currentPath="/blog"
-  image={post.cover}
+  image={post.cover?.src}
   ogType="article"
   structuredData={structuredData}
 >

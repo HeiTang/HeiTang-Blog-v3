@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import socialImage from '../../assets/og/invite-codes.jpg';
 import InviteCodeCard from '../invite-codes/InviteCodeCard.astro';
 import { fetchInviteCodes, extractGroups, groupByGroup } from '../../services/inviteCodes';
 import { copy } from '../../config/copy';
@@ -11,7 +12,7 @@ const groupedCodes = groupByGroup(codes, groups);
 const sectionKeys = Object.keys(groupedCodes);
 ---
 
-<BaseLayout title={copy.inviteCodes.title} description={copy.inviteCodes.description} currentPath="/invite-codes">
+<BaseLayout title={copy.inviteCodes.title} description={copy.inviteCodes.description} currentPath="/invite-codes" image={socialImage.src}>
   <div class="container mx-auto px-6 py-24">
 
     <!-- SVG filter for Liquid Glass refraction (hidden, referenced by CSS backdrop-filter) -->
