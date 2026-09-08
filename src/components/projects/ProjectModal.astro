@@ -5,35 +5,50 @@
  */
 ---
 
-<div id="pm-overlay" role="presentation">
+<dialog id="pm-overlay" aria-labelledby="pm-title">
   <div id="pm-backdrop"></div>
 
   <!-- Desktop Modal: sticky header + scrollable body both inside #pm-content -->
-  <div id="pm-modal" role="dialog" aria-modal="true" aria-labelledby="pm-title">
+  <div id="pm-modal">
     <div id="pm-content"></div>
   </div>
 
   <!-- Mobile Bottom Sheet -->
-  <div id="pm-sheet" role="dialog" aria-modal="true">
+  <div id="pm-sheet">
     <div id="pm-sheet-drag" aria-hidden="true"><div class="pm-drag-handle"></div></div>
     <div id="pm-sheet-content" class="pm-sheet-scroll"></div>
   </div>
-</div>
+</dialog>
 
 <!-- Lightbox (fullscreen image viewer) -->
-<div id="pm-lightbox" aria-hidden="true">
+<dialog id="pm-lightbox" aria-label="專案圖片預覽">
   <div class="pm-lb-backdrop"></div>
   <figure class="pm-lb-figure">
     <img class="pm-lb-img" alt="" />
     <figcaption class="pm-lb-caption"></figcaption>
   </figure>
-  <button type="button" class="pm-lb-close" aria-label="關閉">✕</button>
-  <button type="button" class="pm-lb-nav pm-lb-prev" aria-label="上一張">&#8249;</button>
-  <button type="button" class="pm-lb-nav pm-lb-next" aria-label="下一張">&#8250;</button>
+  <button type="button" class="pm-lb-close" aria-label="關閉"><span aria-hidden="true">✕</span></button>
+  <button type="button" class="pm-lb-nav pm-lb-prev" aria-label="上一張"><span aria-hidden="true">&#8249;</span></button>
+  <button type="button" class="pm-lb-nav pm-lb-next" aria-label="下一張"><span aria-hidden="true">&#8250;</span></button>
   <div class="pm-lb-counter"></div>
-</div>
+</dialog>
 
 <style is:global>
+  #pm-overlay,
+  #pm-lightbox {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    background: transparent;
+    color: rgb(var(--color-text-primary));
+  }
+  #pm-overlay::backdrop,
+  #pm-lightbox::backdrop { background: transparent; }
+
   /* ── Overlay ── */
   #pm-overlay {
     display: none;
@@ -41,7 +56,7 @@
     inset: 0;
     z-index: 1000;
   }
-  #pm-overlay.open { display: block; }
+  #pm-overlay[open] { display: block; }
 
   #pm-backdrop {
     position: absolute;
@@ -52,7 +67,7 @@
     cursor: pointer;
     transition: background 0.3s ease, backdrop-filter 0.3s ease;
   }
-  #pm-overlay.open #pm-backdrop {
+  #pm-overlay[open] #pm-backdrop {
     background: rgba(0,0,0,0.65);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -323,7 +338,9 @@
     transition: opacity 0.2s ease, transform 0.2s ease;
   }
   #pm-content .pm-carousel-slide:hover .pm-carousel-caption,
-  #pm-sheet-content .pm-carousel-slide:hover .pm-carousel-caption {
+  #pm-sheet-content .pm-carousel-slide:hover .pm-carousel-caption,
+  #pm-content .pm-carousel-slide:focus-within .pm-carousel-caption,
+  #pm-sheet-content .pm-carousel-slide:focus-within .pm-carousel-caption {
     opacity: 1;
     transform: translateY(0);
   }
@@ -413,6 +430,13 @@
   #pm-sheet-content .pm-carousel img {
     cursor: zoom-in;
   }
+  .pm-image-trigger {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: zoom-in;
+  }
+  .pm-image-trigger:focus-visible { outline-offset: -3px; }
 
   /* ── Lightbox ── */
   #pm-lightbox {
@@ -423,7 +447,7 @@
     align-items: center;
     justify-content: center;
   }
-  #pm-lightbox.open { display: flex; }
+  #pm-lightbox[open] { display: flex; }
   #pm-lightbox .pm-lb-backdrop {
     position: absolute; inset: 0;
     background: rgba(0,0,0,0.88);
@@ -624,7 +648,7 @@
   const SPRING   = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
   const EASE_OUT = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
-  const overlay      = document.getElementById('pm-overlay')!;
+  const overlay      = document.getElementById('pm-overlay') as HTMLDialogElement;
   const backdrop     = document.getElementById('pm-backdrop')!;
   const modal        = document.getElementById('pm-modal')!;
   const content      = document.getElementById('pm-content')!;
@@ -632,6 +656,10 @@
   const sheetContent = document.getElementById('pm-sheet-content')!;
 
   const isMobile = () => window.innerWidth < 640;
+  let activePanel: HTMLElement | null = null;
+  let projectTrigger: HTMLElement | null = null;
+  let closing = false;
+  let previousOverflow = '';
 
   type Shot = string | { src: string; caption?: string };
   interface ProjectData {
@@ -669,7 +697,7 @@
     const stickyHeader = `
       <div class="pm-sticky-header">
         <h2 id="pm-title" class="pm-title"><span class="pm-title-bracket">&lt;</span>${esc(p.name)}<span class="pm-title-bracket"> /&gt;</span></h2>
-        <button class="pm-close-trigger" aria-label="關閉">✕</button>
+        <button type="button" class="pm-close-trigger" aria-label="關閉"><span aria-hidden="true">✕</span></button>
       </div>`;
 
     // ── Media (right col on desktop, top on mobile) ─────────
@@ -680,12 +708,14 @@
       const isMulti = shots.length > 1;
       const slides = shots.map(s =>
         `<figure class="pm-carousel-slide">
-          <img src="${esc(s.src)}" alt="${esc(s.caption || 'screenshot')}" loading="lazy">
+          <button type="button" class="pm-image-trigger" aria-label="放大${esc(s.caption || p.name + ' 專案圖片')}" aria-haspopup="dialog">
+            <img src="${esc(s.src)}" alt="${esc(s.caption || p.name + ' 專案圖片')}" loading="lazy">
+          </button>
           ${s.caption ? `<figcaption class="pm-carousel-caption">${esc(s.caption)}</figcaption>` : ''}
         </figure>`).join('');
       const navHtml = isMulti ? `
-        <button type="button" class="pm-carousel-nav pm-carousel-prev" aria-label="上一張">&#8249;</button>
-        <button type="button" class="pm-carousel-nav pm-carousel-next" aria-label="下一張">&#8250;</button>
+        <button type="button" class="pm-carousel-nav pm-carousel-prev" aria-label="上一張"><span aria-hidden="true">&#8249;</span></button>
+        <button type="button" class="pm-carousel-nav pm-carousel-next" aria-label="下一張"><span aria-hidden="true">&#8250;</span></button>
         <div class="pm-carousel-counter">1 / ${shots.length}</div>
         <div class="pm-carousel-dots">${shots.map((_, i) =>
           `<button type="button" class="pm-dot${i === 0 ? ' is-active' : ''}" data-idx="${i}" aria-label="第 ${i + 1} 張"></button>`).join('')}</div>` : '';
@@ -757,12 +787,15 @@
   }
 
   // ── Open ─────────────────────────────────────────
-  function openModal(data: ProjectData) {
+  function openModal(data: ProjectData, trigger: HTMLElement) {
+    if (overlay.open || closing) return;
     const html = buildHTML(data);
-    overlay.classList.add('open');
+    projectTrigger = trigger;
+    previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     if (isMobile()) {
+      activePanel = sheet;
       sheetContent.innerHTML = html;
       fillDinoContainers(sheetContent);
       initCarousel(sheetContent);
@@ -773,6 +806,7 @@
         sheet.style.transform = 'translateY(0)';
       });
     } else {
+      activePanel = modal;
       content.innerHTML = html;
       fillDinoContainers(content);
       initCarousel(content);
@@ -785,30 +819,35 @@
         modal.style.transform = 'translate(-50%, -50%) scale(1) translateY(0)';
       });
     }
+    overlay.showModal();
+    activePanel.querySelector<HTMLButtonElement>('.pm-close-trigger')?.focus({ preventScroll: true });
   }
 
   // ── Close ─────────────────────────────────────────
   function closeModal() {
-    if (isMobile()) {
+    if (!overlay.open || !activePanel || closing) return;
+    closing = true;
+    if (lightbox.open) closeLightbox();
+    const panel = activePanel;
+    if (panel === sheet) {
       sheet.style.transition = 'transform 0.25s ease-in';
       sheet.style.transform = 'translateY(100%)';
-      setTimeout(() => {
-        sheet.style.cssText = '';
-        sheetContent.innerHTML = '';
-        overlay.classList.remove('open');
-        document.body.style.overflow = '';
-      }, 260);
     } else {
       modal.style.transition = 'opacity 0.2s ease-in, transform 0.2s ease-in';
       modal.style.opacity = '0';
       modal.style.transform = 'translate(-50%, -50%) scale(0.93) translateY(12px)';
-      setTimeout(() => {
-        modal.style.cssText = '';
-        content.innerHTML = '';
-        overlay.classList.remove('open');
-        document.body.style.overflow = '';
-      }, 220);
     }
+    setTimeout(() => {
+      overlay.close();
+      panel.style.cssText = '';
+      content.innerHTML = '';
+      sheetContent.innerHTML = '';
+      document.body.style.overflow = previousOverflow;
+      activePanel = null;
+      closing = false;
+      if (projectTrigger?.isConnected) projectTrigger.focus({ preventScroll: true });
+      projectTrigger = null;
+    }, panel === sheet ? 260 : 220);
   }
 
   // ── Dino placeholder ─────────────────────────────
@@ -856,8 +895,8 @@
       caption: slide.querySelector<HTMLElement>('.pm-carousel-caption')?.textContent ?? '',
     }));
     slides.forEach((slide, i) => {
-      const img = slide.querySelector<HTMLImageElement>('img');
-      img?.addEventListener('click', () => openLightbox(shots, i));
+      const trigger = slide.querySelector<HTMLButtonElement>('.pm-image-trigger');
+      trigger?.addEventListener('click', () => openLightbox(shots, i, trigger));
     });
 
     if (dots.length === 0) return;
@@ -891,7 +930,7 @@
   }
 
   // ── Lightbox ─────────────────────────────────────
-  const lightbox = document.getElementById('pm-lightbox')!;
+  const lightbox = document.getElementById('pm-lightbox') as HTMLDialogElement;
   const lbImg = lightbox.querySelector<HTMLImageElement>('.pm-lb-img')!;
   const lbCaption = lightbox.querySelector<HTMLElement>('.pm-lb-caption')!;
   const lbCounter = lightbox.querySelector<HTMLElement>('.pm-lb-counter')!;
@@ -903,18 +942,21 @@
   interface LBShot { src: string; caption: string }
   let lbShots: LBShot[] = [];
   let lbIdx = 0;
+  let imageTrigger: HTMLButtonElement | null = null;
 
-  function openLightbox(shots: LBShot[], idx: number) {
+  function openLightbox(shots: LBShot[], idx: number, trigger: HTMLButtonElement) {
+    if (closing || lightbox.open) return;
+    imageTrigger = trigger;
     lbShots = shots;
     lbIdx = idx;
     updateLightbox();
-    lightbox.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    lightbox.showModal();
+    lbClose.focus({ preventScroll: true });
   }
   function closeLightbox() {
-    lightbox.classList.remove('open');
-    // keep body lock if modal still open
-    if (!overlay.classList.contains('open')) document.body.style.overflow = '';
+    lightbox.close();
+    imageTrigger?.focus({ preventScroll: true });
+    imageTrigger = null;
   }
   const lbPreloadCache = new Map<string, HTMLImageElement>();
   function preload(src: string) {
@@ -927,6 +969,7 @@
     const total = lbShots.length || 1;
     const cur = lbShots[lbIdx];
     lbImg.src = cur?.src ?? '';
+    lbImg.alt = cur?.caption || `專案圖片 ${lbIdx + 1}`;
     lbCaption.textContent = cur?.caption ?? '';
     lbCounter.textContent = `${lbIdx + 1} / ${lbShots.length}`;
     // Preload neighbours (with wrap-around) so left/right feels instant
@@ -949,19 +992,40 @@
   });
 
   // ── Listeners ─────────────────────────────────────
+  // Native dialogs make the background inert; wrap Tab explicitly so focus
+  // stays in the dialog instead of moving to browser chrome at either end.
+  for (const dialog of [overlay, lightbox]) {
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const controls = Array.from(dialog.querySelectorAll<HTMLElement>('button, a[href]'))
+        .filter(el => el.tabIndex >= 0 && !el.matches(':disabled') && el.getClientRects().length > 0
+          && getComputedStyle(el).visibility !== 'hidden');
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
+        e.preventDefault();
+        (e.shiftKey ? last : first)?.focus();
+      }
+    });
+  }
   backdrop.addEventListener('click', closeModal);
   // Close button is rendered dynamically inside content — use event delegation
   overlay.addEventListener('click', (e) => {
     if ((e.target as Element).closest('.pm-close-trigger')) closeModal();
   });
-  document.addEventListener('keydown', (e) => {
-    if (lightbox.classList.contains('open')) {
-      if (e.key === 'Escape') closeLightbox();
-      else if (e.key === 'ArrowLeft') lbPrev.click();
-      else if (e.key === 'ArrowRight') lbNext.click();
-      return;
+  overlay.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    closeModal();
+  });
+  lightbox.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    closeLightbox();
+  });
+  lightbox.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      (e.key === 'ArrowLeft' ? lbPrev : lbNext).click();
     }
-    if (e.key === 'Escape') closeModal();
   });
 
   document.addEventListener('click', (e) => {
@@ -969,7 +1033,7 @@
     if (!btn) return;
     const raw = btn.getAttribute('data-project');
     if (!raw) return;
-    try { openModal(JSON.parse(raw) as ProjectData); } catch { /* ignore */ }
+    try { openModal(JSON.parse(raw) as ProjectData, btn); } catch { /* ignore */ }
   });
 
   // ── Swipe-down to close (bottom sheet) ───────────

@@ -2,7 +2,7 @@
 /**
  * ProjectCard — GitHub repository card (Glassmorphism style)
  * Single Responsibility: renders one card; clicking triggers the project Modal.
- * Does NOT navigate directly — parent page wires the click → Modal open.
+ * The heading button opens the Modal; its hit area covers the card.
  */
 import PinnedBadge from './PinnedBadge.astro';
 import { Picture } from 'astro:assets';
@@ -81,13 +81,7 @@ const metaJson = JSON.stringify({
 });
 ---
 
-<!-- data-project triggers the Modal; button for a11y -->
-<button
-  type="button"
-  class="group flex flex-col h-full w-full text-left cursor-pointer"
-  data-project={metaJson}
-  aria-label={`查看 ${name} 專案詳情`}
->
+<article class="project-card group relative flex flex-col h-full w-full text-left">
   <!-- Cover image (fixed h-48 ensures consistent card size) -->
   <div class="relative overflow-hidden rounded-t-3xl h-48 bg-black/20 w-full">
     {typeof cover === 'string' ? (
@@ -149,10 +143,12 @@ const metaJson = JSON.stringify({
   <div class="flex flex-col gap-2 p-5 flex-1">
     <!-- Title row -->
     <div class="flex items-start justify-between gap-2">
-      <h3 class="font-display font-bold text-base text-[rgb(var(--color-text-primary))]
+      <h2 class="font-display font-bold text-base text-[rgb(var(--color-text-primary))]
         group-hover:text-[rgb(var(--color-primary))] transition-colors leading-snug">
-        {name}
-      </h3>
+        <button type="button" class="project-trigger text-left" data-project={metaJson} aria-haspopup="dialog">
+          {name}<span class="sr-only">，查看專案詳情</span>
+        </button>
+      </h2>
       <!-- Expand icon -->
       <svg class="w-4 h-4 flex-shrink-0 text-[rgb(var(--color-text-secondary))] opacity-0 group-hover:opacity-100 transition-opacity mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -203,4 +199,19 @@ const metaJson = JSON.stringify({
       </span>
     </div>
   </div>
-</button>
+</article>
+
+<style>
+  .project-trigger::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    cursor: pointer;
+  }
+  .project-card:focus-within {
+    outline: 2px solid rgb(var(--color-accent));
+    outline-offset: -3px;
+    border-radius: 1.5rem;
+  }
+</style>

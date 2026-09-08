@@ -204,7 +204,6 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
           <a
             class={`project-tile project-tile--${index + 1}`}
             href="/projects"
-            aria-label={`到作品庫查看 ${project.title} 的完整介紹`}
           >
             <div class="project-visual">
               <Picture
@@ -224,6 +223,7 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
             <div class="project-body">
               <p class="project-meta">{project.label} · {project.period ?? '持續製作中'}</p>
               <h3>{project.title}</h3>
+              <span class="sr-only">，到作品庫查看專案詳情</span>
               <p>{project.hook}</p>
               <div class="project-footer">
                 <span class="project-stack">{project.techStack?.slice(0, 2).join(' / ')}</span>
@@ -247,10 +247,11 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
         <ul class="project-shelf" aria-label="更多作品">
           {shelfProjects.map((project, index) => (
             <li>
-              <a href="/projects" aria-label={`到作品庫查看 ${project.name} 的完整介紹`}>
+              <a href="/projects">
                 <span class="project-shelf-number" aria-hidden="true">{String(index + 5).padStart(2, '0')}</span>
                 <span class="project-shelf-copy">
                   <strong>{project.name}</strong>
+                  <span class="sr-only">，到作品庫查看專案詳情</span>
                   <span>{project.techStack?.[0] ?? 'side project'}</span>
                 </span>
                 <svg class="project-shelf-arrow" viewBox="0 0 24 24" aria-hidden="true">
