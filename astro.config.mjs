@@ -9,7 +9,10 @@ export default defineConfig({
   site: 'https://purr.tw',
   integrations: [
     sitemap({
-      filter: (page) => !new URL(page).pathname.startsWith('/en'),
+      filter: (page) => {
+        const pathname = new URL(page).pathname;
+        return !pathname.startsWith('/en') && pathname !== '/sm/';
+      },
     }),
   ],
   output: 'static',

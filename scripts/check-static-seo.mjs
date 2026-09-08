@@ -74,5 +74,9 @@ const sitemap = await readFile(new URL('sitemap-0.xml', dist), 'utf8');
 assert.ok(sitemap.includes('<loc>https://purr.tw/japan/</loc>'));
 assert.ok(sitemap.includes('<loc>https://purr.tw/concerts/</loc>'));
 assert.doesNotMatch(sitemap, /https:\/\/purr\.tw\/en(?:\/|<)/);
+assert.doesNotMatch(sitemap, /<loc>https:\/\/purr\.tw\/sm\/<\/loc>/);
+
+const screenMessage = await readFile(new URL('sm/index.html', dist), 'utf8');
+assert.ok(screenMessage.includes('<meta name="robots" content="noindex, follow">'));
 
 console.log('Static SEO and public-output checks passed.');
