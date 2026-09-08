@@ -203,7 +203,7 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
         {featuredProjects.map((project, index) => (
           <a
             class={`project-tile project-tile--${index + 1}`}
-            href="/projects"
+            href="/projects/"
           >
             <div class="project-visual">
               <Picture
@@ -247,7 +247,7 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
         <ul class="project-shelf" aria-label="更多作品">
           {shelfProjects.map((project, index) => (
             <li>
-              <a href="/projects">
+              <a href="/projects/">
                 <span class="project-shelf-number" aria-hidden="true">{String(index + 5).padStart(2, '0')}</span>
                 <span class="project-shelf-copy">
                   <strong>{project.name}</strong>
@@ -263,7 +263,7 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
         </ul>
       </div>
 
-      <a class="work-all" href="/projects">
+      <a class="work-all" href="/projects/">
         打開全部 {siteConfig.projectsWhitelist.length} 個作品
         <svg class="work-all-arrow" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M5 19 19 5M8 5h11v11" />

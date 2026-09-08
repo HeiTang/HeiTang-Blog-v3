@@ -9,7 +9,8 @@ export interface Props {
   currentPath?: string;
 }
 
-const { currentPath = '/' } = Astro.props;
+const { currentPath: path = '/' } = Astro.props;
+const currentPath = path.endsWith('/') ? path : `${path}/`;
 const navItems = siteConfig.nav;
 ---
 

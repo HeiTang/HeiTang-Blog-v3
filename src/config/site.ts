@@ -158,7 +158,7 @@ export const siteConfig = {
         { src: mailcatInbox, caption: '銀行信件自動分類為「登入通知 / 交易通知 / 電子帳單」並掛上對應銀行子標籤' },
       ],
       tags: ['Google Apps Script', 'Gmail', 'Automation'],
-      blogPost: '/blog/mailcat',
+      blogPost: '/blog/mailcat/',
     },
     {
       name: 'Medium-OPML-Exporter',
@@ -308,15 +308,15 @@ export const siteConfig = {
 
   // Navigation
   nav: [
-    { label: '文章', href: '/blog' },
-    { label: '專案', href: '/projects' },
-    { label: '邀請碼', href: '/invite-codes' },
+    { label: '文章', href: '/blog/' },
+    { label: '專案', href: '/projects/' },
+    { label: '邀請碼', href: '/invite-codes/' },
     {
       label: '關於',
       children: [
-        { label: '關於我', href: '/about' },
-        { label: '日本制縣圖', href: '/japan' },
-        { label: '演唱會足跡', href: '/concerts' },
+        { label: '關於我', href: '/about/' },
+        { label: '日本制縣圖', href: '/japan/' },
+        { label: '演唱會足跡', href: '/concerts/' },
       ],
     },
   ],
