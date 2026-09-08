@@ -89,7 +89,7 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
     <meta name="twitter:image" content={socialImageUrl} />
 
     {structuredData && (
-      <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+      <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\u003c')} />
     )}
     <slot name="head" />
     

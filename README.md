@@ -158,11 +158,40 @@ title: '文章標題'
 description: '文章描述'
 pubDate: 2026-01-01
 tags: ['Tag1', 'Tag2']
-lang: zh
 ---
 
 文章內容...
 ```
+
+省略 `author` 時，作者預設為「黑糖不是炭」（取自 `copy.about.name`）；客座文章可自行填寫 `author`。頁面署名與 BlogPosting 作者會使用同一個值。
+
+### 延伸閱讀：手動優先，未指定時依標籤推薦
+
+在 frontmatter 選填 `relatedPosts`，使用文章檔名（slug），不含 `.md`、`/blog/` 前綴或尾斜線：
+
+```yaml
+relatedPosts:
+  - github-actions-deploy
+  - google-sheets-json-api
+```
+
+| 設定 | 行為 |
+|------|------|
+| 指定 `relatedPosts` | 依填寫順序顯示，只顯示指定文章；指定一篇就只顯示一篇，不自動補滿 |
+| 省略 `relatedPosts` | 依共同 tag 數量排序，同分優先較新的發布日期，再同分按 slug 排序；最多 2 篇 |
+| `relatedPosts: []` | 關閉這篇的延伸閱讀 |
+
+- tags 採完整字串比對，區分大小寫；同一主題請沿用相同標籤。沒有共同 tag 就不顯示，不推薦不相關文章。
+- 自動推薦排除自己與草稿；重複 tag 不會增加分數。
+- 已發布文章手動指定不存在的 slug、草稿、自己或重複 slug，build 會報錯。文章改名或改成草稿時，也要更新引用它的清單。
+- 標題與 URL 從文章資料取得，由 `BlogLayout` 在正文下方產生靜態 HTML，不需在 Markdown 底部再維護一份清單。正文中的情境連結仍可自行加入。
+- 目前三篇文章已手動指定延伸閱讀，可作為範例；新文章省略此欄位即可使用自動推薦。
+
+### 文章搜尋資料
+
+文章會從 frontmatter 自動產生 `BlogPosting` JSON-LD。`updatedDate` 只在內容真的更新時填寫，不使用部署日期；`cover` 只有在圖片確實代表文章時才設定，未設定不會把全站預設 OG 圖宣告成文章主圖。
+
+修改後執行 `npm test`、`npm run build`、`npm run check:seo` 與 `npm run check:font-subsets`。
 
 ## 📄 授權
 

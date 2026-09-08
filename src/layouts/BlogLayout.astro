@@ -5,6 +5,7 @@
  */
 import BaseLayout from './BaseLayout.astro';
 import { formatDate } from '../utils/date';
+import { siteConfig } from '../config/site';
 import { copy } from '../config/copy';
 import type { PostMeta } from '../types/blog';
 
@@ -12,11 +13,29 @@ export interface Props {
   post: PostMeta;
   slug: string;
   readingTime: number;
+  relatedPosts: { id: string; data: PostMeta }[];
 }
 
-const { post, slug, readingTime } = Astro.props;
+const { post, slug, readingTime, relatedPosts } = Astro.props;
 const { blog } = copy;
 const { title, description } = post;
+const canonicalUrl = new URL(Astro.url.pathname, siteConfig.url).toString();
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  url: canonicalUrl,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+  datePublished: post.pubDate.toISOString(),
+  ...(post.updatedDate && { dateModified: post.updatedDate.toISOString() }),
+  author: {
+    '@type': 'Person',
+    name: post.author,
+    ...(post.author === copy.about.name && { url: new URL('/about/', siteConfig.url).toString() }),
+  },
+  ...(post.cover && { image: new URL(post.cover, siteConfig.url).toString() }),
+};
 ---
 
 <BaseLayout
@@ -25,6 +44,7 @@ const { title, description } = post;
   currentPath="/blog"
   image={post.cover}
   ogType="article"
+  structuredData={structuredData}
 >
   <!-- OG meta for article -->
   <Fragment slot="head">
@@ -110,6 +130,16 @@ const { title, description } = post;
       data-pagefind-body
     >
       <slot />
+      {relatedPosts.length > 0 && (
+        <nav aria-labelledby="related-posts-heading" data-related-posts>
+          <h2 id="related-posts-heading">延伸閱讀</h2>
+          <ul>
+            {relatedPosts.map(related => (
+              <li><a href={`/blog/${related.id}/`}>{related.data.title}</a></li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </article>
   </div>
 </BaseLayout>
