@@ -5,7 +5,8 @@
  * Does NOT navigate directly — parent page wires the click → Modal open.
  */
 import PinnedBadge from './PinnedBadge.astro';
-import type { ProjectMeta } from '../../types/projects';
+import { Picture } from 'astro:assets';
+import type { ProjectAsset, ProjectMeta, ProjectScreenshot } from '../../types/projects';
 
 const GITHUB_USERNAME = 'HeiTang';
 
@@ -40,6 +41,13 @@ const {
 
 // Cover image: custom (from meta) > GitHub Social Preview (opengraph)
 const cover = meta?.image ?? `https://opengraph.githubassets.com/1/${GITHUB_USERNAME}/${name}`;
+const resolveAssetUrl = (asset: ProjectAsset) => typeof asset === 'string' ? asset : asset.src;
+const coverUrl = resolveAssetUrl(cover);
+const screenshots = (meta?.screenshots ?? []).map((screenshot: ProjectScreenshot) => (
+  typeof screenshot === 'string'
+    ? resolveAssetUrl(screenshot)
+    : { ...screenshot, src: resolveAssetUrl(screenshot.src) }
+));
 
 // Tech stack: prefer meta.techStack, fallback to topics
 const techBadges = (meta?.techStack ?? topics).slice(0, 4);
@@ -58,12 +66,12 @@ const metaJson = JSON.stringify({
   description: meta?.customDescription ?? description,
   url,
   homepageUrl: homepageUrl ?? null,
-  cover,
+  cover: coverUrl,
   role: meta?.role ?? null,
   period: meta?.period ?? null,
   techStack: meta?.techStack ?? [],
   highlights: meta?.highlights ?? [],
-  screenshots: meta?.screenshots ?? [],
+  screenshots,
   blogPost: meta?.blogPost ?? null,
   hideGithubLink: meta?.hideGithubLink ?? false,
   language,
@@ -82,13 +90,28 @@ const metaJson = JSON.stringify({
 >
   <!-- Cover image (fixed h-48 ensures consistent card size) -->
   <div class="relative overflow-hidden rounded-t-3xl h-48 bg-black/20 w-full">
-    <img
-      src={cover}
-      alt={`${name} preview`}
-      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-      loading="lazy"
-      onerror="this.style.display='none'; this.parentElement.querySelector('.cover-fallback').style.display='flex'"
-    />
+    {typeof cover === 'string' ? (
+      <img
+        src={cover}
+        alt={`${name} preview`}
+        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="lazy"
+        onerror="this.style.display='none'; this.parentElement.querySelector('.cover-fallback').style.display='flex'"
+      />
+    ) : (
+      <Picture
+        src={cover}
+        alt={`${name} preview`}
+        class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        widths={[320, 640, 960]}
+        sizes="(max-width: 640px) calc(100vw - 3rem), (max-width: 1024px) 45vw, 30vw"
+        formats={['avif', 'webp']}
+        fallbackFormat="png"
+        loading="lazy"
+        decoding="async"
+        onerror="this.style.display='none'; this.parentElement.querySelector('.cover-fallback').style.display='flex'"
+      />
+    )}
     <!-- Fallback placeholder -->
     <div class="cover-fallback absolute inset-0 items-center justify-center bg-gradient-to-br from-[rgba(var(--color-primary),0.15)] to-[rgba(var(--color-accent),0.10)]" style="display:none">
       <svg class="w-12 h-12 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">

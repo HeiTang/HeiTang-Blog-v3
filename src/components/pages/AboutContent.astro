@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { copy } from '../../config/copy';
+import { Picture } from 'astro:assets';
+import profileImage from '../../assets/profile.jpeg';
 
 const skillColors = ['primary', 'accent', 'secondary'];
 ---
@@ -17,7 +19,19 @@ const skillColors = ['primary', 'accent', 'secondary'];
       <div class="glass p-8 rounded-2xl">
         <div class="flex items-center gap-6 mb-6">
           <div class="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border-2 border-[rgb(var(--color-primary))]">
-            <img src="/images/profile.jpeg" alt={copy.about.name} class="w-full h-full object-cover" />
+            <Picture
+              src={profileImage}
+              alt={copy.about.name}
+              class="w-full h-full object-cover"
+              width={96}
+              height={96}
+              widths={[96, 192]}
+              sizes="96px"
+              formats={['avif', 'webp']}
+              fallbackFormat="jpeg"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           <div>
             <h2 class="text-2xl font-bold text-[rgb(var(--color-text-primary))] mb-1">{copy.about.name}</h2>

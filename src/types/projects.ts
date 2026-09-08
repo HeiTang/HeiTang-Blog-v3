@@ -4,12 +4,17 @@
  *
  * Single Responsibility: this type owns only the "extra info beyond GitHub API".
  */
+import type { ImageMetadata } from 'astro:assets';
+
+export type ProjectAsset = string | ImageMetadata;
+export type ProjectScreenshot = string | { src: ProjectAsset; caption?: string };
+
 export interface ProjectMeta {
   /** Must match the GitHub repository name exactly */
   name: string;
 
-  /** Custom cover image path (public/images/projects/). Falls back to GitHub Social Preview. */
-  image?: string;
+  /** Custom local asset or remote cover URL. Falls back to GitHub Social Preview. */
+  image?: ProjectAsset;
 
   /** Role label shown on card and Modal header (e.g. 「個人作品」「開源貢獻」「團隊專案」) */
   role?: string;
@@ -28,7 +33,7 @@ export interface ProjectMeta {
    *  - a string (path / URL), or
    *  - `{ src, caption }` to attach a caption shown on the slide & lightbox.
    */
-  screenshots?: Array<string | { src: string; caption?: string }>;
+  screenshots?: ProjectScreenshot[];
 
   /** Overrides the GitHub API description in Modal (use for richer narrative) */
   customDescription?: string;

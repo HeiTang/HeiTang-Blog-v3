@@ -12,6 +12,14 @@ test('homepage hero keeps contact and a motion-safe typewriter', async () => {
   ]);
 
   assert.match(source, /const homeTitle = '黑糖不是炭';/);
+  assert.match(source, /import \{ Picture \} from 'astro:assets';/);
+  assert.match(source, /import profileImage from '\.\.\/\.\.\/assets\/profile\.jpeg';/);
+  assert.match(source, /widths=\{\[140, 280, 420\]\}/);
+  assert.match(source, /sizes="\(min-width: 768px\) 15vw, 140px"/);
+  assert.match(source, /formats=\{\['avif', 'webp'\]\}/);
+  assert.match(source, /fallbackFormat="jpeg"/);
+  assert.match(source, /loading="eager"/);
+  assert.doesNotMatch(source, /\/images\/profile\.jpeg/);
   assert.doesNotMatch(source, /fonts\.googleapis\.com\/css2/);
   assert.match(global, /font-family: 'Nasalization Rg';/);
   assert.match(global, /nasalization-brand\.woff/);
@@ -67,6 +75,10 @@ test('homepage hero keeps contact and a motion-safe typewriter', async () => {
   assert.match(source, /<div class="project-wall">/);
   assert.match(source, /featuredProjects\.map\(\(project, index\)/);
   assert.match(source, /<h3>\{project\.title\}<\/h3>/);
+  assert.match(source, /widths=\{\[480, 768, 1280\]\}/);
+  assert.match(source, /sizes=\{project\.imageSizes\}/);
+  assert.match(source, /fallbackFormat="png"/);
+  assert.doesNotMatch(source, /\/images\/projects\//);
   assert.match(source, /<ul class="project-shelf" aria-label="更多作品">/);
   assert.match(source, /shelfProjects\.map\(\(project, index\)/);
   assert.match(source, /loading="lazy"/);

@@ -1,6 +1,12 @@
 ---
 import { siteConfig } from '../../config/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { Picture } from 'astro:assets';
+import profileImage from '../../assets/profile.jpeg';
+import fxPulseJpyChart from '../../assets/projects/fx-pulse/jpy-chart.png';
+import mailcatInbox from '../../assets/projects/mailcat/inbox.png';
+import shortyouHome from '../../assets/projects/shortyou/home.png';
+import yannickDetail from '../../assets/projects/yannick/detail.png';
 
 const homeTitle = '黑糖不是炭';
 const typewriterText = [
@@ -35,28 +41,32 @@ const projectStories = [
     title: 'FX-Pulse',
     label: '資料 / 金融',
     hook: '把三家信用卡匯率攤在同一張桌上，刷卡比價不必來回切頁。',
-    image: '/images/projects/fx-pulse/jpy-chart.png',
+    image: fxPulseJpyChart,
+    imageSizes: '(max-width: 800px) calc(100vw - 2rem), 33rem',
   },
   {
     name: 'yannick-stock-checker',
     title: '亞尼克 YTM 庫存查詢',
     label: '搜尋 / 自動化',
     hook: '從想買的商品反查還有庫存的站點，少一點無止盡的尋找。',
-    image: '/images/projects/yannick/detail.png',
+    image: yannickDetail,
+    imageSizes: '(max-width: 800px) calc(100vw - 2rem), 24rem',
   },
   {
     name: 'MailCat',
     title: 'MailCat',
     label: '信箱 / 自動化',
     hook: '把銀行信件收好、分類好，讓收件匣不再被塞滿。',
-    image: '/images/projects/mailcat/inbox.png',
+    image: mailcatInbox,
+    imageSizes: '(max-width: 800px) calc(100vw - 2rem), 24rem',
   },
   {
     name: 'ShortYou',
     title: 'ShortYou',
     label: '短網址 / Web',
     hook: '一個短網址服務，也是一個關於權限與自架邊界的解決方案。',
-    image: '/images/projects/shortyou/home.png',
+    image: shortyouHome,
+    imageSizes: '(max-width: 800px) calc(100vw - 2rem), 33rem',
   },
 ] as const;
 const featuredProjectNames = new Set<string>(projectStories.map(({ name }) => name));
@@ -83,12 +93,17 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
       <div class="hero-content">
         <p class="hero-kicker">BACKEND · TAIWAN</p>
         <h1 id="hero-title">{homeTitle}</h1>
-        <img
+        <Picture
+          src={profileImage}
           class="avatar"
-          src="/images/profile.jpeg"
           width="720"
           height="719"
           alt="黑糖的個人照片"
+          widths={[140, 280, 420]}
+          sizes="(min-width: 768px) 15vw, 140px"
+          formats={['avif', 'webp']}
+          fallbackFormat="jpeg"
+          loading="eager"
           fetchpriority="high"
         />
         <p class="typewriter-line">
@@ -192,7 +207,17 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
             aria-label={`到作品庫查看 ${project.title} 的完整介紹`}
           >
             <div class="project-visual">
-              <img src={project.image} alt={`${project.title} 的介面截圖`} loading="lazy" decoding="async" />
+              <Picture
+                src={project.image}
+                alt={`${project.title} 的介面截圖`}
+                class="w-full h-full object-cover"
+                widths={[480, 768, 1280]}
+                sizes={project.imageSizes}
+                formats={['avif', 'webp']}
+                fallbackFormat="png"
+                loading="lazy"
+                decoding="async"
+              />
               <span class="project-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
               <span class="project-label">{project.label}</span>
             </div>
