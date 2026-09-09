@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import socialImage from '../../assets/og/projects.jpg';
 import ProjectCard from '../projects/ProjectCard.astro';
 import ProjectModal from '../projects/ProjectModal.astro';
 import { fetchPinnedRepos, fetchPublicRepos } from '../../services/github';
@@ -70,19 +71,13 @@ const sortedTags = Object.entries(tagCount)
   .map(([tag]) => tag);
 ---
 
-<BaseLayout title={copy.projects.title} currentPath="/projects">
+<BaseLayout title={copy.projects.title} description={copy.projects.description} currentPath="/projects" image={socialImage.src}>
   <div class="container mx-auto px-6 py-24">
     <!-- Page header -->
     <div class="mb-8">
       <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
         🚀 {copy.projects.title}
       </h1>
-      <p class="text-[rgb(var(--color-text-secondary))]">
-        <a href="https://github.com/HeiTang" target="_blank" rel="noopener noreferrer"
-          class="heitang-brand-font tracking-[0.14em] hover:text-[rgb(var(--color-primary))] transition-colors">
-          HEITANG
-        </a>{copy.projects.subtitle}
-      </p>
     </div>
 
     <!-- Tag filter tabs -->

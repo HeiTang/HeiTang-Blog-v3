@@ -3,6 +3,17 @@
  * Following SOLID principles: Single Responsibility
  */
 import type { ProjectMeta } from '../types/projects';
+import fxPulseFullUsd from '../assets/projects/fx-pulse/full-usd.png';
+import fxPulseHome from '../assets/projects/fx-pulse/home.png';
+import fxPulseJpyChart from '../assets/projects/fx-pulse/jpy-chart.png';
+import mailcatInbox from '../assets/projects/mailcat/inbox.png';
+import shortyouAuthorizedMode from '../assets/projects/shortyou/authorized-mode.png';
+import shortyouHomeWithAlias from '../assets/projects/shortyou/home-with-alias.png';
+import shortyouHome from '../assets/projects/shortyou/home.png';
+import shortyouRedirectResolving from '../assets/projects/shortyou/redirect-resolving.png';
+import shortyouResultQr from '../assets/projects/shortyou/result-qr.png';
+import yannickDemo from '../assets/projects/yannick/demo.png';
+import yannickDetail from '../assets/projects/yannick/detail.png';
 
 export const siteConfig = {
   title: '黑糖ㄉ貓窩',
@@ -37,7 +48,7 @@ export const siteConfig = {
       name: 'FX-Pulse',
       role: '個人作品',
       period: '2026',
-      image: '/images/projects/fx-pulse/home.png',
+      image: fxPulseHome,
       customDescription: 'FX Pulse — 匯率脈動。每日自動抓取 VISA、Mastercard、JCB 三大信用卡組織官方匯率並排比較，同幣別最優匯率自動標綠、最差標紅，搭配 ECharts 互動式三線歷史走勢圖。前端 Astro 6 + Tailwind v4 部署於 GitHub Pages，爬蟲透過 GitHub Actions 排程，零伺服器成本。目前運行於 fx.purr.tw。',
       techStack: [
         'Python 3.12',
@@ -57,9 +68,9 @@ export const siteConfig = {
         '彈性 CLI：支援指定來源 / 日期 / 區間 / 月份、dry-run、整月平行批量抓取。',
       ],
       screenshots: [
-        { src: '/images/projects/fx-pulse/home.png', caption: '首頁即時匯率：同幣別三家並排，最優標綠、最差標紅' },
-        { src: '/images/projects/fx-pulse/full-usd.png', caption: 'USD 三線歷史走勢圖（ECharts），支援滑動縮放' },
-        { src: '/images/projects/fx-pulse/jpy-chart.png', caption: '點擊幣別卡片即切換走勢圖 — JPY 為例' },
+        { src: fxPulseHome, caption: '首頁即時匯率：同幣別三家並排，最優標綠、最差標紅' },
+        { src: fxPulseFullUsd, caption: 'USD 三線歷史走勢圖（ECharts），支援滑動縮放' },
+        { src: fxPulseJpyChart, caption: '點擊幣別卡片即切換走勢圖 — JPY 為例' },
       ],
       tags: ['Python', 'Astro', 'Scraper', 'GitHub Actions', 'Serverless'],
     },
@@ -106,7 +117,7 @@ export const siteConfig = {
       name: 'yannick-stock-checker',
       role: '個人作品',
       period: '2026',
-      image: '/images/projects/yannick/demo.png',
+      image: yannickDemo,
       customDescription: '亞尼克 YTM 庫存查詢。以商品為核心建立反向索引，快速定位仍有現貨的 YTM 站點。FastAPI + Astro 同時提供網頁查詢與 REST API，內建快取、限流與重試機制，兼顧查詢速度與來源負載。目前運行於 yannick.purr.tw。',
       techStack: [
         'Python 3.11',
@@ -124,8 +135,8 @@ export const siteConfig = {
         '完整 pytest 覆蓋率與 coverage 報告，部署可靠度有保障。',
       ],
       screenshots: [
-        { src: '/images/projects/yannick/demo.png', caption: '商品總覽 — 顯示有貨商品數與可購買站點數' },
-        { src: '/images/projects/yannick/detail.png', caption: '點開單一商品可看所有仍有貨的 YTM 站點' },
+        { src: yannickDemo, caption: '商品總覽 — 顯示有貨商品數與可購買站點數' },
+        { src: yannickDetail, caption: '點開單一商品可看所有仍有貨的 YTM 站點' },
       ],
       tags: ['Python', 'FastAPI', 'Astro', 'Scraper', 'API'],
     },
@@ -133,7 +144,7 @@ export const siteConfig = {
       name: 'MailCat',
       role: '個人作品',
       period: '2024 - 2026',
-      image: '/images/projects/mailcat/inbox.png',
+      image: mailcatInbox,
       customDescription: 'Google Apps Script 打造的 Gmail 自動化規則管理器。自動替銀行、電子支付信件加上標籤、定時刪除登入通知、封存已讀信件、備份電子帳單附件至 Google Drive。',
       techStack: ['Google Apps Script', 'JavaScript', 'Gmail API', 'Google Drive API'],
       highlights: [
@@ -144,10 +155,10 @@ export const siteConfig = {
         '⭐ 26 顆星，台灣 GAS 社群熱門工具',
       ],
       screenshots: [
-        { src: '/images/projects/mailcat/inbox.png', caption: '銀行信件自動分類為「登入通知 / 交易通知 / 電子帳單」並掛上對應銀行子標籤' },
+        { src: mailcatInbox, caption: '銀行信件自動分類為「登入通知 / 交易通知 / 電子帳單」並掛上對應銀行子標籤' },
       ],
       tags: ['Google Apps Script', 'Gmail', 'Automation'],
-      blogPost: '/blog/mailcat',
+      blogPost: '/blog/mailcat/',
     },
     {
       name: 'Medium-OPML-Exporter',
@@ -215,7 +226,7 @@ export const siteConfig = {
       name: 'ShortYou',
       role: '個人作品',
       period: '2022 – 2026',
-      image: '/images/projects/shortyou/home.png',
+      image: shortyouHome,
       customDescription: '輕量、可自行部署的短網址服務，採前後端分離：前端用 Astro 5 + Tailwind 部署於靜態主機，後端維持 Google Apps Script + Google Sheets 儲存。公開查詢與「受邀建立」拆開，建立流程以 capability token 控管並可串接 Cloudflare Turnstile。目前運行於 s.purr.tw。',
       techStack: [
         'Astro 5',
@@ -235,11 +246,11 @@ export const siteConfig = {
         '公開首頁僅提供 playground 展示，不會真的建立短網址。',
       ],
       screenshots: [
-        { src: '/images/projects/shortyou/home.png', caption: '公開首頁 — playground 展示，不會真的建立短網址' },
-        { src: '/images/projects/shortyou/home-with-alias.png', caption: '輸入自訂 alias 預覽要產生的短連結格式' },
-        { src: '/images/projects/shortyou/result-qr.png', caption: '建立完成的結果頁，附上可掃描的 QR Code' },
-        { src: '/images/projects/shortyou/authorized-mode.png', caption: '透過 Token 進入授權建立模式' },
-        { src: '/images/projects/shortyou/redirect-resolving.png', caption: '訪問短連結時的過場畫面' },
+        { src: shortyouHome, caption: '公開首頁 — playground 展示，不會真的建立短網址' },
+        { src: shortyouHomeWithAlias, caption: '輸入自訂 alias 預覽要產生的短連結格式' },
+        { src: shortyouResultQr, caption: '建立完成的結果頁，附上可掃描的 QR Code' },
+        { src: shortyouAuthorizedMode, caption: '透過 Token 進入授權建立模式' },
+        { src: shortyouRedirectResolving, caption: '訪問短連結時的過場畫面' },
       ],
       tags: ['Astro', 'Google Apps Script', 'Serverless', 'URL Shortener', 'Capability Token'],
     },
@@ -297,15 +308,15 @@ export const siteConfig = {
 
   // Navigation
   nav: [
-    { label: '文章', href: '/blog' },
-    { label: '專案', href: '/projects' },
-    { label: '邀請碼', href: '/invite-codes' },
+    { label: '文章', href: '/blog/' },
+    { label: '專案', href: '/projects/' },
+    { label: '邀請碼', href: '/invite-codes/' },
     {
       label: '關於',
       children: [
-        { label: '關於我', href: '/about' },
-        { label: '日本制縣圖', href: '/japan' },
-        { label: '演唱會足跡', href: '/concerts' },
+        { label: '關於我', href: '/about/' },
+        { label: '日本制縣圖', href: '/japan/' },
+        { label: '演唱會足跡', href: '/concerts/' },
       ],
     },
   ],

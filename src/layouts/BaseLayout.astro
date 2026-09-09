@@ -6,7 +6,19 @@
 import { siteConfig } from '../config/site';
 import Header from '../components/common/Header.astro';
 import Footer from '../components/common/Footer.astro';
+import favicon from '../assets/brand/favicon-32.png';
+import defaultSocialImage from '../assets/og/default.png';
 import '../styles/global.css';
+
+const localFontSources = {
+  inter: '/fonts/inter-latin.woff2',
+  'jetbrains-mono': '/fonts/jetbrains-mono-latin.woff2',
+  'noto-sans-tc': '/fonts/noto-sans-tc-site.woff2',
+  orbitron: '/fonts/orbitron-latin.woff2',
+  dotgothic16: '/fonts/dotgothic16-title.woff2',
+} as const;
+
+export type PreloadFont = keyof typeof localFontSources;
 
 export interface Props {
   title?: string;
@@ -17,17 +29,21 @@ export interface Props {
   noindex?: boolean;
   hasPointerGlow?: boolean;
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
+  preloadFonts?: PreloadFont[];
 }
+
+const defaultPreloadFonts: PreloadFont[] = ['inter', 'noto-sans-tc'];
 
 const {
   title,
   description,
   currentPath = '/',
-  image = '/images/og/default.png',
+  image = defaultSocialImage.src,
   ogType = 'website',
   noindex = false,
   hasPointerGlow = true,
   structuredData,
+  preloadFonts = defaultPreloadFonts,
 } = Astro.props;
 
 const siteTitle = siteConfig.title;
@@ -36,6 +52,7 @@ const resolvedDescription = description ?? siteConfig.description;
 const fullTitle = resolvedTitle === siteTitle ? resolvedTitle : `${resolvedTitle} | ${siteTitle}`;
 const canonicalUrl = new URL(Astro.url.pathname, siteConfig.url).toString();
 const socialImageUrl = new URL(image, siteConfig.url).toString();
+const uniquePreloadFonts = Array.from(new Set(preloadFonts));
 ---
 
 <!doctype html>
@@ -45,19 +62,12 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
     <meta name="description" content={resolvedDescription} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- 字型：以 <link> 平行載入，取代 global.css 裡的串行 @import -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.cdnfonts.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;500;700&family=Orbitron:wght@500;700;900&display=swap"
-    />
-    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/nasalization" />
+    {uniquePreloadFonts.map((font) => (
+      <link rel="preload" href={localFontSources[font]} as="font" type="font/woff2" crossorigin />
+    ))}
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="canonical" href={canonicalUrl} />
-    <link rel="icon" type="image/png" href="/images/icon.png" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href={favicon.src} />
     <meta name="generator" content={Astro.generator} />
     
     <!-- Open Graph / Facebook -->
@@ -80,17 +90,12 @@ const socialImageUrl = new URL(image, siteConfig.url).toString();
     <meta name="twitter:image" content={socialImageUrl} />
 
     {structuredData && (
-      <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+      <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\u003c')} />
     )}
     <slot name="head" />
     
     <title>{fullTitle}</title>
     
-    <!-- Theme Switcher Script (runs before page load to prevent flash) -->
-    <script is:inline>
-      const savedTheme = localStorage.getItem('theme') || 'elegant-cyber';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
   </head>
   <body
     class="flex flex-col min-h-screen bg-[rgb(var(--color-bg-dark))]"

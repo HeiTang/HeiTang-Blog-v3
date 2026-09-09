@@ -2,6 +2,7 @@
 import ConcertCard from '../../components/concerts/ConcertCard.astro';
 import { siteConfig } from '../../config/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import socialImage from '../../assets/og/concerts.png';
 import { fetchConcerts, type Concert } from '../../services/concerts';
 
 const pageUrl = `${siteConfig.url}/concerts/`;
@@ -66,7 +67,7 @@ const structuredData = [
   title={title}
   description={description}
   currentPath="/concerts"
-  image="/images/og/concerts.png"
+  image={socialImage.src}
   structuredData={structuredData}
 >
   <article class="page-shell" data-pagefind-body>
@@ -485,7 +486,7 @@ const structuredData = [
   }
 
   :global(.concert-poster-fallback strong) {
-    font-family: var(--font-heitang-brand);
+    font-family: 'Orbitron', sans-serif;
     font-size: clamp(1.05rem, 2.2vw, 1.75rem);
     letter-spacing: 0.02em;
     line-height: 1.05;

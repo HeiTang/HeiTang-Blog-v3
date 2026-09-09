@@ -4,12 +4,15 @@
  * Following SOLID principles: Single Responsibility
  */
 import { siteConfig } from '../../config/site';
+import logo from '../../assets/brand/logo-72.webp';
+import logoStill from '../../assets/brand/logo-72-still.png';
 
 export interface Props {
   currentPath?: string;
 }
 
-const { currentPath = '/' } = Astro.props;
+const { currentPath: path = '/' } = Astro.props;
+const currentPath = path.endsWith('/') ? path : `${path}/`;
 const navItems = siteConfig.nav;
 ---
 
@@ -19,12 +22,15 @@ const navItems = siteConfig.nav;
       <!-- Logo -->
       <a
         href="/"
-        aria-label="回到首頁"
+        aria-label="HEITANG，回到首頁"
         class="flex items-center gap-3 group"
       >
         <div class="w-9 h-9 flex items-center justify-center rounded-xl overflow-hidden transition-all
           group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(255,140,97,0.6)]">
-          <img src="/images/icon.png" alt="Logo" class="w-full h-full object-contain" />
+          <picture>
+            <source media="(prefers-reduced-motion: reduce)" srcset={logoStill.src} />
+            <img src={logo.src} alt="Logo" width="36" height="36" class="w-full h-full object-contain" />
+          </picture>
         </div>
         <span class="site-brand heitang-brand-font text-[0.95rem] font-bold tracking-[0.16em] text-[rgb(var(--color-primary))] transition-colors group-hover:text-white">
           HEITANG

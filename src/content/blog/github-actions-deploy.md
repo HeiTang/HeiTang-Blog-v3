@@ -1,8 +1,11 @@
 ---
 title: 'GitHub Actions 自動部署完整指南'
+cover: '../../assets/og/github-actions-deploy.jpg'
 description: '從零開始設定 GitHub Actions 自動部署 Astro 靜態網站到 GitHub Pages，並綁定自訂網域。'
 pubDate: 2026-02-10
-author: HeiTang
+relatedPosts:
+  - astro-personal-website
+  - google-sheets-json-api
 tags: ['GitHub', 'DevOps', 'CI/CD']
 ---
 

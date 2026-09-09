@@ -3,7 +3,57 @@
  * Theme system using CSS custom properties
  */
 
-/* 字型改由 BaseLayout.astro 的 <link> 載入，避免 @import 串行阻塞首屏 */
+/* 字型同源託管，避免 CSS → 第三方 stylesheet → font 的串行發現。 */
+
+@font-face {
+  font-family: 'Nasalization Rg';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  /* ponytail: brand-only glyph subset; regenerate when the Header label changes. */
+  src: url('/fonts/nasalization-brand.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  /* ponytail: static-site glyph subset; regenerate when visible copy gains new CJK characters. */
+  src: url('/fonts/noto-sans-tc-site.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 500 900;
+  font-display: swap;
+  src: url('/fonts/orbitron-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'DotGothic16';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/dotgothic16-title.woff2') format('woff2');
+}
 
 /* GenKiGothic2TW-B 的 Header 導覽子集；授權見 public/fonts/OFL-1.1.txt。 */
 @font-face {
@@ -39,7 +89,7 @@
     
     --glow-intensity: 0.3;
     --border-radius: 1.5rem;
-    --font-heitang-brand: 'Nasalization Rg', 'Nasalization', 'Orbitron', sans-serif;
+    --font-heitang-brand: 'Nasalization Rg', 'Inter', 'Noto Sans TC', sans-serif;
 
     /* Bento Grid */
     --bento-gap: 1rem;

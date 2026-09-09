@@ -8,6 +8,7 @@ import {
 } from '../../data/japan';
 import { mapStyles, renderMap } from 'japan-prefecture-map/render';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import socialImage from '../../assets/og/japan.png';
 
 const title = `制縣等級 ${japanScore}：我的 47 都道府縣足跡`;
 const description = '記錄在日本 47 都道府縣的通過、到訪、住宿與居住經驗。';
@@ -46,7 +47,7 @@ const structuredData = [
   title={title}
   description={description}
   currentPath="/japan"
-  image="/images/og/japan.png"
+  image={socialImage.src}
   structuredData={structuredData}
 >
   <style is:inline set:html={mapStyles}></style>

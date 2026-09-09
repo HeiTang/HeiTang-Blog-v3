@@ -3,22 +3,41 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 test('homepage hero keeps contact and a motion-safe typewriter', async () => {
-  const [source, home, layout, site] = await Promise.all([
+  const [source, home, layout, site, global] = await Promise.all([
     readFile(new URL('./HomeHero.astro', import.meta.url), 'utf8'),
     readFile(new URL('../../pages/index.astro', import.meta.url), 'utf8'),
     readFile(new URL('../../layouts/BaseLayout.astro', import.meta.url), 'utf8'),
     readFile(new URL('../../config/site.ts', import.meta.url), 'utf8'),
+    readFile(new URL('../../styles/global.css', import.meta.url), 'utf8'),
   ]);
 
   assert.match(source, /const homeTitle = '黑糖不是炭';/);
-  assert.match(source, /family=DotGothic16&text=\$\{titleGlyphs\}&display=swap/);
+  assert.match(source, /import \{ Picture \} from 'astro:assets';/);
+  assert.match(source, /import profileImage from '\.\.\/\.\.\/assets\/profile\.jpeg';/);
+  assert.match(source, /widths=\{\[140, 280, 420\]\}/);
+  assert.match(source, /sizes="\(min-width: 768px\) 15vw, 140px"/);
+  assert.match(source, /formats=\{\['avif', 'webp'\]\}/);
+  assert.match(source, /fallbackFormat="jpeg"/);
+  assert.match(source, /loading="eager"/);
+  assert.doesNotMatch(source, /\/images\/profile\.jpeg/);
+  assert.doesNotMatch(source, /fonts\.googleapis\.com\/css2/);
+  assert.match(global, /font-family: 'Nasalization Rg';/);
+  assert.match(global, /nasalization-brand\.woff/);
+  assert.match(global, /--font-heitang-brand: 'Nasalization Rg', 'Inter', 'Noto Sans TC'/);
   assert.match(source, /font-family: 'DotGothic16', sans-serif;/);
   assert.match(source, /const typewriterText = \[/);
   assert.match(source, /const typewriterText = \[\s+'[^']+',/);
+  assert.match(source, /const typewriterCompactText = \[\s+'橘貓不胖只是蓬鬆了點！'/);
+  assert.match(source, /data-typewriter-compact=\{JSON\.stringify\(typewriterCompactText\)\}/);
+  assert.match(source, /max-width: 360px/);
   assert.match(source, /data-typewriter=\{JSON\.stringify\(typewriterText\)\}/);
   assert.match(source, /textIndex = \(textIndex \+ 1\) % texts\.length;/);
   assert.match(source, /prefers-reduced-motion/);
-  assert.match(source, /min-block-size/);
+  assert.match(source, /block-size: 3\.3rem;/);
+  assert.match(source, /white-space: nowrap;/);
+  assert.match(source, /position: absolute;/);
+  assert.match(source, /document\.fonts\.load/);
+  assert.doesNotMatch(source, /typewriter\.textContent = ''/);
   assert.doesNotMatch(source, /class="eyebrow"/);
   assert.match(source, /margin-top: 4\.25rem;/);
   assert.match(source, /min-height: calc\(100svh - 4\.25rem\)/);
@@ -56,6 +75,10 @@ test('homepage hero keeps contact and a motion-safe typewriter', async () => {
   assert.match(source, /<div class="project-wall">/);
   assert.match(source, /featuredProjects\.map\(\(project, index\)/);
   assert.match(source, /<h3>\{project\.title\}<\/h3>/);
+  assert.match(source, /widths=\{\[480, 768, 1280\]\}/);
+  assert.match(source, /sizes=\{project\.imageSizes\}/);
+  assert.match(source, /fallbackFormat="png"/);
+  assert.doesNotMatch(source, /\/images\/projects\//);
   assert.match(source, /<ul class="project-shelf" aria-label="更多作品">/);
   assert.match(source, /shelfProjects\.map\(\(project, index\)/);
   assert.match(source, /loading="lazy"/);
