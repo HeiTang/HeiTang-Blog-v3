@@ -44,6 +44,7 @@ jobs:
           INVITE_CODES_API_URL: ${{ vars.INVITE_CODES_API_URL }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}
+          PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
 
       - name: Verify font subset coverage
         run: npm run check:font-subsets

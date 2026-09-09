@@ -76,8 +76,11 @@ npx pagefind --site dist   # 建立搜尋索引
 | `INVITE_CODES_API_URL` | Google Apps Script JSON API 端點 | 邀請碼頁面需要 |
 | `NOTION_TOKEN` | Notion internal integration token，設為 Actions Secret | 演唱會頁面需要 |
 | `NOTION_DATABASE_ID` | Notion Database 網址中的 32 字元 ID，設為 Actions Variable | 演唱會頁面需要 |
+| `PUBLIC_GA_MEASUREMENT_ID` | GA4 評估 ID（`G-XXXXXXXXXX`），設為 Actions Variable | 選填 |
 
 在 GitHub Repository → **Settings → Secrets and variables → Actions** 中設定。
+
+GA4 僅在正式建置且瀏覽網址符合 `siteConfig.url` 的主機名稱時載入；未設定 ID、開發模式及本機預覽均不送出資料。使用 `BaseLayout` 的頁面會記錄瀏覽，獨立的 `/sm/` 文字顯示工具不載入追蹤。修改 Actions Variable 後需重新建置部署才會生效。
 
 ## 🗾 日本制縣圖設定
 

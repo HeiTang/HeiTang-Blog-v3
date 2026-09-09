@@ -6,6 +6,7 @@
 import { siteConfig } from '../config/site';
 import Header from '../components/common/Header.astro';
 import Footer from '../components/common/Footer.astro';
+import GoogleAnalytics from '../components/common/GoogleAnalytics.astro';
 import favicon from '../assets/brand/favicon-32.png';
 import defaultSocialImage from '../assets/og/default.png';
 import '../styles/global.css';
@@ -61,6 +62,7 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
     <meta charset="UTF-8" />
     <meta name="description" content={resolvedDescription} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <GoogleAnalytics />
 
     {uniquePreloadFonts.map((font) => (
       <link rel="preload" href={localFontSources[font]} as="font" type="font/woff2" crossorigin />
