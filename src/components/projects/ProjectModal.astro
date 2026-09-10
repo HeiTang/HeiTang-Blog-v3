@@ -664,6 +664,7 @@
   type Shot = string | { src: string; caption?: string };
   interface ProjectData {
     name: string;
+    title: string;
     description: string | null;
     url: string;
     homepageUrl: string | null;
@@ -696,7 +697,7 @@
     // ── Sticky Header: title + close button ────────────────
     const stickyHeader = `
       <div class="pm-sticky-header">
-        <h2 id="pm-title" class="pm-title"><span class="pm-title-bracket">&lt;</span>${esc(p.name)}<span class="pm-title-bracket"> /&gt;</span></h2>
+        <h2 id="pm-title" class="pm-title"><span class="pm-title-bracket">&lt;</span>${esc(p.title)}<span class="pm-title-bracket"> /&gt;</span></h2>
         <button type="button" class="pm-close-trigger" aria-label="關閉"><span aria-hidden="true">✕</span></button>
       </div>`;
 
@@ -708,8 +709,8 @@
       const isMulti = shots.length > 1;
       const slides = shots.map(s =>
         `<figure class="pm-carousel-slide">
-          <button type="button" class="pm-image-trigger" aria-label="放大${esc(s.caption || p.name + ' 專案圖片')}" aria-haspopup="dialog">
-            <img src="${esc(s.src)}" alt="${esc(s.caption || p.name + ' 專案圖片')}" loading="lazy">
+          <button type="button" class="pm-image-trigger" aria-label="放大${esc(s.caption || p.title + ' 專案圖片')}" aria-haspopup="dialog">
+            <img src="${esc(s.src)}" alt="${esc(s.caption || p.title + ' 專案圖片')}" loading="lazy">
           </button>
           ${s.caption ? `<figcaption class="pm-carousel-caption">${esc(s.caption)}</figcaption>` : ''}
         </figure>`).join('');
@@ -725,7 +726,7 @@
           ${navHtml}
         </div>`;
     } else if (p.cover) {
-      mediaInner = `<img src="${esc(p.cover)}" alt="${esc(p.name)}" onerror="pmNoCover(this.parentElement)">`;
+      mediaInner = `<img src="${esc(p.cover)}" alt="${esc(p.title)}" onerror="pmNoCover(this.parentElement)">`;
     } else {
       mediaInner = `<div class="pm-no-cover" data-pm-dino></div>`;
     }

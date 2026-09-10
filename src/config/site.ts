@@ -10,10 +10,13 @@ import mailcatInbox from '../assets/projects/mailcat/inbox.png';
 import shortyouAuthorizedMode from '../assets/projects/shortyou/authorized-mode.png';
 import shortyouHomeWithAlias from '../assets/projects/shortyou/home-with-alias.png';
 import shortyouHome from '../assets/projects/shortyou/home.png';
-import shortyouRedirectResolving from '../assets/projects/shortyou/redirect-resolving.png';
-import shortyouResultQr from '../assets/projects/shortyou/result-qr.png';
-import yannickDemo from '../assets/projects/yannick/demo.png';
-import yannickDetail from '../assets/projects/yannick/detail.png';
+import shortyouRedirectLaunch from '../assets/projects/shortyou/redirect-launch.png';
+import shortyouResultMock from '../assets/projects/shortyou/result-mock.png';
+import shortyouResultMockQr from '../assets/projects/shortyou/result-mock-qr.png';
+import yannickHomeHero from '../assets/projects/yannick/home-hero.png';
+import yannickHomeProductQuery from '../assets/projects/yannick/home-product-query.png';
+import yannickHomeApiOverview from '../assets/projects/yannick/home-api-overview.png';
+import yannickQuickQueryProductView from '../assets/projects/yannick/quick-query-product-view.png';
 
 export const siteConfig = {
   title: '黑糖ㄉ貓窩',
@@ -46,6 +49,7 @@ export const siteConfig = {
   projectsWhitelist: [
     {
       name: 'FX-Pulse',
+      title: 'FX-Pulse 信用卡匯率比較',
       role: '個人作品',
       period: '2026',
       image: fxPulseHome,
@@ -76,6 +80,7 @@ export const siteConfig = {
     },
     {
       name: 'Remindly',
+      title: 'Remindly 提醒機器人',
       role: '個人作品',
       period: '2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Remindly',
@@ -99,6 +104,7 @@ export const siteConfig = {
     },
     {
       name: 'GitHub-Stars-to-Obsidian',
+      title: 'GitHub 收藏同步至 Obsidian',
       role: '個人作品',
       period: '2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/GitHub-Stars-to-Obsidian',
@@ -115,9 +121,10 @@ export const siteConfig = {
     },
     {
       name: 'yannick-stock-checker',
+      title: '亞尼克 YTM 庫存查詢',
       role: '個人作品',
       period: '2026',
-      image: yannickDemo,
+      image: yannickHomeHero,
       customDescription: '亞尼克 YTM 庫存查詢。以商品為核心建立反向索引，快速定位仍有現貨的 YTM 站點。FastAPI + Astro 同時提供網頁查詢與 REST API，內建快取、限流與重試機制，兼顧查詢速度與來源負載。目前運行於 yannick.purr.tw。',
       techStack: [
         'Python 3.11',
@@ -135,13 +142,16 @@ export const siteConfig = {
         '完整 pytest 覆蓋率與 coverage 報告，部署可靠度有保障。',
       ],
       screenshots: [
-        { src: yannickDemo, caption: '商品總覽 — 顯示有貨商品數與可購買站點數' },
-        { src: yannickDetail, caption: '點開單一商品可看所有仍有貨的 YTM 站點' },
+        { src: yannickHomeHero, caption: '首頁 — 即時庫存快照與全台庫存統計' },
+        { src: yannickHomeProductQuery, caption: '商品查詢 — 從商品反查仍有現貨的 YTM 站點' },
+        { src: yannickQuickQueryProductView, caption: '快速查詢 — 商品搜尋、站點篩選與定位入口' },
+        { src: yannickHomeApiOverview, caption: 'API 總覽 — 商品、站點、庫存與服務狀態端點' },
       ],
       tags: ['Python', 'FastAPI', 'Astro', 'Scraper', 'API'],
     },
     {
       name: 'MailCat',
+      title: 'MailCat 銀行信件自動整理',
       role: '個人作品',
       period: '2024 - 2026',
       image: mailcatInbox,
@@ -162,6 +172,7 @@ export const siteConfig = {
     },
     {
       name: 'Medium-OPML-Exporter',
+      title: 'Medium 追蹤清單匯出',
       role: '個人作品',
       period: '2025',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Medium-OPML-Exporter',
@@ -177,6 +188,7 @@ export const siteConfig = {
     },
     {
       name: 'PDF-Storm',
+      title: 'PDF-Storm 批次下載工具',
       role: '個人作品',
       period: '2024',
       image: 'https://opengraph.githubassets.com/1/HeiTang/PDF-Storm',
@@ -192,6 +204,7 @@ export const siteConfig = {
     },
     {
       name: 'AniCat-v2',
+      title: 'AniCat 動畫下載器',
       role: '個人作品',
       period: '2023 - 2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/AniCat-v2',
@@ -208,6 +221,7 @@ export const siteConfig = {
     },
     {
       name: 'FCU-CourseData',
+      title: '逢甲大學課程資料集',
       role: '個人作品',
       period: '2020 – 2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/FCU-CourseData',
@@ -224,6 +238,7 @@ export const siteConfig = {
     },
     {
       name: 'ShortYou',
+      title: 'ShortYou 短網址服務',
       role: '個人作品',
       period: '2022 – 2026',
       image: shortyouHome,
@@ -248,14 +263,16 @@ export const siteConfig = {
       screenshots: [
         { src: shortyouHome, caption: '公開首頁 — playground 展示，不會真的建立短網址' },
         { src: shortyouHomeWithAlias, caption: '輸入自訂 alias 預覽要產生的短連結格式' },
-        { src: shortyouResultQr, caption: '建立完成的結果頁，附上可掃描的 QR Code' },
+        { src: shortyouResultMock, caption: '示範結果 — 短連結預覽與複製操作' },
+        { src: shortyouResultMockQr, caption: '示範結果 — 展開短連結的 QR Code' },
         { src: shortyouAuthorizedMode, caption: '透過 Token 進入授權建立模式' },
-        { src: shortyouRedirectResolving, caption: '訪問短連結時的過場畫面' },
+        { src: shortyouRedirectLaunch, caption: '訪問短連結時的過場畫面' },
       ],
       tags: ['Astro', 'Google Apps Script', 'Serverless', 'URL Shortener', 'Capability Token'],
     },
     {
       name: 'Gmail-Archiver',
+      title: 'Gmail 郵件匯出與備份',
       role: '個人作品',
       period: '2024',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Gmail-Archiver',
@@ -272,6 +289,7 @@ export const siteConfig = {
     },
     {
       name: 'Zrss',
+      title: 'HITCON ZeroDay 漏洞訂閱',
       role: '個人作品',
       period: '2023',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Zrss',
@@ -288,6 +306,7 @@ export const siteConfig = {
     },
     {
       name: 'Travel-Advisory',
+      title: 'RiskRadar 旅遊警示通知',
       role: '個人作品',
       period: '2025 - 2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Travel-Advisory',

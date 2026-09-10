@@ -66,7 +66,8 @@ test('homepage hero keeps contact and a motion-safe typewriter', async () => {
   assert.match(source, /aria-label="前往精選作品"/);
   assert.doesNotMatch(source, />\s*看精選作品\s*</);
   assert.match(source, /const projectStories = \[/);
-  assert.match(source, /name: 'yannick-stock-checker',\s+title: '亞尼克 YTM 庫存查詢'/);
+  assert.match(site, /name: 'yannick-stock-checker',\s+title: '亞尼克 YTM 庫存查詢'/);
+  assert.match(source, /title: project\.title \?\? project\.name/);
   assert.match(source, /const featuredProjects = projectStories\.flatMap/);
   assert.match(source, /const shelfProjects = siteConfig\.projectsWhitelist/);
   assert.match(source, /<section id="work" class="work" aria-labelledby="work-title">/);

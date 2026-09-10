@@ -5,7 +5,7 @@
  * The heading button opens the Modal; its hit area covers the card.
  */
 import PinnedBadge from './PinnedBadge.astro';
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
 import type { ProjectAsset, ProjectMeta, ProjectScreenshot } from '../../types/projects';
 
 const GITHUB_USERNAME = 'HeiTang';
@@ -39,15 +39,26 @@ const {
   meta,
 } = Astro.props;
 
+const title = meta?.title ?? name;
+
 // Cover image: custom (from meta) > GitHub Social Preview (opengraph)
 const cover = meta?.image ?? `https://opengraph.githubassets.com/1/${GITHUB_USERNAME}/${name}`;
-const resolveAssetUrl = (asset: ProjectAsset) => typeof asset === 'string' ? asset : asset.src;
-const coverUrl = resolveAssetUrl(cover);
-const screenshots = (meta?.screenshots ?? []).map((screenshot: ProjectScreenshot) => (
+const resolveAssetUrl = async (asset: ProjectAsset): Promise<string> => {
+  if (typeof asset === 'string') return asset;
+  const image = await getImage({
+    src: asset,
+    width: Math.min(1600, asset.width),
+    format: 'webp',
+    quality: 85,
+  });
+  return image.src;
+};
+const coverUrl = await resolveAssetUrl(cover);
+const screenshots = await Promise.all((meta?.screenshots ?? []).map(async (screenshot: ProjectScreenshot) => (
   typeof screenshot === 'string'
-    ? resolveAssetUrl(screenshot)
-    : { ...screenshot, src: resolveAssetUrl(screenshot.src) }
-));
+    ? await resolveAssetUrl(screenshot)
+    : { ...screenshot, src: await resolveAssetUrl(screenshot.src) }
+)));
 
 // Tech stack: prefer meta.techStack, fallback to topics
 const techBadges = (meta?.techStack ?? topics).slice(0, 4);
@@ -63,6 +74,7 @@ const color = languageColor ?? (language ? langColorFallback[language] : null) ?
 // Serialise meta so JS can hydrate the Modal without a server round-trip
 const metaJson = JSON.stringify({
   name,
+  title,
   description: meta?.customDescription ?? description,
   url,
   homepageUrl: homepageUrl ?? null,
@@ -87,7 +99,7 @@ const metaJson = JSON.stringify({
     {typeof cover === 'string' ? (
       <img
         src={cover}
-        alt={`${name} preview`}
+        alt={`${title} 專案圖片`}
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
         onerror="this.style.display='none'; this.parentElement.querySelector('.cover-fallback').style.display='flex'"
@@ -95,7 +107,7 @@ const metaJson = JSON.stringify({
     ) : (
       <Picture
         src={cover}
-        alt={`${name} preview`}
+        alt={`${title} 專案圖片`}
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         widths={[320, 640, 960]}
         sizes="(max-width: 640px) calc(100vw - 3rem), (max-width: 1024px) 45vw, 30vw"
@@ -146,7 +158,7 @@ const metaJson = JSON.stringify({
       <h2 class="font-display font-bold text-base text-[rgb(var(--color-text-primary))]
         group-hover:text-[rgb(var(--color-primary))] transition-colors leading-snug">
         <button type="button" class="project-trigger text-left" data-project={metaJson} aria-haspopup="dialog">
-          {name}<span class="sr-only">，查看專案詳情</span>
+          {title}<span class="sr-only">，查看專案詳情</span>
         </button>
       </h2>
       <!-- Expand icon -->
