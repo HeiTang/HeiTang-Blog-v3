@@ -5,7 +5,7 @@
  * The heading button opens the Modal; its hit area covers the card.
  */
 import PinnedBadge from './PinnedBadge.astro';
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
 import type { ProjectAsset, ProjectMeta, ProjectScreenshot } from '../../types/projects';
 
 const GITHUB_USERNAME = 'HeiTang';
@@ -43,13 +43,22 @@ const title = meta?.title ?? name;
 
 // Cover image: custom (from meta) > GitHub Social Preview (opengraph)
 const cover = meta?.image ?? `https://opengraph.githubassets.com/1/${GITHUB_USERNAME}/${name}`;
-const resolveAssetUrl = (asset: ProjectAsset) => typeof asset === 'string' ? asset : asset.src;
-const coverUrl = resolveAssetUrl(cover);
-const screenshots = (meta?.screenshots ?? []).map((screenshot: ProjectScreenshot) => (
+const resolveAssetUrl = async (asset: ProjectAsset): Promise<string> => {
+  if (typeof asset === 'string') return asset;
+  const image = await getImage({
+    src: asset,
+    width: Math.min(1600, asset.width),
+    format: 'webp',
+    quality: 85,
+  });
+  return image.src;
+};
+const coverUrl = await resolveAssetUrl(cover);
+const screenshots = await Promise.all((meta?.screenshots ?? []).map(async (screenshot: ProjectScreenshot) => (
   typeof screenshot === 'string'
-    ? resolveAssetUrl(screenshot)
-    : { ...screenshot, src: resolveAssetUrl(screenshot.src) }
-));
+    ? await resolveAssetUrl(screenshot)
+    : { ...screenshot, src: await resolveAssetUrl(screenshot.src) }
+)));
 
 // Tech stack: prefer meta.techStack, fallback to topics
 const techBadges = (meta?.techStack ?? topics).slice(0, 4);
