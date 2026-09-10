@@ -38,7 +38,6 @@ const homeStructuredData = {
 const projectStories = [
   {
     name: 'FX-Pulse',
-    title: 'FX-Pulse',
     label: '資料 / 金融',
     hook: '把三家信用卡匯率攤在同一張桌上，刷卡比價不必來回切頁。',
     image: fxPulseJpyChart,
@@ -46,7 +45,6 @@ const projectStories = [
   },
   {
     name: 'yannick-stock-checker',
-    title: '亞尼克 YTM 庫存查詢',
     label: '搜尋 / 自動化',
     hook: '從想買的商品反查還有庫存的站點，少一點無止盡的尋找。',
     image: yannickQuickQueryProductView,
@@ -54,7 +52,6 @@ const projectStories = [
   },
   {
     name: 'MailCat',
-    title: 'MailCat',
     label: '信箱 / 自動化',
     hook: '把銀行信件收好、分類好，讓收件匣不再被塞滿。',
     image: mailcatInbox,
@@ -62,7 +59,6 @@ const projectStories = [
   },
   {
     name: 'ShortYou',
-    title: 'ShortYou',
     label: '短網址 / Web',
     hook: '一個短網址服務，也是一個關於權限與自架邊界的解決方案。',
     image: shortyouHome,
@@ -72,7 +68,7 @@ const projectStories = [
 const featuredProjectNames = new Set<string>(projectStories.map(({ name }) => name));
 const featuredProjects = projectStories.flatMap((story) => {
   const project = siteConfig.projectsWhitelist.find(({ name }) => name === story.name);
-  return project ? [{ ...project, ...story }] : [];
+  return project ? [{ ...project, ...story, title: project.title ?? project.name }] : [];
 });
 const shelfProjects = siteConfig.projectsWhitelist
   .filter(({ name }) => !featuredProjectNames.has(name))
@@ -250,7 +246,7 @@ const remainingProjectCount = Math.max(siteConfig.projectsWhitelist.length - fea
               <a href="/projects/">
                 <span class="project-shelf-number" aria-hidden="true">{String(index + 5).padStart(2, '0')}</span>
                 <span class="project-shelf-copy">
-                  <strong>{project.name}</strong>
+                  <strong>{project.title ?? project.name}</strong>
                   <span class="sr-only">，到作品庫查看專案詳情</span>
                   <span>{project.techStack?.[0] ?? 'side project'}</span>
                 </span>

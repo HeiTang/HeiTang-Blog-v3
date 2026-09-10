@@ -13,6 +13,9 @@ export interface ProjectMeta {
   /** Must match the GitHub repository name exactly */
   name: string;
 
+  /** Visitor-facing title. Falls back to the repository name. */
+  title?: string;
+
   /** Custom local asset or remote cover URL. Falls back to GitHub Social Preview. */
   image?: ProjectAsset;
 

@@ -39,6 +39,8 @@ const {
   meta,
 } = Astro.props;
 
+const title = meta?.title ?? name;
+
 // Cover image: custom (from meta) > GitHub Social Preview (opengraph)
 const cover = meta?.image ?? `https://opengraph.githubassets.com/1/${GITHUB_USERNAME}/${name}`;
 const resolveAssetUrl = (asset: ProjectAsset) => typeof asset === 'string' ? asset : asset.src;
@@ -63,6 +65,7 @@ const color = languageColor ?? (language ? langColorFallback[language] : null) ?
 // Serialise meta so JS can hydrate the Modal without a server round-trip
 const metaJson = JSON.stringify({
   name,
+  title,
   description: meta?.customDescription ?? description,
   url,
   homepageUrl: homepageUrl ?? null,
@@ -87,7 +90,7 @@ const metaJson = JSON.stringify({
     {typeof cover === 'string' ? (
       <img
         src={cover}
-        alt={`${name} preview`}
+        alt={`${title} 專案圖片`}
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"
         onerror="this.style.display='none'; this.parentElement.querySelector('.cover-fallback').style.display='flex'"
@@ -95,7 +98,7 @@ const metaJson = JSON.stringify({
     ) : (
       <Picture
         src={cover}
-        alt={`${name} preview`}
+        alt={`${title} 專案圖片`}
         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         widths={[320, 640, 960]}
         sizes="(max-width: 640px) calc(100vw - 3rem), (max-width: 1024px) 45vw, 30vw"
@@ -146,7 +149,7 @@ const metaJson = JSON.stringify({
       <h2 class="font-display font-bold text-base text-[rgb(var(--color-text-primary))]
         group-hover:text-[rgb(var(--color-primary))] transition-colors leading-snug">
         <button type="button" class="project-trigger text-left" data-project={metaJson} aria-haspopup="dialog">
-          {name}<span class="sr-only">，查看專案詳情</span>
+          {title}<span class="sr-only">，查看專案詳情</span>
         </button>
       </h2>
       <!-- Expand icon -->

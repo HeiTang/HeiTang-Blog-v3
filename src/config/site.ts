@@ -118,6 +118,7 @@ export const siteConfig = {
     },
     {
       name: 'yannick-stock-checker',
+      title: '亞尼克 YTM 庫存查詢',
       role: '個人作品',
       period: '2026',
       image: yannickHomeHero,
@@ -229,6 +230,7 @@ export const siteConfig = {
     },
     {
       name: 'ShortYou',
+      title: 'ShortYou 短網址服務',
       role: '個人作品',
       period: '2022 – 2026',
       image: shortyouHome,
