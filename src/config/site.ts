@@ -49,6 +49,7 @@ export const siteConfig = {
   projectsWhitelist: [
     {
       name: 'FX-Pulse',
+      title: 'FX-Pulse 信用卡匯率比較',
       role: '個人作品',
       period: '2026',
       image: fxPulseHome,
@@ -79,6 +80,7 @@ export const siteConfig = {
     },
     {
       name: 'Remindly',
+      title: 'Remindly 提醒機器人',
       role: '個人作品',
       period: '2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Remindly',
@@ -102,6 +104,7 @@ export const siteConfig = {
     },
     {
       name: 'GitHub-Stars-to-Obsidian',
+      title: 'GitHub 收藏同步至 Obsidian',
       role: '個人作品',
       period: '2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/GitHub-Stars-to-Obsidian',
@@ -148,6 +151,7 @@ export const siteConfig = {
     },
     {
       name: 'MailCat',
+      title: 'MailCat 銀行信件自動整理',
       role: '個人作品',
       period: '2024 - 2026',
       image: mailcatInbox,
@@ -168,6 +172,7 @@ export const siteConfig = {
     },
     {
       name: 'Medium-OPML-Exporter',
+      title: 'Medium 追蹤清單匯出',
       role: '個人作品',
       period: '2025',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Medium-OPML-Exporter',
@@ -183,6 +188,7 @@ export const siteConfig = {
     },
     {
       name: 'PDF-Storm',
+      title: 'PDF-Storm 批次下載工具',
       role: '個人作品',
       period: '2024',
       image: 'https://opengraph.githubassets.com/1/HeiTang/PDF-Storm',
@@ -198,6 +204,7 @@ export const siteConfig = {
     },
     {
       name: 'AniCat-v2',
+      title: 'AniCat 動畫下載器',
       role: '個人作品',
       period: '2023 - 2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/AniCat-v2',
@@ -214,6 +221,7 @@ export const siteConfig = {
     },
     {
       name: 'FCU-CourseData',
+      title: '逢甲大學課程資料集',
       role: '個人作品',
       period: '2020 – 2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/FCU-CourseData',
@@ -264,6 +272,7 @@ export const siteConfig = {
     },
     {
       name: 'Gmail-Archiver',
+      title: 'Gmail 郵件匯出與備份',
       role: '個人作品',
       period: '2024',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Gmail-Archiver',
@@ -280,6 +289,7 @@ export const siteConfig = {
     },
     {
       name: 'Zrss',
+      title: 'HITCON ZeroDay 漏洞訂閱',
       role: '個人作品',
       period: '2023',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Zrss',
@@ -296,6 +306,7 @@ export const siteConfig = {
     },
     {
       name: 'Travel-Advisory',
+      title: 'RiskRadar 旅遊警示通知',
       role: '個人作品',
       period: '2025 - 2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Travel-Advisory',
