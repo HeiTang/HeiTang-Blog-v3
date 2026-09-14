@@ -1,0 +1,124 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectGallery from '../../components/projects/ProjectGallery.astro';
+import { siteConfig } from '../../config/site';
+import socialImage from '../../assets/og/projects.jpg';
+
+export function getStaticPaths() {
+  return siteConfig.projectsWhitelist.map((project, index, projects) => ({
+    params: { slug: project.name.toLowerCase() },
+    props: { project, next: projects[(index + 1) % projects.length] },
+  }));
+}
+const { project, next } = Astro.props;
+const title = project.title ?? project.name;
+const description = project.summary ?? project.customDescription ?? title;
+const isYannick = project.name === 'yannick-stock-checker';
+const screenshots = project.screenshots ?? [];
+const path = `/projects/${project.name.toLowerCase()}/`;
+const structuredData = [
+  { '@context': 'https://schema.org', '@type': 'CreativeWork', name: title, description: project.customDescription ?? description,
+    url: `${siteConfig.url}${path}`, author: { '@type': 'Person', name: siteConfig.author } },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '作品', item: `${siteConfig.url}/projects/` },
+    { '@type': 'ListItem', position: 2, name: title, item: `${siteConfig.url}${path}` },
+  ] },
+];
+---
+<BaseLayout title={title} description={description} currentPath="/projects/" image={socialImage.src} structuredData={structuredData} hasPointerGlow={false}>
+  <article class="project-page" data-pagefind-body>
+    <header class="project-header">
+      <a class="back" href="/projects/">← 所有作品</a>
+      <p class="eyebrow">{project.category} <span aria-hidden="true">/</span> {project.period}</p>
+      <h1>{title}</h1>
+      <p class="summary">{description}</p>
+      <div class="actions">
+        {project.homepage && <a class="primary" href={project.homepage} target="_blank" rel="noopener noreferrer">開啟網站 <span aria-hidden="true">↗</span><span class="sr-only">（開新分頁）</span></a>}
+        {!project.hideGithubLink && <a href={`https://github.com/HeiTang/${project.name}`} target="_blank" rel="noopener noreferrer">查看原始碼 <span aria-hidden="true">↗</span><span class="sr-only">（開新分頁）</span></a>}
+        {project.blogPost && <a href={project.blogPost}>閱讀開發筆記 →</a>}
+      </div>
+    </header>
+    <div class="project-story">
+      <section class="overview" aria-labelledby="overview-title">
+        <h2 id="overview-title">{isYannick ? '從想買的商品開始' : '關於這個作品'}</h2>
+        <div>{isYannick ? <>
+          <p>想買特定口味的生乳捲，卻得逐站確認 YTM 庫存。這個工具把查詢順序反過來：先選想買的商品，再看哪些站點還有現貨。</p>
+          <p>從商品清單、站點庫存到 API，同一份資料既能讓人直接查，也能接進自己的工具。</p>
+        </> : <p>{project.customDescription}</p>}</div>
+      </section>
+      {isYannick && <ol class="steps" aria-label="查詢流程">
+        <li><span>01</span><h3>選想買的商品</h3><p>搜尋口味或商品名稱，找到想買的生乳捲。</p></li>
+        <li><span>02</span><h3>看有貨的站點</h3><p>從商品反查庫存，依捷運或門市篩選。</p></li>
+        <li><span>03</span><h3>挑方便的地點</h3><p>開啟定位，依距離尋找附近的取貨站點。</p></li>
+      </ol>}
+      {screenshots.length > 0 && <section class="screenshots" aria-labelledby="screenshots-title">
+        <div class="section-label"><h2 id="screenshots-title">實際畫面</h2><span>點圖片看細節</span></div>
+        <ProjectGallery screenshots={screenshots} title={title} />
+      </section>}
+      {project.highlights && project.highlights.length > 0 && <section class="choices" aria-labelledby="choices-title">
+        <h2 id="choices-title">{isYannick ? '實作上的選擇' : '功能與實作'}</h2>
+        <ul>{project.highlights.map((highlight, index) => <li>
+          <span class="choice-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          <p>{highlight}</p>
+        </li>)}</ul>
+      </section>}
+      <section class="project-info" aria-labelledby="info-title">
+        <h2 id="info-title">專案資訊</h2>
+        <dl><div><dt>角色</dt><dd>{project.role}</dd></div><div><dt>年份</dt><dd>{project.period}</dd></div><div><dt>主要技術</dt><dd><ul class="tech-stack" aria-label="主要技術">{project.techStack?.map(tech => <li>{tech}</li>)}</ul></dd></div></dl>
+      </section>
+    </div>
+    <footer class="next-project"><span>接著看看</span><a href={`/projects/${next.name.toLowerCase()}/`}>{next.title ?? next.name}<span aria-hidden="true">↗</span></a></footer>
+  </article>
+</BaseLayout>
+<style>
+  .project-page { max-width: 1080px; margin: auto; padding: 7rem 1.25rem 4rem; }
+  .project-header { max-width: 850px; margin: 0 auto 4rem; }
+  .back { display: inline-flex; align-items: center; min-height: 44px; font-size: .9rem; color: rgb(var(--color-text-secondary)); }
+  .eyebrow { margin: 2.5rem 0 1rem; color: rgb(var(--color-primary)); font-size: .8rem; letter-spacing: .06em; }
+  .eyebrow span { margin: 0 .7rem; }
+  h1 { font-size: clamp(2rem, 4.5vw, 3.3rem); line-height: 1.35; letter-spacing: -.035em; font-weight: 700; }
+  .summary { font-size: clamp(1.05rem, 2vw, 1.35rem); line-height: 1.8; color: rgb(var(--color-text-secondary)); margin-top: 1rem; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 2rem; }
+  .actions a { display: inline-flex; gap: .8rem; align-items: center; min-height: 44px; padding: .65rem 1rem; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; font-size: .9rem; }
+  .actions .primary { color: rgb(var(--color-bg-dark)); background: rgb(var(--color-primary)); border-color: transparent; font-weight: 600; }
+  .actions a:hover { border-color: rgb(var(--color-primary)); }
+  .overview { display: grid; grid-template-columns: 1fr 2.3fr; gap: 2rem; max-width: 850px; margin: 0 auto; }
+  h2 { font-size: 1.1rem; line-height: 1.6; font-weight: 600; }
+  .overview p { margin: 0 0 1rem; line-height: 1.95; color: rgb(var(--color-text-secondary)); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); list-style: none; padding: 0; gap: 2rem; margin: 2.5rem auto 4rem; max-width: 850px; }
+  .steps li { border-top: 1px solid rgb(var(--color-primary) / .45); padding-top: 1rem; }
+  .steps span { color: rgb(var(--color-primary)); font-size: .75rem; }
+  .steps h3 { font-size: 1rem; font-weight: 600; margin: .75rem 0 .5rem; }
+  .steps p { font-size: .9rem; line-height: 1.8; color: rgb(var(--color-text-secondary)); }
+  .screenshots { margin: 4rem 0; }
+  .section-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; }
+  .section-label span { color: rgb(var(--color-text-secondary)); font-size: .8rem; }
+  .choices { max-width: 850px; margin: 0 auto; }
+  .choices h2 { margin-bottom: 1.5rem; }
+  .choices ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; list-style: none; padding: 1px; background: rgb(var(--color-primary) / .18); border-radius: 16px; overflow: hidden; }
+  .choices li { padding: clamp(1.25rem, 3vw, 2rem); background: rgb(var(--color-bg-dark)); }
+  .choices li:first-child { grid-column: 1 / -1; background: linear-gradient(115deg, rgb(var(--color-primary) / .1), transparent 75%), rgb(var(--color-bg-dark)); }
+  .choice-number { display: block; color: rgb(var(--color-primary)); font-size: .8rem; font-variant-numeric: tabular-nums; letter-spacing: .12em; margin-bottom: 1rem; }
+  .choices p { margin: 0; line-height: 1.9; color: rgb(var(--color-text-secondary)); overflow-wrap: anywhere; }
+  .choices li:first-child p { color: inherit; font-size: 1.1rem; }
+  .tech-stack { display: flex; flex-wrap: wrap; gap: .55rem; padding: 0; margin: 0; list-style: none; }
+  .tech-stack li { padding: .35rem .8rem; border: 1px solid rgb(var(--color-primary) / .25); border-radius: 6px; background: rgb(var(--color-primary) / .06); font-size: .85rem; line-height: 1.6; overflow-wrap: anywhere; }
+  .project-info { max-width: 850px; margin: 3.5rem auto 0; }
+  dl { display: grid; grid-template-columns: 1fr 1fr 3fr; gap: 1.5rem; margin-top: 1.5rem; }
+  dt { color: rgb(var(--color-text-secondary)); font-size: .8rem; margin-bottom: .5rem; }
+  dd { font-size: .9rem; line-height: 1.8; margin: 0; }
+  .next-project { border-top: 1px solid rgba(255,255,255,.16); padding-top: 2rem; margin-top: 5rem; }
+  .next-project > span { font-size: .8rem; color: rgb(var(--color-text-secondary)); }
+  .next-project a { display: flex; justify-content: space-between; gap: 1rem; font-size: clamp(1.3rem, 3vw, 2rem); padding: 1rem 0; }
+  .next-project a span { color: rgb(var(--color-primary)); }
+  a:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 5px; }
+  @media (max-width: 700px) {
+    .project-page { padding-top: 5.5rem; }
+    .project-header { margin-bottom: 3rem; }
+    .overview { grid-template-columns: 1fr; gap: 1rem; }
+    .steps { grid-template-columns: 1fr; gap: 1.5rem; }
+    .choices ul { grid-template-columns: 1fr; }
+    dl { grid-template-columns: 1fr 1fr; }
+    dl > div:last-child { grid-column: 1 / -1; }
+  }
+</style>

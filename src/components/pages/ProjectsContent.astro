@@ -1,248 +1,127 @@
 ---
+import { Picture } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import socialImage from '../../assets/og/projects.jpg';
-import ProjectCard from '../projects/ProjectCard.astro';
-import ProjectModal from '../projects/ProjectModal.astro';
-import { fetchPinnedRepos, fetchPublicRepos } from '../../services/github';
-import { copy } from '../../config/copy';
 import { siteConfig } from '../../config/site';
 
-const [pinnedRepos, publicRepos] = await Promise.all([
-  fetchPinnedRepos(),
-  fetchPublicRepos(),
-]);
-
-const metaMap = new Map(siteConfig.projectsWhitelist.map(m => [m.name, m]));
-const pinnedNames = new Set(pinnedRepos.map(r => r.name));
-const apiRepoNames = new Set(publicRepos.map(r => r.name));
-
-const whitelistRepos = publicRepos
-  .filter(r => metaMap.has(r.name) && !pinnedNames.has(r.name))
-  .map(r => ({ ...r, meta: metaMap.get(r.name) }));
-
-const fallbackRepos = siteConfig.projectsWhitelist
-  .filter(m => !pinnedNames.has(m.name) && !apiRepoNames.has(m.name))
-  .map(m => ({
-    name: m.name,
-    description: m.customDescription ?? null,
-    html_url: `https://github.com/HeiTang/${m.name}`,
-    homepage: null as string | null,
-    language: m.techStack?.[0] ?? null,
-    stargazers_count: 0,
-    forks_count: 0,
-    topics: [] as string[],
-    meta: m,
-    isFallback: true,
-  }));
-
-const allRepos = [
-  ...pinnedRepos.map(r => ({
-    name: r.name,
-    language: r.primaryLanguage?.name ?? null,
-    topics: r.repositoryTopics.nodes.map((n: any) => n.topic.name),
-    pinned: true,
-    meta: metaMap.get(r.name),
-  })),
-  ...whitelistRepos.map(r => ({
-    name: r.name,
-    language: r.language ?? null,
-    topics: r.topics ?? [],
-    pinned: false,
-    meta: r.meta,
-  })),
-  ...fallbackRepos.map(r => ({
-    name: r.name,
-    language: r.language ?? null,
-    topics: [] as string[],
-    pinned: false,
-    meta: r.meta,
-  })),
-];
-
-const tagCount: Record<string, number> = {};
-for (const repo of allRepos) {
-  const tags = (repo.meta?.tags ?? []) as string[];
-  for (const tag of tags) {
-    tagCount[tag] = (tagCount[tag] ?? 0) + 1;
-  }
-}
-const sortedTags = Object.entries(tagCount)
-  .sort((a, b) => b[1] - a[1])
-  .map(([tag]) => tag);
+const projects = siteConfig.projectsWhitelist;
+const featuredNames = ['FX-Pulse', 'yannick-stock-checker', 'ShortYou'];
+const featured = featuredNames.map(name => projects.find(project => project.name === name)!);
+const remaining = projects.filter(project => !featuredNames.includes(project.name));
+const categories = ['全部', ...new Set(remaining.map(project => project.category))];
+const description = '把生活裡反覆遇到的麻煩，做成好用的工具。探索黑糖的網站服務、自動化工具與資料專案。';
+const structuredData = {
+  '@context': 'https://schema.org', '@type': 'CollectionPage', name: '作品',
+  url: `${siteConfig.url}/projects/`, description,
+  mainEntity: { '@type': 'ItemList', itemListElement: projects.map((project, index) => ({
+    '@type': 'ListItem', position: index + 1, name: project.title ?? project.name,
+    url: `${siteConfig.url}/projects/${project.name.toLowerCase()}/`,
+  })) },
+};
 ---
-
-<BaseLayout title={copy.projects.title} description={copy.projects.description} currentPath="/projects" image={socialImage.src}>
-  <div class="container mx-auto px-6 py-24">
-    <!-- Page header -->
-    <div class="mb-8">
-      <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
-        🚀 {copy.projects.title}
-      </h1>
-    </div>
-
-    <!-- Tag filter tabs -->
-    {sortedTags.length > 0 && (
-      <div class="tag-tabs-wrapper sticky top-16 z-20 mb-8 -mx-2 px-2 py-2">
-        <div class="relative">
-          <div class="tag-tabs-scroll flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            <button
-              class="tag-tab active flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium"
-              data-tag="__all__"
-            >
-              {copy.projects.allFilter}
-              <span class="ml-1.5 text-xs opacity-70">({allRepos.length})</span>
-            </button>
-            {sortedTags.map(tag => (
-              <button
-                class="tag-tab flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium"
-                data-tag={tag}
-              >
-                {tag}
-                <span class="ml-1.5 text-xs opacity-70">({tagCount[tag]})</span>
-              </button>
-            ))}
-          </div>
-          <div class="tag-tabs-fade pointer-events-none absolute right-0 top-0 bottom-0 w-12
-            bg-gradient-to-l from-[rgb(var(--color-bg))] to-transparent rounded-r-full"></div>
-        </div>
+<BaseLayout title="作品" description={description} currentPath="/projects/" image={socialImage.src} structuredData={structuredData} hasPointerGlow={false}>
+  <div class="portfolio" data-pagefind-body>
+    <header class="intro">
+      <p class="eyebrow">SELECTED WORK / 黑糖的工具箱</p>
+      <h1>從生活裡的麻煩，<br />做出一點<span>改變。</span></h1>
+      <div class="intro-bottom"><p>寫些自己也會用的工具。<br />從查庫存、比匯率，到把每天的重複工作交給程式。</p><a href="#project-directory">看看另外 {remaining.length} 個作品 <span aria-hidden="true">↓</span></a></div>
+    </header>
+    <section aria-labelledby="featured-title" class="featured-section">
+      <div class="section-heading"><h2 id="featured-title">精選作品</h2><span>先從這三個開始</span></div>
+      <div class="featured-grid">
+        {featured.map((project, index) => (
+          <a class:list={['feature', { 'feature-lead': index === 0 }]} href={`/projects/${project.name.toLowerCase()}/`}>
+            <div class="feature-image">
+              {project.image && (typeof project.image === 'string' ? <img src={project.image} alt={`${project.title} 的介面截圖`} loading="lazy" /> :
+                <Picture src={project.image} alt={`${project.title} 的介面截圖`} widths={[480, 800, 1280, 1600]} sizes={index === 0 ? '(max-width: 700px) calc(100vw - 40px), 1080px' : '(max-width: 700px) calc(100vw - 40px), 530px'} formats={['avif', 'webp']} loading={index === 0 ? 'eager' : 'lazy'} />)}
+              <span class="feature-number" aria-hidden="true">0{index + 1}</span>
+            </div>
+            <div class="feature-caption"><div><h3>{project.title ?? project.name}</h3><p>{project.summary}</p></div><span class="arrow" aria-hidden="true">↗</span></div>
+          </a>
+        ))}
       </div>
-    )}
-
-    <!-- All project cards (flat, filtered by JS) -->
-    <div id="projects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {pinnedRepos.map(repo => (
-        <div
-          class="proj-card card-interactive rounded-3xl border border-white/[0.08] overflow-hidden ring-1 ring-[rgba(var(--color-primary),0.2)]"
-          style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));"
-          data-tags={[...(metaMap.get(repo.name)?.tags ?? [])].join(',')}
-        >
-          <ProjectCard
-            name={repo.name}
-            description={repo.description}
-            url={repo.url}
-            homepageUrl={repo.homepageUrl}
-            language={repo.primaryLanguage?.name ?? null}
-            languageColor={repo.primaryLanguage?.color ?? null}
-            stars={repo.stargazerCount}
-            forks={repo.forkCount}
-            topics={repo.repositoryTopics.nodes.map((n: any) => n.topic.name)}
-            pinned={true}
-            meta={metaMap.get(repo.name)}
-          />
-        </div>
-      ))}
-      {whitelistRepos.map(repo => (
-        <div
-          class="proj-card card-interactive rounded-3xl border border-white/[0.08] overflow-hidden"
-          style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));"
-          data-tags={[...(repo.meta?.tags ?? [])].join(',')}
-        >
-          <ProjectCard
-            name={repo.name}
-            description={repo.description}
-            url={repo.html_url}
-            homepageUrl={repo.homepage}
-            language={repo.language}
-            stars={repo.stargazers_count}
-            forks={repo.forks_count}
-            topics={repo.topics}
-            meta={repo.meta}
-          />
-        </div>
-      ))}
-      {fallbackRepos.map(repo => (
-        <div
-          class="proj-card card-interactive rounded-3xl border border-white/[0.08] overflow-hidden"
-          style="background: var(--bento-card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));"
-          data-tags={[...(repo.meta?.tags ?? [])].join(',')}
-        >
-          <ProjectCard
-            name={repo.name}
-            description={repo.description}
-            url={repo.html_url}
-            homepageUrl={repo.homepage}
-            language={repo.language}
-            stars={repo.stargazers_count}
-            forks={repo.forks_count}
-            topics={repo.topics}
-            meta={repo.meta}
-          />
-        </div>
-      ))}
-    </div>
-
-    <!-- Empty state -->
-    <div id="projects-empty" class="hidden glass p-12 rounded-2xl text-center">
-      <p class="text-[rgb(var(--color-text-secondary))] text-lg">{copy.projects.noMatchingProjects}</p>
-    </div>
-
-    {pinnedRepos.length === 0 && whitelistRepos.length === 0 && (
-      <div class="glass p-12 rounded-2xl text-center">
-        <p class="text-[rgb(var(--color-text-secondary))] text-lg">{copy.projects.noRepos}</p>
+    </section>
+    <section id="project-directory" aria-labelledby="directory-title" class="directory">
+      <div class="section-heading"><h2 id="directory-title">還有這些小工具</h2><span>讓日常少一點重複</span></div>
+      <div class="filters" role="group" aria-label="篩選其他作品" hidden>
+        {categories.map((category, index) => <button type="button" data-category={category} aria-pressed={index === 0}>{category}</button>)}
       </div>
-    )}
+      <ul class="project-list">
+        {remaining.map(project => (
+          <li data-project-category={project.category}>
+            <a href={`/projects/${project.name.toLowerCase()}/`}><span class="row-category">{project.category}</span><div><h3>{project.title ?? project.name}</h3><p>{project.summary}</p></div><span class="arrow" aria-hidden="true">↗</span></a>
+          </li>
+        ))}
+      </ul>
+      <p class="filter-status" role="status" aria-live="polite"></p>
+    </section>
   </div>
-
-  <ProjectModal />
 </BaseLayout>
-
 <style>
-  .tag-tab {
-    color: rgb(var(--color-text-secondary));
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.03);
-    transition: color 0.2s, background 0.2s, border-color 0.2s;
+  .portfolio { max-width: 1080px; margin: auto; padding: 8rem 1.25rem 5rem; }
+  .eyebrow { color: rgb(var(--color-primary)); font-size: .75rem; letter-spacing: .15em; margin-bottom: 1.8rem; }
+  h1 { font-size: clamp(2.2rem, 5.3vw, 4.1rem); font-weight: 700; line-height: 1.3; letter-spacing: -.035em; }
+  h1 span { color: rgb(var(--color-primary)); }
+  .intro-bottom { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-top: 2rem; }
+  .intro-bottom p { color: rgb(var(--color-text-secondary)); line-height: 1.9; }
+  .intro-bottom a { display: inline-flex; align-items: center; gap: 1rem; min-height: 44px; font-size: .875rem; border-bottom: 1px solid rgb(var(--color-primary)); }
+  .featured-section { margin-top: 5rem; }
+  .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+  .section-heading h2 { font-size: 1.1rem; font-weight: 600; }
+  .section-heading > span { font-size: .8rem; color: rgb(var(--color-text-secondary)); }
+  .featured-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem 1.5rem; }
+  .feature { min-width: 0; border-radius: 12px; }
+  .feature-lead { grid-column: 1 / -1; }
+  .feature-image { position: relative; overflow: hidden; border-radius: 12px; background: rgb(var(--color-primary) / .045); border: 1px solid rgba(255,255,255,.1); padding: 1.5rem; aspect-ratio: 1.6; display: flex; align-items: center; justify-content: center; }
+  .feature-lead .feature-image { aspect-ratio: 2.1; padding: 2.5rem 4rem; }
+  .feature-image :global(picture) { width: 100%; height: 100%; }
+  .feature-image :global(img) { width: 100%; height: 100%; object-fit: contain; transition: transform .25s ease; }
+  .feature:hover .feature-image :global(img) { transform: scale(1.025); }
+  .feature-number { position: absolute; left: 1rem; top: .8rem; font-size: .7rem; color: rgb(var(--color-text-secondary)); }
+  .feature-caption { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1.2rem; }
+  h3 { font-size: 1.15rem; line-height: 1.5; font-weight: 600; }
+  .feature-caption p, .project-list p { margin-top: .4rem; font-size: .9rem; line-height: 1.7; color: rgb(var(--color-text-secondary)); }
+  .arrow { color: rgb(var(--color-primary)); font-size: 1.35rem; }
+  .directory { margin-top: 5.5rem; scroll-margin-top: 6rem; }
+  .filters { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem; }
+  .filters[hidden], li[hidden] { display: none; }
+  .filters button { min-height: 44px; padding: .5rem 1rem; border: 1px solid rgba(255,255,255,.14); border-radius: 6px; color: rgb(var(--color-text-secondary)); font-size: .85rem; cursor: pointer; }
+  .filters button[aria-pressed="true"] { color: rgb(var(--color-primary)); background: rgb(var(--color-primary) / .1); border-color: rgb(var(--color-primary) / .45); }
+  .project-list { padding: 0; list-style: none; }
+  .project-list li { border-top: 1px solid rgba(255,255,255,.12); }
+  .project-list li:last-child { border-bottom: 1px solid rgba(255,255,255,.12); }
+  .project-list a { display: grid; grid-template-columns: 7rem 1fr auto; gap: 1.5rem; align-items: center; padding: 1.5rem .5rem; }
+  .project-list a:hover h3, .feature:hover h3 { color: rgb(var(--color-primary)); }
+  .row-category { font-size: .75rem; color: rgb(var(--color-text-secondary)); }
+  .filter-status { min-height: 1.5rem; margin-top: 1rem; font-size: .8rem; color: rgb(var(--color-text-secondary)); }
+  a:focus-visible, button:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 5px; }
+  @media (max-width: 700px) {
+    .portfolio { padding-top: 6rem; }
+    .intro-bottom { display: block; }
+    .intro-bottom a { margin-top: 1.5rem; }
+    .featured-grid { grid-template-columns: 1fr; }
+    .feature-lead .feature-image, .feature-image { aspect-ratio: 1.6; padding: 1rem; }
+    .project-list a { grid-template-columns: 1fr auto; gap: .4rem 1rem; }
+    .row-category { grid-column: 1 / -1; }
+    .section-heading > span { font-size: .75rem; }
+    .featured-section, .directory { margin-top: 3.5rem; }
   }
-  .tag-tab:hover {
-    color: rgb(var(--color-text-primary));
-    background: rgba(255,255,255,0.06);
-  }
-  .tag-tab.active {
-    color: rgb(var(--color-primary));
-    border-color: rgba(var(--color-primary), 0.5);
-    background: rgba(var(--color-primary), 0.1);
-  }
-  .tag-tabs-wrapper {
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background: rgba(var(--color-bg), 0.6);
-    border-radius: 1rem;
-  }
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-  .proj-card {
-    transition: opacity 0.25s ease, transform 0.25s ease;
-  }
-  .proj-card.hidden-card {
-    display: none;
-  }
+  @media (prefers-reduced-motion: reduce) { .feature-image :global(img) { transition: none; } .feature:hover .feature-image :global(img) { transform: none; } }
 </style>
-
 <script>
-  const tabs = document.querySelectorAll<HTMLButtonElement>('.tag-tab');
-  const cards = document.querySelectorAll<HTMLElement>('.proj-card');
-  const emptyEl = document.getElementById('projects-empty');
-
-  let activeTag = '__all__';
-
-  function applyFilter() {
-    let visible = 0;
-    cards.forEach(card => {
-      const tags = (card.dataset.tags ?? '').split(',').filter(Boolean);
-      const match = activeTag === '__all__' || tags.includes(activeTag);
-      card.classList.toggle('hidden-card', !match);
-      if (match) visible++;
+  const filters = document.querySelector<HTMLElement>('.filters');
+  const buttons = filters?.querySelectorAll<HTMLButtonElement>('button') ?? [];
+  const rows = document.querySelectorAll<HTMLElement>('[data-project-category]');
+  const status = document.querySelector<HTMLElement>('.filter-status');
+  if (filters) filters.hidden = false;
+  buttons.forEach(button => button.addEventListener('click', () => {
+    const category = button.dataset.category;
+    let count = 0;
+    buttons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    rows.forEach(row => {
+      row.hidden = category !== '全部' && row.dataset.projectCategory !== category;
+      if (!row.hidden) count++;
     });
-    emptyEl?.classList.toggle('hidden', visible > 0);
-  }
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      activeTag = tab.dataset.tag ?? '__all__';
-      applyFilter();
-    });
-  });
+    if (status) status.textContent = count ? `顯示 ${count} 個作品` : '精選網站作品在上方，這裡目前沒有其他作品。';
+  }));
 </script>

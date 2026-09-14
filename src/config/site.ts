@@ -50,6 +50,9 @@ export const siteConfig = {
     {
       name: 'FX-Pulse',
       title: 'FX-Pulse 信用卡匯率比較',
+      summary: '出國刷卡前，把三家信用卡匯率放一起看。',
+      category: '網站服務',
+      homepage: 'https://fx.purr.tw/',
       role: '個人作品',
       period: '2026',
       image: fxPulseHome,
@@ -81,6 +84,8 @@ export const siteConfig = {
     {
       name: 'Remindly',
       title: 'Remindly 提醒機器人',
+      summary: '用一句話設定提醒，到時間由 Telegram 通知。',
+      category: '自動化工具',
       role: '個人作品',
       period: '2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Remindly',
@@ -105,6 +110,8 @@ export const siteConfig = {
     {
       name: 'GitHub-Stars-to-Obsidian',
       title: 'GitHub 收藏同步至 Obsidian',
+      summary: '把收藏過的工具，整理成可搜尋的 Obsidian 筆記。',
+      category: '自動化工具',
       role: '個人作品',
       period: '2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/GitHub-Stars-to-Obsidian',
@@ -122,6 +129,9 @@ export const siteConfig = {
     {
       name: 'yannick-stock-checker',
       title: '亞尼克 YTM 庫存查詢',
+      summary: '想買的生乳捲，哪個站點還有貨？',
+      category: '網站服務',
+      homepage: 'https://yannick.purr.tw/',
       role: '個人作品',
       period: '2026',
       image: yannickHomeHero,
@@ -152,6 +162,8 @@ export const siteConfig = {
     {
       name: 'MailCat',
       title: 'MailCat 銀行信件自動整理',
+      summary: '自動分類銀行通知，整理信箱裡的電子帳單。',
+      category: '自動化工具',
       role: '個人作品',
       period: '2024 - 2026',
       image: mailcatInbox,
@@ -173,6 +185,8 @@ export const siteConfig = {
     {
       name: 'Medium-OPML-Exporter',
       title: 'Medium 追蹤清單匯出',
+      summary: '把 Medium 追蹤清單帶到你喜歡的 RSS 閱讀器。',
+      category: '自動化工具',
       role: '個人作品',
       period: '2025',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Medium-OPML-Exporter',
@@ -189,6 +203,8 @@ export const siteConfig = {
     {
       name: 'PDF-Storm',
       title: 'PDF-Storm 批次下載工具',
+      summary: '一次下載網頁上的 PDF，省下逐一點開的時間。',
+      category: '自動化工具',
       role: '個人作品',
       period: '2024',
       image: 'https://opengraph.githubassets.com/1/HeiTang/PDF-Storm',
@@ -205,6 +221,8 @@ export const siteConfig = {
     {
       name: 'AniCat-v2',
       title: 'AniCat 動畫下載器',
+      summary: '從 Anime1 連結下載動畫，支援單集與整季。',
+      category: '自動化工具',
       role: '個人作品',
       period: '2023 - 2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/AniCat-v2',
@@ -222,6 +240,8 @@ export const siteConfig = {
     {
       name: 'FCU-CourseData',
       title: '逢甲大學課程資料集',
+      summary: '整理歷年逢甲課程資訊，方便查詢與再利用。',
+      category: '資料與訂閱',
       role: '個人作品',
       period: '2020 – 2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/FCU-CourseData',
@@ -239,6 +259,9 @@ export const siteConfig = {
     {
       name: 'ShortYou',
       title: 'ShortYou 短網址服務',
+      summary: '把長網址縮短，讓連結更容易分享。',
+      category: '網站服務',
+      homepage: 'https://s.purr.tw/',
       role: '個人作品',
       period: '2022 – 2026',
       image: shortyouHome,
@@ -273,6 +296,8 @@ export const siteConfig = {
     {
       name: 'Gmail-Archiver',
       title: 'Gmail 郵件匯出與備份',
+      summary: '把信件與附件匯出到 Google Drive，分類留存。',
+      category: '自動化工具',
       role: '個人作品',
       period: '2024',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Gmail-Archiver',
@@ -290,6 +315,8 @@ export const siteConfig = {
     {
       name: 'Zrss',
       title: 'HITCON ZeroDay 漏洞訂閱',
+      summary: '用 RSS 訂閱 HITCON ZeroDay 的漏洞揭露資訊。',
+      category: '資料與訂閱',
       role: '個人作品',
       period: '2023',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Zrss',
@@ -307,6 +334,8 @@ export const siteConfig = {
     {
       name: 'Travel-Advisory',
       title: 'RiskRadar 旅遊警示通知',
+      summary: '訂閱旅遊警示，等級變動時由 Telegram 通知。',
+      category: '資料與訂閱',
       role: '個人作品',
       period: '2025 - 2026',
       image: 'https://opengraph.githubassets.com/1/HeiTang/Travel-Advisory',
