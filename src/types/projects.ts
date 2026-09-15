@@ -5,6 +5,10 @@ import type { ImageMetadata } from 'astro:assets';
 
 export type ProjectAsset = string | ImageMetadata;
 export type ProjectScreenshot = string | { src: ProjectAsset; caption?: string };
+export interface ProjectHighlight {
+  title: string;
+  description: string;
+}
 
 export interface ProjectMeta {
   /** Must match the GitHub repository name exactly */
@@ -28,8 +32,8 @@ export interface ProjectMeta {
   /** Tech stack shown on the detail page */
   techStack?: string[];
 
-  /** Project highlights */
-  highlights?: string[];
+  /** Project highlights shown as a title and supporting description */
+  highlights?: ProjectHighlight[];
 
   /**
    * Screenshots for the project gallery. Each entry can be:

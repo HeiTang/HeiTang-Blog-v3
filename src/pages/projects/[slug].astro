@@ -33,8 +33,8 @@ const structuredData = [
       <h1>{title}</h1>
       <p class="summary">{description}</p>
       <div class="actions">
-        {project.homepage && <a class="primary" href={project.homepage} target="_blank" rel="noopener noreferrer">開啟網站 <span aria-hidden="true">↗</span><span class="sr-only">（開新分頁）</span></a>}
-        {!project.hideGithubLink && <a href={`https://github.com/HeiTang/${project.name}`} target="_blank" rel="noopener noreferrer">查看原始碼 <span aria-hidden="true">↗</span><span class="sr-only">（開新分頁）</span></a>}
+        {project.homepage && <a class="primary" href={project.homepage} target="_blank" rel="noopener noreferrer">開啟網站 <svg class="external-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5v5" /><path d="m19 5-9 9" /><path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" /></svg><span class="sr-only">（開新分頁）</span></a>}
+        {!project.hideGithubLink && <a href={`https://github.com/HeiTang/${project.name}`} target="_blank" rel="noopener noreferrer">查看原始碼 <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" /></svg><span class="sr-only">（開新分頁）</span></a>}
         {project.blogPost && <a href={project.blogPost}>閱讀開發筆記 →</a>}
       </div>
     </header>
@@ -55,19 +55,19 @@ const structuredData = [
         <div class="section-label"><h2 id="screenshots-title">實際畫面</h2><span>點圖片看細節</span></div>
         <ProjectGallery screenshots={screenshots} title={title} />
       </section>}
-      {project.highlights && project.highlights.length > 0 && <section class="choices" aria-labelledby="choices-title">
-        <h2 id="choices-title">{isYannick ? '實作上的選擇' : '功能與實作'}</h2>
-        <ul>{project.highlights.map((highlight, index) => <li>
-          <span class="choice-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-          <p>{highlight}</p>
-        </li>)}</ul>
+      {project.highlights && project.highlights.length > 0 && <section class="highlights" aria-labelledby="highlights-title">
+        <div class="section-label"><h2 id="highlights-title">專案看點</h2></div>
+        <ol>{project.highlights.map((highlight, index) => <li>
+          <span class="highlight-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          <div class="highlight-copy"><h3>{highlight.title}</h3><p>{highlight.description}</p></div>
+        </li>)}</ol>
       </section>}
       <section class="project-info" aria-labelledby="info-title">
         <h2 id="info-title">專案資訊</h2>
-        <dl><div><dt>角色</dt><dd>{project.role}</dd></div><div><dt>年份</dt><dd>{project.period}</dd></div><div><dt>主要技術</dt><dd><ul class="tech-stack" aria-label="主要技術">{project.techStack?.map(tech => <li>{tech}</li>)}</ul></dd></div></dl>
+        <dl><div><dt>角色</dt><dd>{project.role}</dd></div><div><dt>期間</dt><dd>{project.period}</dd></div><div><dt>主要技術</dt><dd><ul class="tech-stack" aria-label="主要技術">{project.techStack?.map(tech => <li>{tech}</li>)}</ul></dd></div></dl>
       </section>
     </div>
-    <footer class="next-project"><span>接著看看</span><a href={`/projects/${next.name.toLowerCase()}/`}>{next.title ?? next.name}<span aria-hidden="true">↗</span></a></footer>
+    <footer class="next-project"><span>接著看看</span><a href={`/projects/${next.name.toLowerCase()}/`}>{next.title ?? next.name}<svg class="next-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg></a></footer>
   </article>
 </BaseLayout>
 <style>
@@ -80,6 +80,7 @@ const structuredData = [
   .summary { font-size: clamp(1.05rem, 2vw, 1.35rem); line-height: 1.8; color: rgb(var(--color-text-secondary)); margin-top: 1rem; }
   .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 2rem; }
   .actions a { display: inline-flex; gap: .8rem; align-items: center; min-height: 44px; padding: .65rem 1rem; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; font-size: .9rem; }
+  .actions a svg { width: 1rem; height: 1rem; flex: 0 0 auto; }
   .actions .primary { color: rgb(var(--color-bg-dark)); background: rgb(var(--color-primary)); border-color: transparent; font-weight: 600; }
   .actions a:hover { border-color: rgb(var(--color-primary)); }
   .overview { display: grid; grid-template-columns: 1fr 2.3fr; gap: 2rem; max-width: 850px; margin: 0 auto; }
@@ -93,14 +94,16 @@ const structuredData = [
   .screenshots { margin: 4rem 0; }
   .section-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; }
   .section-label span { color: rgb(var(--color-text-secondary)); font-size: .8rem; }
-  .choices { max-width: 850px; margin: 0 auto; }
-  .choices h2 { margin-bottom: 1.5rem; }
-  .choices ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; list-style: none; padding: 1px; background: rgb(var(--color-primary) / .18); border-radius: 16px; overflow: hidden; }
-  .choices li { padding: clamp(1.25rem, 3vw, 2rem); background: rgb(var(--color-bg-dark)); }
-  .choices li:first-child { grid-column: 1 / -1; background: linear-gradient(115deg, rgb(var(--color-primary) / .1), transparent 75%), rgb(var(--color-bg-dark)); }
-  .choice-number { display: block; color: rgb(var(--color-primary)); font-size: .8rem; font-variant-numeric: tabular-nums; letter-spacing: .12em; margin-bottom: 1rem; }
-  .choices p { margin: 0; line-height: 1.9; color: rgb(var(--color-text-secondary)); overflow-wrap: anywhere; }
-  .choices li:first-child p { color: inherit; font-size: 1.1rem; }
+  .highlights { max-width: 850px; margin: 0 auto; }
+  .highlights .section-label { margin-bottom: 1.75rem; }
+  .highlights ol { list-style: none; padding: 0; margin: 0; }
+  .highlights li { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: clamp(1rem, 4vw, 2rem); padding: 1.5rem 0 1.5rem .25rem; border-top: 1px solid rgb(var(--color-primary) / .2); border-left: 2px solid transparent; transition: background-color .2s ease, border-color .2s ease; }
+  .highlights li:last-child { border-bottom: 1px solid rgb(var(--color-primary) / .2); }
+  .highlights li:hover { background: rgb(var(--color-primary) / .04); border-left-color: rgb(var(--color-primary)); }
+  .highlight-index { padding-top: .3rem; color: rgb(var(--color-primary)); font-size: .75rem; font-variant-numeric: tabular-nums; letter-spacing: .12em; line-height: 1; opacity: .85; }
+  .highlight-copy { min-width: 0; }
+  .highlights h3 { margin: 0; font-size: clamp(1.05rem, 2vw, 1.25rem); font-weight: 600; line-height: 1.55; overflow-wrap: anywhere; }
+  .highlights p { max-width: 60ch; margin: .4rem 0 0; line-height: 1.85; color: rgb(var(--color-text-secondary)); overflow-wrap: anywhere; }
   .tech-stack { display: flex; flex-wrap: wrap; gap: .55rem; padding: 0; margin: 0; list-style: none; }
   .tech-stack li { padding: .35rem .8rem; border: 1px solid rgb(var(--color-primary) / .25); border-radius: 6px; background: rgb(var(--color-primary) / .06); font-size: .85rem; line-height: 1.6; overflow-wrap: anywhere; }
   .project-info { max-width: 850px; margin: 3.5rem auto 0; }
@@ -110,14 +113,14 @@ const structuredData = [
   .next-project { border-top: 1px solid rgba(255,255,255,.16); padding-top: 2rem; margin-top: 5rem; }
   .next-project > span { font-size: .8rem; color: rgb(var(--color-text-secondary)); }
   .next-project a { display: flex; justify-content: space-between; gap: 1rem; font-size: clamp(1.3rem, 3vw, 2rem); padding: 1rem 0; }
-  .next-project a span { color: rgb(var(--color-primary)); }
+  .next-project a svg { width: 1.5rem; height: 1.5rem; flex: 0 0 auto; color: rgb(var(--color-primary)); }
   a:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 5px; }
   @media (max-width: 700px) {
     .project-page { padding-top: 5.5rem; }
     .project-header { margin-bottom: 3rem; }
     .overview { grid-template-columns: 1fr; gap: 1rem; }
     .steps { grid-template-columns: 1fr; gap: 1.5rem; }
-    .choices ul { grid-template-columns: 1fr; }
+    .highlights li { grid-template-columns: 1fr; gap: .55rem; }
     dl { grid-template-columns: 1fr 1fr; }
     dl > div:last-child { grid-column: 1 / -1; }
   }
