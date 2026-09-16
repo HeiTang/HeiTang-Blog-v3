@@ -23,7 +23,7 @@ export const copy: SiteCopy = {
     updatedOn: '更新於',
   },
   projects: {
-    title: 'GitHub 專案',
+    title: '作品',
     description: '瀏覽黑糖的 GitHub 專案與個人作品，包含網站、資料查詢與自動化工具，了解使用技術、功能與開發成果。',
     noRepos: '暫無公開專案',
     noMatchingProjects: '沒有符合的專案',

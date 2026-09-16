@@ -1,0 +1,67 @@
+---
+import { getImage } from 'astro:assets';
+import type { ProjectScreenshot } from '../../types/projects';
+interface Props { screenshots: ProjectScreenshot[]; title: string; }
+const { screenshots, title } = Astro.props;
+const images = await Promise.all(screenshots.map(async (shot) => {
+  const asset = typeof shot === 'string' ? shot : shot.src;
+  const caption = typeof shot === 'string' ? title : (shot.caption ?? title);
+  if (typeof asset === 'string') return { src: asset, caption, width: undefined, height: undefined };
+  const image = await getImage({ src: asset, width: Math.min(1600, asset.width), format: 'webp', quality: 85 });
+  return { src: image.src, caption, width: image.attributes.width, height: image.attributes.height };
+}));
+---
+<div class="gallery">
+  {images.map((image, index) => <figure>
+    <button class="gallery-open" type="button" aria-label={`放大：${image.caption}`} aria-haspopup="dialog" data-image={image.src} data-caption={image.caption}>
+      <img src={image.src} width={image.width} height={image.height} alt={image.caption} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
+      <span class="zoom-label" aria-hidden="true">放大 <svg class="zoom-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H3v6" /><path d="M15 3h6v6" /><path d="M21 15v6h-6" /><path d="M3 15v6h6" /></svg></span>
+    </button>
+    <figcaption><span aria-hidden="true">{String(index + 1).padStart(2, '0')} / </span>{image.caption}</figcaption>
+  </figure>)}
+</div>
+{images.length > 0 && <dialog class="image-dialog" aria-label="專案圖片預覽">
+  <form method="dialog"><button class="gallery-close" aria-label="關閉圖片預覽">關閉 ×</button></form>
+  <figure><img alt="" /><figcaption></figcaption></figure>
+</dialog>}
+<style>
+  .gallery { display: grid; gap: 2.5rem; }
+  figure { margin: 0; min-width: 0; }
+  .gallery-open { display: block; position: relative; width: 100%; border-radius: 12px; overflow: hidden; background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.12); cursor: zoom-in; }
+  .gallery-open img { display: block; width: 100%; height: auto; }
+  figcaption { margin-top: .8rem; font-size: .85rem; line-height: 1.6; color: rgb(var(--color-text-secondary)); }
+  figcaption span { color: rgb(var(--color-primary)); margin-right: .5rem; }
+  .zoom-label { position: absolute; right: .75rem; bottom: .75rem; display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .65rem; color: white; background: rgba(0,0,0,.8); border-radius: 5px; font-size: .75rem; }
+  .zoom-icon { width: .9rem; height: .9rem; flex: 0 0 auto; }
+  .image-dialog { margin: auto; padding: 3.5rem 1rem 1rem; width: min(96vw, 1640px); max-height: 95dvh; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; background: rgb(var(--color-bg-dark)); color: rgb(var(--color-text-primary)); }
+  .image-dialog::backdrop { background: rgba(0,0,0,.85); }
+  .image-dialog img { display: block; max-width: 100%; max-height: 76dvh; margin: auto; object-fit: contain; }
+  .gallery-close { position: absolute; right: 1rem; top: .4rem; min-height: 44px; padding: .5rem; cursor: pointer; }
+  button:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 4px; }
+</style>
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('.image-dialog');
+  const image = dialog?.querySelector('img');
+  const caption = dialog?.querySelector('figcaption');
+  let trigger: HTMLButtonElement | undefined;
+  let previousOverflow = '';
+  document.querySelectorAll<HTMLButtonElement>('.gallery-open').forEach(button => button.addEventListener('click', () => {
+    if (!dialog || !image || !caption) return;
+    trigger = button;
+    image.src = button.dataset.image!;
+    image.alt = button.dataset.caption ?? '';
+    caption.textContent = image.alt;
+    previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialog.showModal();
+  }));
+  dialog?.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  dialog?.addEventListener('keydown', event => {
+    if (event.key === 'Tab') { event.preventDefault(); dialog.querySelector('button')?.focus(); }
+  });
+  dialog?.addEventListener('close', () => {
+    document.body.style.overflow = previousOverflow;
+    trigger?.focus();
+    image?.removeAttribute('src');
+  });
+</script>

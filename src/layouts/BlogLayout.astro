@@ -8,15 +8,18 @@ import { formatDate } from '../utils/date';
 import { siteConfig } from '../config/site';
 import { copy } from '../config/copy';
 import type { PostMeta } from '../types/blog';
+import type { MarkdownHeading } from 'astro';
 
 export interface Props {
   post: PostMeta;
   slug: string;
   readingTime: number;
   relatedPosts: { id: string; data: PostMeta }[];
+  headings: MarkdownHeading[];
 }
 
-const { post, slug, readingTime, relatedPosts } = Astro.props;
+const { post, slug, readingTime, relatedPosts, headings } = Astro.props;
+const chapters = headings.filter(heading => heading.depth === 2 || heading.depth === 3);
 const { blog } = copy;
 const { title, description } = post;
 const canonicalUrl = new URL(Astro.url.pathname, siteConfig.url).toString();
@@ -52,7 +55,7 @@ const structuredData = {
     {post.updatedDate && <meta property="article:modified_time" content={post.updatedDate.toISOString()} />}
   </Fragment>
 
-  <div class="container mx-auto px-6 py-24 max-w-3xl">
+  <div class="container mx-auto px-6 py-24 max-w-[45.5rem]">
     <!-- Back link -->
     <a
       href="/blog/"
@@ -65,7 +68,7 @@ const structuredData = {
     </a>
 
     <!-- Article header -->
-    <header class="mb-10">
+    <header class="mb-10 max-w-3xl">
       <!-- Tags -->
       {post.tags.length > 0 && (
         <div class="flex flex-wrap gap-2 mb-4">
@@ -110,14 +113,14 @@ const structuredData = {
 
     <!-- Article body -->
     <article
-      class="prose prose-invert prose-lg max-w-none
+      class="prose prose-invert prose-lg max-w-none text-[1.0625rem] leading-[1.75]
         prose-headings:font-display prose-headings:text-[rgb(var(--color-text-primary))] prose-headings:font-bold
         prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
-        prose-p:text-[rgb(var(--color-text-secondary))] prose-p:leading-relaxed
+        prose-p:text-[rgb(var(--color-text-secondary))] prose-p:leading-[1.75] prose-p:my-6
         prose-a:text-[rgb(var(--color-primary))] prose-a:no-underline hover:prose-a:underline prose-a:font-medium
         prose-strong:text-[rgb(var(--color-text-primary))] prose-strong:font-semibold
         prose-em:text-[rgb(var(--color-text-secondary))]
-        prose-li:text-[rgb(var(--color-text-secondary))] prose-li:leading-relaxed
+        prose-li:text-[rgb(var(--color-text-secondary))] prose-li:leading-[1.75]
         prose-ul:my-4 prose-ol:my-4
         prose-code:text-sm prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
         prose-pre:border prose-pre:border-[var(--glass-border)] prose-pre:rounded-xl prose-pre:my-6
@@ -141,10 +144,93 @@ const structuredData = {
         </nav>
       )}
     </article>
+    {chapters.length > 0 && (
+      <>
+        <button class="toc-toggle" type="button" popovertarget="blog-toc" aria-label="開啟章節目錄" aria-expanded="false" aria-controls="blog-toc">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1" />
+          </svg>
+        </button>
+        <nav id="blog-toc" class="blog-toc" popover="auto" aria-labelledby="blog-toc-title" data-pagefind-ignore>
+          <div class="toc-header">
+            <h2 id="blog-toc-title">章節</h2>
+            <button class="toc-close" type="button" popovertarget="blog-toc" popovertargetaction="hide" aria-label="關閉章節目錄">×</button>
+          </div>
+          <ol>
+            {chapters.map(heading => (
+              <li class:list={{ 'toc-subheading': heading.depth === 3 }} hidden={heading.depth === 3}>
+                <a href={`#${heading.slug}`}>{heading.text}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      </>
+    )}
   </div>
 </BaseLayout>
 
 <style>
+  article { min-width: 0; }
+  article :global([id]) { scroll-margin-top: 6rem; }
+
+  .blog-toc {
+    position: fixed;
+    inset: auto 1.5rem calc(9.5rem + env(safe-area-inset-bottom)) auto;
+    margin: 0;
+    width: min(20rem, calc(100vw - 3rem));
+    max-height: min(65dvh, calc(100dvh - 12rem));
+    overflow-y: auto;
+    padding: 1rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 1rem;
+    background: rgb(var(--color-bg-dark));
+    color: rgb(var(--color-text-secondary));
+    box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+    font-size: 0.875rem;
+  }
+
+  .blog-toc::backdrop { background: rgb(0 0 0 / 0.25); }
+  .toc-header { display: flex; align-items: center; justify-content: space-between; }
+  .toc-header h2 { font-weight: 600; color: rgb(var(--color-text-primary)); }
+  .toc-close { width: 2.75rem; height: 2.75rem; font-size: 1.5rem; }
+  .blog-toc a { display: block; padding: 0.75rem 0.5rem; border-left: 2px solid transparent; overflow-wrap: anywhere; }
+  .blog-toc a:hover { color: rgb(var(--color-text-primary)); }
+  .blog-toc a[aria-current] { color: rgb(var(--color-primary)); border-left-color: currentColor; background: rgb(var(--color-primary) / 0.06); }
+  .blog-toc a:focus-visible, .toc-toggle:focus-visible, .toc-close:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .toc-subheading { padding-left: 0.75rem; }
+  .toc-toggle {
+    position: fixed;
+    right: 1.5rem;
+    bottom: calc(6rem + env(safe-area-inset-bottom));
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    background: rgb(var(--color-bg-dark));
+    color: rgb(var(--color-text-primary));
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+  }
+
+  @media (min-width: 1440px) {
+    .toc-toggle, .toc-close { display: none; }
+    .blog-toc {
+      display: block;
+      inset: 8rem auto auto calc(50% + 24.25rem);
+      width: min(15rem, calc(50vw - 25.75rem));
+      max-height: calc(100dvh - 10rem);
+      padding: 0 0.25rem;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    .toc-header { margin-bottom: 0.75rem; }
+    .blog-toc a { padding-block: 0.5rem; }
+  }
+
   :global([data-theme="minimalist"]) article :global(a) {
     color: rgb(var(--color-text-primary));
     text-decoration: underline;
@@ -165,3 +251,58 @@ const structuredData = {
     padding: 0;
   }
 </style>
+
+<script>
+  const toc = document.querySelector<HTMLElement>('#blog-toc');
+  const toggle = document.querySelector<HTMLButtonElement>('.toc-toggle');
+  if (toc && toggle) {
+    const desktop = matchMedia('(min-width: 1440px)');
+    const setMode = () => {
+      if (toc.matches(':popover-open')) toc.hidePopover();
+      if (desktop.matches) toc.removeAttribute('popover');
+      else toc.setAttribute('popover', 'auto');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+    setMode();
+    desktop.addEventListener('change', setMode);
+    toc.addEventListener('toggle', () => {
+      toggle.setAttribute('aria-expanded', String(toc.matches(':popover-open')));
+    });
+    toc.addEventListener('click', event => {
+      if (event.target instanceof Element && event.target.closest('a') && toc.matches(':popover-open')) toc.hidePopover();
+    });
+    const links = [...toc.querySelectorAll<HTMLAnchorElement>('a')];
+    const sections = links.map(link => document.getElementById(decodeURIComponent(link.hash.slice(1))));
+    let parent = 0;
+    const groups = sections.map((section, index) => {
+      if (section?.tagName === 'H2') parent = index;
+      return parent;
+    });
+    const updateChapter = () => {
+      let active = 0;
+      sections.forEach((section, index) => {
+        if (section && section.getBoundingClientRect().top <= 140) active = index;
+      });
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) active = links.length - 1;
+      links.forEach((link, index) => {
+        link.parentElement!.hidden = sections[index]?.tagName === 'H3' && groups[index] !== groups[active];
+        if (index === active) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+      if (desktop.matches) {
+        const item = links[active].getBoundingClientRect();
+        const panel = toc.getBoundingClientRect();
+        if (item.top < panel.top) toc.scrollTop += item.top - panel.top;
+        else if (item.bottom > panel.bottom) toc.scrollTop += item.bottom - panel.bottom;
+      }
+    };
+    let scheduled = false;
+    window.addEventListener('scroll', () => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => { updateChapter(); scheduled = false; });
+    }, { passive: true });
+    window.addEventListener('resize', updateChapter);
+    updateChapter();
+  }
+</script>
