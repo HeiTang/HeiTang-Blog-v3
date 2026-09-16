@@ -133,12 +133,14 @@ const structuredData = {
   .filter-status { min-height: 1.5rem; margin-top: 1rem; font-size: .8rem; color: rgb(var(--color-text-secondary)); }
   .directory[data-view="cards"] .project-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
   .directory[data-view="cards"] .project-list li, .directory[data-view="cards"] .project-list li:last-child { border: 1px solid rgba(255,255,255,.12); border-radius: 10px; overflow: hidden; }
-  .directory[data-view="cards"] .project-list a { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; gap: 1rem; height: 100%; padding: 1rem; }
-  .directory[data-view="cards"] .row-meta { display: flex; grid-column: 1 / -1; grid-row: 1; flex-direction: row; align-items: center; justify-content: center; gap: .5rem; text-align: center; }
-  .directory[data-view="cards"] .row-period::before { content: '·'; margin-right: .5rem; color: rgb(var(--color-text-secondary)); }
-  .directory[data-view="cards"] .row-media { grid-column: 1 / -1; grid-row: 2; width: calc(100% + 2rem); margin-inline: -1rem; aspect-ratio: 16 / 10; border-width: 1px 0; border-radius: 0; }
+  .directory[data-view="cards"] .project-list a { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 1rem; height: 100%; padding: 0 1rem 1rem; }
+  .directory[data-view="cards"] .row-meta { position: relative; z-index: 2; display: block; grid-column: 1 / -1; grid-row: 1; width: calc(100% + 2rem); height: 100%; margin-inline: -1rem; pointer-events: none; text-align: initial; }
+  .directory[data-view="cards"] .row-category, .directory[data-view="cards"] .row-period { position: absolute; display: inline-flex; align-items: center; min-height: 1.5rem; max-width: calc(100% - 1.5rem); padding: .2rem .55rem; overflow: hidden; border: 1px solid rgb(var(--color-primary) / .42); border-radius: 999px; background: rgb(var(--color-bg-dark) / .78); color: rgb(var(--color-text-primary)); font-size: .7rem; line-height: 1.2; white-space: nowrap; text-overflow: ellipsis; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .directory[data-view="cards"] .row-category { top: .75rem; right: .75rem; min-height: 1.35rem; padding: .15rem .45rem; font-size: .65rem; }
+  .directory[data-view="cards"] .row-period { bottom: .75rem; left: .75rem; color: rgb(var(--color-primary)); }
+  .directory[data-view="cards"] .row-media { grid-column: 1 / -1; grid-row: 1; z-index: 1; width: calc(100% + 2rem); height: 12rem; margin-inline: -1rem; aspect-ratio: auto; border-width: 0 0 1px; border-radius: 0; }
   .directory[data-view="cards"] .row-media :global(img) { object-fit: contain; }
-  .directory[data-view="cards"] .row-copy { grid-column: 1; grid-row: 3; align-self: start; }
+  .directory[data-view="cards"] .row-copy { grid-column: 1; grid-row: 2; align-self: start; }
   .directory[data-view="cards"] .row-copy p { margin-bottom: 0; }
   a:focus-visible, button:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 5px; }
   @media (max-width: 700px) {
@@ -152,7 +154,7 @@ const structuredData = {
     .row-meta { grid-column: 1 / -1; }
     .row-media { width: 5.75rem; }
     .directory[data-view="cards"] .project-list { grid-template-columns: 1fr; }
-    .directory[data-view="cards"] .project-list a { grid-template-columns: 1fr; padding: 1rem; }
+    .directory[data-view="cards"] .project-list a { grid-template-columns: 1fr; padding: 0 1rem 1rem; }
     .section-heading > span { font-size: .75rem; }
     .featured-section, .directory { margin-top: 3.5rem; }
   }
