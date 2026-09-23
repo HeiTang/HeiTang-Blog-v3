@@ -112,7 +112,7 @@ const structuredData = {
   .filters button { min-height: 44px; padding: .5rem 1rem; border: 1px solid rgba(255,255,255,.14); border-radius: 6px; color: rgb(var(--color-text-secondary)); font-size: .85rem; cursor: pointer; }
   .filters button[aria-pressed="true"] { color: rgb(var(--color-primary)); background: rgb(var(--color-primary) / .1); border-color: rgb(var(--color-primary) / .45); }
   .view-switch { padding: .2rem; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; }
-  .view-switch button { min-height: 36px; padding: .35rem .7rem; border: 0; border-radius: 5px; color: rgb(var(--color-text-secondary)); background: transparent; font-size: .8rem; cursor: pointer; }
+  .view-switch button { min-height: 44px; padding: .35rem .7rem; border: 0; border-radius: 5px; color: rgb(var(--color-text-secondary)); background: transparent; font-size: .8rem; cursor: pointer; }
   .view-switch button[aria-pressed="true"] { color: rgb(var(--color-text)); background: rgb(var(--color-primary) / .14); }
   .project-list { padding: 0; list-style: none; }
   .project-list li { border-top: 1px solid rgba(255,255,255,.12); }
@@ -150,14 +150,16 @@ const structuredData = {
     .featured-grid { grid-template-columns: 1fr; }
     .feature-lead .feature-image, .feature-image { aspect-ratio: 1.6; padding: 1rem; }
     .directory-controls { align-items: flex-start; flex-direction: column; }
+    .filters button { padding-inline: .875rem; }
     .project-list a { grid-template-columns: 5.75rem minmax(0, 1fr); gap: .5rem .85rem; padding: 1rem 0; }
-    .row-meta { grid-column: 1 / -1; }
+    .row-meta { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; gap: .5rem; text-align: left; }
     .row-media { width: 5.75rem; }
     .directory[data-view="cards"] .project-list { grid-template-columns: 1fr; }
     .directory[data-view="cards"] .project-list a { grid-template-columns: 1fr; padding: 0 1rem 1rem; }
     .section-heading > span { font-size: .75rem; }
     .featured-section, .directory { margin-top: 3.5rem; }
   }
+  @media (max-width: 480px) { .view-switch { display: none; } }
   @media (prefers-reduced-motion: reduce) { .feature-image :global(img), .row-media :global(img) { transition: none; } .feature:hover .feature-image :global(img), .project-list a:hover .row-media :global(img) { transform: none; } }
 </style>
 <script>
@@ -168,13 +170,21 @@ const structuredData = {
   const buttons = filters?.querySelectorAll<HTMLButtonElement>('button') ?? [];
   const rows = document.querySelectorAll<HTMLElement>('[data-project-category]');
   const status = document.querySelector<HTMLElement>('.filter-status');
+  const mobileViewport = window.matchMedia('(max-width: 480px)');
+  const setView = (view: 'list' | 'cards') => {
+    if (!directory) return;
+    directory.dataset.view = view;
+    viewButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === view)));
+  };
+
+  setView(mobileViewport.matches ? 'cards' : 'list');
+  mobileViewport.addEventListener('change', event => setView(event.matches ? 'cards' : 'list'));
   if (filters) filters.hidden = false;
   if (viewSwitch) viewSwitch.hidden = false;
   viewButtons.forEach(button => button.addEventListener('click', () => {
     const view = button.dataset.view;
-    if (!directory || !view) return;
-    directory.dataset.view = view;
-    viewButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    if (view !== 'list' && view !== 'cards') return;
+    setView(view);
   }));
   buttons.forEach(button => button.addEventListener('click', () => {
     const category = button.dataset.category;
