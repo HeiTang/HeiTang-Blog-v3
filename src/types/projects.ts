@@ -1,49 +1,56 @@
 /**
- * ProjectMeta — per-project metadata for the portfolio Modal
- * Extends what GitHub API provides with hand-crafted resume content.
- *
- * Single Responsibility: this type owns only the "extra info beyond GitHub API".
+ * Curated metadata shared by the portfolio index and project detail pages.
  */
 import type { ImageMetadata } from 'astro:assets';
 
 export type ProjectAsset = string | ImageMetadata;
 export type ProjectScreenshot = string | { src: ProjectAsset; caption?: string };
+export interface ProjectHighlight {
+  title: string;
+  description: string;
+}
 
 export interface ProjectMeta {
   /** Must match the GitHub repository name exactly */
   name: string;
 
+  /** Visitor-facing title. Falls back to the repository name. */
+  title?: string;
+  summary?: string;
+  category?: '網站服務' | '自動化工具' | '資料與訂閱';
+  homepage?: string;
+
   /** Custom local asset or remote cover URL. Falls back to GitHub Social Preview. */
   image?: ProjectAsset;
 
-  /** Role label shown on card and Modal header (e.g. 「個人作品」「開源貢獻」「團隊專案」) */
+  /** Project role (e.g. 「個人作品」「開源貢獻」「團隊專案」) */
   role?: string;
 
-  /** Development period shown in Modal (e.g. 「2023.06」「2024.01 – 2024.06」) */
+  /** Development period (e.g. 「2023.06」「2024.01 – 2024.06」) */
   period?: string;
 
-  /** Tech stack badges — shown on card (max 4) and fully in Modal */
+  /** Tech stack shown on the detail page */
   techStack?: string[];
 
-  /** Achievement bullet points shown in Modal (✦ prefix) */
-  highlights?: string[];
+  /** Project highlights shown as a title and supporting description */
+  highlights?: ProjectHighlight[];
 
   /**
-   * Additional screenshots for Modal carousel. Each entry can be:
+   * Screenshots for the project gallery. Each entry can be:
    *  - a string (path / URL), or
-   *  - `{ src, caption }` to attach a caption shown on the slide & lightbox.
+   *  - `{ src, caption }` to attach a caption shown in the gallery and lightbox.
    */
   screenshots?: ProjectScreenshot[];
 
-  /** Overrides the GitHub API description in Modal (use for richer narrative) */
+  /** Full project description */
   customDescription?: string;
 
-  /** Custom filter tags shown in the projects page tag bar (e.g. ['CLI', 'Tool', 'Open Source']) */
+  /** Project topic tags */
   tags?: string[];
 
-  /** Link to a related blog post — renders as「閱讀文章 →」button in Modal */
+  /** Link to a related blog post — renders as「閱讀文章 →」button on the detail page */
   blogPost?: string;
 
-  /** When true, hides the GitHub link button in Modal (e.g. private repos) */
+  /** When true, hides the GitHub link button on the detail page (e.g. private repos) */
   hideGithubLink?: boolean;
 }
