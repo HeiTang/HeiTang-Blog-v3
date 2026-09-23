@@ -159,7 +159,11 @@ const structuredData = {
     .section-heading > span { font-size: .75rem; }
     .featured-section, .directory { margin-top: 3.5rem; }
   }
-  @media (max-width: 480px) { .view-switch { display: none; } }
+  @media (max-width: 480px) {
+    .view-switch { display: none; }
+    .directory[data-view="cards"] .row-media { height: clamp(9rem, 40vw, 11rem); }
+    .directory[data-view="cards"] .row-copy p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  }
   @media (prefers-reduced-motion: reduce) { .feature-image :global(img), .row-media :global(img) { transition: none; } .feature:hover .feature-image :global(img), .project-list a:hover .row-media :global(img) { transform: none; } }
 </style>
 <script>
