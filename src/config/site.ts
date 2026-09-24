@@ -7,6 +7,7 @@ import fxPulseFullUsd from '../assets/projects/fx-pulse/full-usd.png';
 import fxPulseHome from '../assets/projects/fx-pulse/home.png';
 import fxPulseJpyChart from '../assets/projects/fx-pulse/jpy-chart.png';
 import mailcatInbox from '../assets/projects/mailcat/inbox.png';
+import projectPlaceholder from '../assets/projects/project-placeholder.png';
 import shortyouAuthorizedMode from '../assets/projects/shortyou/authorized-mode.png';
 import shortyouHomeWithAlias from '../assets/projects/shortyou/home-with-alias.png';
 import shortyouHome from '../assets/projects/shortyou/home.png';
@@ -338,7 +339,7 @@ export const siteConfig = {
       category: '資料與訂閱',
       role: '個人作品',
       period: '2025 - 2026',
-      image: 'https://opengraph.githubassets.com/1/HeiTang/Travel-Advisory',
+      image: projectPlaceholder,
       customDescription: 'RiskRadar — 全球旅遊警示監控系統。追蹤美國國務院 200+ 個國家旅遊警示等級，透過 Telegram Bot 提供即時查詢、訂閱監控與警示變動推播。',
       techStack: ['Python', 'FastAPI', 'PostgreSQL', 'python-telegram-bot', 'Docker', 'Google Cloud Run'],
       highlights: [
