@@ -63,7 +63,7 @@ const structuredData = {
               </span>
               <span class="row-media">
                 {typeof project.image === 'string' ? <img src={project.image} data-fallback={defaultProjectImage.src} alt={`${project.title ?? project.name} 的專案畫面`} loading="lazy" decoding="async" onerror="this.onerror=null; this.src=this.dataset.fallback" /> :
-                  <Picture src={project.image ?? defaultProjectImage} alt={`${project.title ?? project.name} 的專案畫面`} widths={[160, 240, 320]} sizes="(max-width: 700px) 96px, 112px" formats={['avif', 'webp']} loading="lazy" />}
+                  <Picture src={project.image ?? defaultProjectImage} alt={`${project.title ?? project.name} 的專案畫面`} widths={[160, 240, 320, 480, 800, 1280]} sizes="(max-width: 700px) 92px, 112px" formats={['avif', 'webp']} loading="lazy" />}
               </span>
               <span class="row-copy">
                 <h3>{project.title ?? project.name}</h3>
@@ -174,6 +174,10 @@ const structuredData = {
   const setView = (view: 'list' | 'cards') => {
     if (!directory) return;
     directory.dataset.view = view;
+    const imageSizes = view === 'cards'
+      ? '(max-width: 700px) calc(100vw - 40px), (max-width: 1120px) calc((100vw - 72px) / 3), 350px'
+      : '(max-width: 700px) 92px, 112px';
+    directory.querySelectorAll('.row-media picture source, .row-media picture img').forEach(image => image.setAttribute('sizes', imageSizes));
     viewButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === view)));
   };
 
