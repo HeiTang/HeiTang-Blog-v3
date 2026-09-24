@@ -6,7 +6,12 @@ import type { ProjectMeta } from '../types/projects';
 import fxPulseFullUsd from '../assets/projects/fx-pulse/full-usd.png';
 import fxPulseHome from '../assets/projects/fx-pulse/home.png';
 import fxPulseJpyChart from '../assets/projects/fx-pulse/jpy-chart.png';
+import cardFluxActivityOverview from '../assets/projects/cardflux/activity-overview.png';
+import cardFluxScheduleManagement from '../assets/projects/cardflux/schedule-management.png';
+import cardFluxRegistrationIssueReview from '../assets/projects/cardflux/registration-issue-review.png';
+import cardFluxExecutionHistory from '../assets/projects/cardflux/execution-history.png';
 import mailcatInbox from '../assets/projects/mailcat/inbox.png';
+import projectPlaceholder from '../assets/projects/project-placeholder.png';
 import shortyouAuthorizedMode from '../assets/projects/shortyou/authorized-mode.png';
 import shortyouHomeWithAlias from '../assets/projects/shortyou/home-with-alias.png';
 import shortyouHome from '../assets/projects/shortyou/home.png';
@@ -338,7 +343,7 @@ export const siteConfig = {
       category: '資料與訂閱',
       role: '個人作品',
       period: '2025 - 2026',
-      image: 'https://opengraph.githubassets.com/1/HeiTang/Travel-Advisory',
+      image: projectPlaceholder,
       customDescription: 'RiskRadar — 全球旅遊警示監控系統。追蹤美國國務院 200+ 個國家旅遊警示等級，透過 Telegram Bot 提供即時查詢、訂閱監控與警示變動推播。',
       techStack: ['Python', 'FastAPI', 'PostgreSQL', 'python-telegram-bot', 'Docker', 'Google Cloud Run'],
       highlights: [
@@ -350,6 +355,31 @@ export const siteConfig = {
       ],
       screenshots: [],
       tags: ['Python', 'Telegram', 'FastAPI', 'Monitor'],
+      hideGithubLink: true,
+    },
+    {
+      name: 'CardFlux',
+      title: 'CardFlux 信用卡優惠工具',
+      summary: '整合多家銀行優惠查詢與登錄，支援關鍵字篩選及多身份紀錄。',
+      category: '自動化工具',
+      role: '個人作品',
+      period: '2026',
+      image: cardFluxActivityOverview,
+      customDescription: 'CardFlux 是本機優先的多銀行信用卡優惠活動自動化工具，提供 CLI 與 Astro 本機管理後台，可查詢、搜尋、篩選並登錄活動，並保留逐筆結果、身份紀錄與去重資料。服務支援 Docker／Compose 部署。',
+      techStack: ['Python', 'FastAPI', 'Astro', 'TypeScript', 'Playwright', 'Docker Compose'],
+      highlights: [
+        { title: '多銀行活動查詢與登錄', description: '支援玉山、國泰、中信、台新與聯邦活動。' },
+        { title: '依條件篩選優惠', description: '使用關鍵字包含或排除條件，挑選需要登錄的活動。' },
+        { title: '逐筆結果與去重紀錄', description: '保留每次執行結果，避免重複處理已登錄活動。' },
+        { title: 'CLI 與本機管理後台', description: '可透過終端機或 Astro 管理介面操作。' },
+      ],
+      screenshots: [
+        { src: cardFluxActivityOverview, caption: '活動總覽：查看活動數量、可登錄與本次執行狀態，並選擇銀行查詢或登錄。' },
+        { src: cardFluxScheduleManagement, caption: '排程管理：依身份與狀態篩選排程，檢視最近結果、下次執行時間與操作。' },
+        { src: cardFluxRegistrationIssueReview, caption: '登錄問題處理：核對銀行實際登錄狀態與依據，避免結果不明時直接重送。' },
+        { src: cardFluxExecutionHistory, caption: '執行紀錄：篩選最近 50 筆操作，查看銀行、耗時、狀態與結果，也可匯出紀錄。' },
+      ],
+      tags: ['Python', 'FastAPI', 'Astro', 'Playwright', 'Docker'],
       hideGithubLink: true,
     },
   ] as ProjectMeta[],

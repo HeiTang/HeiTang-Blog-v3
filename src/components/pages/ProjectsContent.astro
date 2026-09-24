@@ -63,7 +63,7 @@ const structuredData = {
               </span>
               <span class="row-media">
                 {typeof project.image === 'string' ? <img src={project.image} data-fallback={defaultProjectImage.src} alt={`${project.title ?? project.name} 的專案畫面`} loading="lazy" decoding="async" onerror="this.onerror=null; this.src=this.dataset.fallback" /> :
-                  <Picture src={project.image ?? defaultProjectImage} alt={`${project.title ?? project.name} 的專案畫面`} widths={[160, 240, 320]} sizes="(max-width: 700px) 96px, 112px" formats={['avif', 'webp']} loading="lazy" />}
+                  <Picture src={project.image ?? defaultProjectImage} alt={`${project.title ?? project.name} 的專案畫面`} widths={[160, 240, 320, 480, 800, 1280]} sizes="(max-width: 700px) 92px, 112px" formats={['avif', 'webp']} loading="lazy" />}
               </span>
               <span class="row-copy">
                 <h3>{project.title ?? project.name}</h3>
@@ -123,9 +123,9 @@ const structuredData = {
   .row-category, .row-period { font-size: .75rem; }
   .row-category { color: rgb(var(--color-text-secondary)); }
   .row-period { color: rgb(var(--color-primary)); }
-  .row-media { position: relative; display: block; width: 7rem; aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; background: rgb(var(--color-primary) / .045); }
+  .row-media { position: relative; display: block; width: 7rem; aspect-ratio: 2 / 1; overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; background: rgb(var(--color-primary) / .045); }
   .row-media :global(picture), .row-media :global(img) { display: block; width: 100%; height: 100%; }
-  .row-media :global(img) { object-fit: contain; transition: transform .25s ease; }
+  .row-media :global(img) { object-fit: cover; transition: transform .25s ease; }
   .project-list a:hover .row-media :global(img) { transform: scale(1.04); }
   .row-copy { min-width: 0; }
   .row-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .35rem; padding: 0; margin: .7rem 0 0; list-style: none; }
@@ -138,8 +138,7 @@ const structuredData = {
   .directory[data-view="cards"] .row-category, .directory[data-view="cards"] .row-period { position: absolute; display: inline-flex; align-items: center; min-height: 1.5rem; max-width: calc(100% - 1.5rem); padding: .2rem .55rem; overflow: hidden; border: 1px solid rgb(var(--color-primary) / .42); border-radius: 999px; background: rgb(var(--color-bg-dark) / .78); color: rgb(var(--color-text-primary)); font-size: .7rem; line-height: 1.2; white-space: nowrap; text-overflow: ellipsis; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
   .directory[data-view="cards"] .row-category { top: .75rem; right: .75rem; min-height: 1.35rem; padding: .15rem .45rem; font-size: .65rem; }
   .directory[data-view="cards"] .row-period { bottom: .75rem; left: .75rem; color: rgb(var(--color-primary)); }
-  .directory[data-view="cards"] .row-media { grid-column: 1 / -1; grid-row: 1; z-index: 1; width: calc(100% + 2rem); height: 12rem; margin-inline: -1rem; aspect-ratio: auto; border-width: 0 0 1px; border-radius: 0; }
-  .directory[data-view="cards"] .row-media :global(img) { object-fit: contain; }
+  .directory[data-view="cards"] .row-media { grid-column: 1 / -1; grid-row: 1; z-index: 1; width: calc(100% + 2rem); margin-inline: -1rem; border-width: 0 0 1px; border-radius: 0; }
   .directory[data-view="cards"] .row-copy { grid-column: 1; grid-row: 2; align-self: start; }
   .directory[data-view="cards"] .row-copy p { margin-bottom: 0; }
   a:focus-visible, button:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 5px; }
@@ -159,7 +158,10 @@ const structuredData = {
     .section-heading > span { font-size: .75rem; }
     .featured-section, .directory { margin-top: 3.5rem; }
   }
-  @media (max-width: 480px) { .view-switch { display: none; } }
+  @media (max-width: 480px) {
+    .view-switch { display: none; }
+    .directory[data-view="cards"] .row-copy p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  }
   @media (prefers-reduced-motion: reduce) { .feature-image :global(img), .row-media :global(img) { transition: none; } .feature:hover .feature-image :global(img), .project-list a:hover .row-media :global(img) { transform: none; } }
 </style>
 <script>
@@ -174,6 +176,10 @@ const structuredData = {
   const setView = (view: 'list' | 'cards') => {
     if (!directory) return;
     directory.dataset.view = view;
+    const imageSizes = view === 'cards'
+      ? '(max-width: 700px) calc(100vw - 40px), (max-width: 1120px) calc((100vw - 72px) / 3), 350px'
+      : '(max-width: 700px) 92px, 112px';
+    directory.querySelectorAll('.row-media picture source, .row-media picture img').forEach(image => image.setAttribute('sizes', imageSizes));
     viewButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === view)));
   };
 
