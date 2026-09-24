@@ -4,6 +4,8 @@ import path from 'node:path';
 const projectRoot = process.cwd();
 const distDirectory = path.join(projectRoot, 'dist');
 const coverageFile = path.join(projectRoot, 'scripts/noto-sans-tc-site.coverage.txt');
+const reportArgument = process.argv.indexOf('--report');
+const reportFile = reportArgument >= 0 ? process.argv[reportArgument + 1] : null;
 
 const trackedRanges = [
   [0x3000, 0x30ff],
@@ -49,18 +51,32 @@ const collectHtmlFiles = (directory) => {
 const formatCodePoint = (codePoint) =>
   'U+' + codePoint.toString(16).toUpperCase().padStart(4, '0');
 
-if (!fs.existsSync(distDirectory)) {
-  console.error('Font subset check failed: dist/ does not exist. Run npm run build first.');
+const writeReport = (report) => {
+  if (!reportFile) return;
+  fs.mkdirSync(path.dirname(path.resolve(reportFile)), { recursive: true });
+  fs.writeFileSync(reportFile, JSON.stringify({ schemaVersion: 1, ...report }, null, 2) + '\n');
+};
+
+const fail = (error) => {
+  writeReport({ status: 'error', error });
+  console.error(error);
   process.exit(1);
+};
+
+if (reportArgument >= 0 && !reportFile) {
+  fail('Font subset check failed: --report requires a file path.');
+}
+
+if (!fs.existsSync(distDirectory)) {
+  fail('Font subset check failed: dist/ does not exist. Run npm run build first.');
 }
 
 if (!fs.existsSync(coverageFile)) {
-  console.error(
+  fail(
     'Font subset check failed: ' +
       path.relative(projectRoot, coverageFile) +
       ' does not exist.',
   );
-  process.exit(1);
 }
 
 const coverage = new Set(
@@ -69,6 +85,7 @@ const coverage = new Set(
     .filter(isTrackedCodePoint),
 );
 const missingByCodePoint = new Map();
+const visibleByCodePoint = new Map();
 const htmlFiles = collectHtmlFiles(distDirectory);
 
 for (const file of htmlFiles) {
@@ -77,7 +94,12 @@ for (const file of htmlFiles) {
 
   for (const character of text) {
     const codePoint = character.codePointAt(0);
-    if (!isTrackedCodePoint(codePoint) || coverage.has(codePoint)) continue;
+    if (!isTrackedCodePoint(codePoint)) continue;
+
+    const visibleFiles = visibleByCodePoint.get(codePoint) ?? [];
+    if (!visibleFiles.includes(relativeFile)) visibleFiles.push(relativeFile);
+    visibleByCodePoint.set(codePoint, visibleFiles);
+    if (coverage.has(codePoint)) continue;
 
     const files = missingByCodePoint.get(codePoint) ?? [];
     if (!files.includes(relativeFile)) files.push(relativeFile);
@@ -85,18 +107,34 @@ for (const file of htmlFiles) {
   }
 }
 
+const visible = [...visibleByCodePoint.entries()]
+  .sort(([a], [b]) => a - b)
+  .map(([codePoint, files]) => ({
+    codePoint: formatCodePoint(codePoint),
+    character: String.fromCodePoint(codePoint),
+    files,
+  }));
+
 if (missingByCodePoint.size > 0) {
+  const missing = [...missingByCodePoint.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([codePoint, files]) => ({
+      codePoint: formatCodePoint(codePoint),
+      character: String.fromCodePoint(codePoint),
+      files,
+    }));
+  writeReport({
+    status: 'missing',
+    htmlFileCount: htmlFiles.length,
+    visible,
+    missing,
+  });
   console.error(
     'Font subset check failed: visible CJK characters are outside the committed Noto coverage.',
   );
-  for (const [codePoint, files] of [...missingByCodePoint.entries()].sort(([a], [b]) => a - b)) {
+  for (const { codePoint, character, files } of missing) {
     console.error(
-      '- ' +
-        formatCodePoint(codePoint) +
-        ' ' +
-        String.fromCodePoint(codePoint) +
-        ': ' +
-        files.join(', '),
+      '- ' + codePoint + ' ' + character + ': ' + files.join(', '),
     );
   }
   console.error(
@@ -105,6 +143,13 @@ if (missingByCodePoint.size > 0) {
   );
   process.exit(1);
 }
+
+writeReport({
+  status: 'ok',
+  htmlFileCount: htmlFiles.length,
+  visible,
+  missing: [],
+});
 
 console.log(
   'Noto Sans TC subset coverage OK: ' +

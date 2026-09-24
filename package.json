@@ -14,6 +14,7 @@
     "test": "node --experimental-strip-types --test",
     "check:seo": "node scripts/check-static-seo.mjs",
     "check:font-subsets": "node scripts/check-font-subsets.mjs",
+    "check:font-cmap": "python3 scripts/noto-font-tool.py verify",
     "preview": "astro preview",
     "astro": "astro"
   },

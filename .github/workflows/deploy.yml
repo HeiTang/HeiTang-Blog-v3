@@ -1,9 +1,12 @@
 name: Deploy to GitHub Pages
 
 on:
+  # Publish every merged main commit.
   push:
     branches: [main]
+  # Allow an operator to rebuild main on demand.
   workflow_dispatch:
+  # Refresh pages that include external project data.
   schedule:
     # 每天 UTC 02:00（台灣時間 10:00）自動 rebuild，確保 GitHub 專案資料保持最新
     - cron: '0 2 * * *'
@@ -19,25 +22,27 @@ concurrency:
 
 jobs:
   build:
-    name: Build
+    name: Build and validate Pages artifact
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 22 with npm cache
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install locked npm dependencies
         run: npm ci
 
+      # The scheduled refresh rebuilds unchanged source; PR runs cover unit tests.
       - name: Test public data decoders
+        if: github.event_name != 'schedule'
         run: npm test
 
-      - name: Build with Astro
+      - name: Build static site with Astro
         run: npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,22 +51,23 @@ jobs:
           NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}
           PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
 
-      - name: Verify font subset coverage
+      # External data can add visible CJK text between code merges.
+      - name: Check visible Noto Sans TC coverage
         run: npm run check:font-subsets
 
-      - name: Verify static SEO and public output
+      - name: Verify static SEO and generated public output
         run: npm run check:seo
 
-      - name: Run Pagefind
+      - name: Generate Pagefind search index
         run: npx pagefind --site dist
 
-      - name: Upload artifact
+      - name: Upload validated Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
-    name: Deploy
+    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     environment:

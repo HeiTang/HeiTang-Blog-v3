@@ -1,0 +1,159 @@
+name: PR validation
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+    types: [opened, reopened, synchronize, ready_for_review]
+
+# Keep only the newest run for each PR. Drafts are skipped below until review starts.
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    # Preserve one stable required-check name for both target branches.
+    name: PR validation
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      # This job uses build secrets, so reject fork code before checkout.
+      - name: Reject fork pull requests before checkout
+        id: fork_guard
+        env:
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ "$HEAD_REPOSITORY" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::Fork pull requests are not supported by this repository's PR validation workflow. No repository secrets were used."
+            exit 1
+          fi
+
+      - name: Checkout pull request
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Shared fast gate: run on both dev and main PRs.
+      - name: Setup Node.js 22 with npm cache
+        id: setup_node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked npm dependencies
+        id: install_dependencies
+        run: npm ci
+
+      - name: Test public data decoders
+        id: tests
+        run: npm test
+
+      - name: Build static site with Astro
+        id: build
+        run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INVITE_CODES_API_URL: ${{ vars.INVITE_CODES_API_URL }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}
+          PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
+
+      # The visible-character report drives font repair for both PR tiers.
+      - name: Check visible Noto Sans TC coverage
+        id: visible_fonts
+        continue-on-error: true
+        run: node scripts/check-font-subsets.mjs --report "$RUNNER_TEMP/font-visible-report.json"
+
+      # Release-only checks run on PRs targeting main. The generated font repair
+      # PR is independently verified before it is opened, so dev PRs skip Python.
+      - name: Setup Python 3.12 with pip cache
+        id: setup_python
+        if: github.base_ref == 'main'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/requirements-font.txt
+
+      - name: Install pinned WOFF2 verification tools
+        id: install_font_tools
+        if: github.base_ref == 'main'
+        run: python -m pip install -r scripts/requirements-font.txt
+
+      - name: Check Noto WOFF2 cmap and variable weight axis
+        id: woff2_cmap
+        if: github.base_ref == 'main'
+        continue-on-error: true
+        run: >-
+          python scripts/noto-font-tool.py verify
+          --report "$RUNNER_TEMP/font-cmap-report.json"
+
+      - name: Verify static SEO and generated public output
+        id: seo
+        if: github.base_ref == 'main'
+        run: npm run check:seo
+
+      - name: Generate Pagefind search index
+        id: pagefind
+        if: github.base_ref == 'main'
+        run: npx pagefind --site dist
+
+      # Font checks are allowed to continue so SEO and Pagefind can finish on
+      # main PRs; this final gate makes a font failure fail the required check.
+      - name: Fail if required font checks failed
+        id: font_gate
+        if: >-
+          always() &&
+          steps.build.outcome == 'success' &&
+          steps.visible_fonts.outcome != 'skipped' &&
+          (github.base_ref == 'dev' ||
+          (steps.seo.conclusion == 'success' && steps.pagefind.conclusion == 'success'))
+        env:
+          TARGET_BRANCH: ${{ github.base_ref }}
+          VISIBLE_FONT_OUTCOME: ${{ steps.visible_fonts.outcome }}
+          WOFF2_CMAP_OUTCOME: ${{ steps.woff2_cmap.outcome }}
+        run: |
+          if [ "$VISIBLE_FONT_OUTCOME" != "success" ]; then
+            echo "::error::Visible Noto Sans TC coverage validation failed."
+            exit 1
+          fi
+
+          if [ "$TARGET_BRANCH" = "main" ] && [ "$WOFF2_CMAP_OUTCOME" != "success" ]; then
+            echo "::error::Noto Sans TC WOFF2 cmap or variable weight axis validation failed."
+            exit 1
+          fi
+
+      # Upload only when the font failure is isolated from the checks required
+      # for this target branch. The artifact may contain one report on dev and
+      # both visible/cmap reports on main.
+      - name: Upload font repair reports
+        if: >-
+          always() &&
+          steps.tests.outcome == 'success' &&
+          steps.build.outcome == 'success' &&
+          (steps.visible_fonts.outcome == 'failure' ||
+          (github.base_ref == 'main' && steps.woff2_cmap.outcome == 'failure')) &&
+          ((github.base_ref == 'dev' &&
+          steps.setup_python.conclusion == 'skipped' &&
+          steps.install_font_tools.conclusion == 'skipped' &&
+          steps.woff2_cmap.conclusion == 'skipped' &&
+          steps.seo.conclusion == 'skipped' &&
+          steps.pagefind.conclusion == 'skipped') ||
+          (github.base_ref == 'main' &&
+          steps.setup_python.outcome == 'success' &&
+          steps.install_font_tools.outcome == 'success' &&
+          steps.seo.outcome == 'success' &&
+          steps.pagefind.outcome == 'success'))
+        uses: actions/upload-artifact@v4
+        with:
+          name: font-subset-report
+          path: ${{ runner.temp }}/font-*-report.json
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,147 @@
+name: Open font repair PR
+
+on:
+  workflow_run:
+    workflows: [PR validation]
+    types: [completed]
+
+permissions:
+  # The workflow_run token only reads the failed run and its reports.
+  actions: read
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: font-fix-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    name: Open reviewed font repair PR
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Confirm this run failed only font validation
+        id: classify
+        run: node .github/scripts/font-fix.mjs classify
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Create repository-scoped GitHub App token
+        id: app_token
+        if: steps.classify.outputs.status == 'repair' || steps.classify.outputs.status == 'manual'
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.FONT_FIX_APP_ID }}
+          private-key: ${{ secrets.FONT_FIX_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+
+      - name: Download untrusted font report
+        id: download_report
+        if: steps.classify.outputs.status == 'repair'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.classify.outputs.run_id }}
+          name: font-subset-report
+          path: ${{ runner.temp }}/font-subset-report
+
+      - name: Setup Python 3.12 with pip cache
+        if: steps.classify.outputs.status == 'repair' && steps.download_report.outcome == 'success'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/requirements-font.txt
+
+      - name: Install pinned WOFF2 generation tools
+        if: steps.classify.outputs.status == 'repair' && steps.download_report.outcome == 'success'
+        run: python -m pip install -r scripts/requirements-font.txt
+
+      - name: Validate report and source PR coverage
+        id: prepare
+        if: steps.classify.outputs.status == 'repair' && steps.download_report.outcome == 'success'
+        run: node .github/scripts/font-fix.mjs prepare
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FONT_FIX_REPORT_DIRECTORY: ${{ runner.temp }}/font-subset-report
+          FONT_FIX_PR_NUMBER: ${{ steps.classify.outputs.pr_number }}
+          FONT_FIX_HEAD_SHA: ${{ steps.classify.outputs.head_sha }}
+          FONT_FIX_PR_BASE_REF: ${{ steps.classify.outputs.base_ref }}
+
+      - name: Generate font files from pinned Noto Sans TC source
+        id: generate
+        if: steps.prepare.outputs.prepared == 'true'
+        run: |
+          mkdir -p "$RUNNER_TEMP/font-fix-output/public/fonts" "$RUNNER_TEMP/font-fix-output/scripts"
+          python scripts/noto-font-tool.py generate \
+            --coverage "$RUNNER_TEMP/font-fix-coverage.txt" \
+            --codepoints "$RUNNER_TEMP/font-fix-codepoints.json" \
+            --font-output "$RUNNER_TEMP/font-fix-output/public/fonts/noto-sans-tc-site.woff2" \
+            --coverage-output "$RUNNER_TEMP/font-fix-output/scripts/noto-sans-tc-site.coverage.txt"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Verify generated WOFF2 cmap and weight axis
+        id: verify_generated
+        if: steps.generate.outcome == 'success'
+        run: >-
+          python scripts/noto-font-tool.py verify
+          --font "$RUNNER_TEMP/font-fix-output/public/fonts/noto-sans-tc-site.woff2"
+          --coverage "$RUNNER_TEMP/font-fix-output/scripts/noto-sans-tc-site.coverage.txt"
+          --report "$RUNNER_TEMP/font-fix-verify-report.json"
+
+      - name: Open or reuse the font repair PR
+        id: create_repair
+        if: steps.verify_generated.outcome == 'success'
+        run: node .github/scripts/font-fix.mjs create
+        env:
+          FONT_FIX_APP_TOKEN: ${{ steps.app_token.outputs.token }}
+          FONT_FIX_PR_NUMBER: ${{ steps.classify.outputs.pr_number }}
+          FONT_FIX_HEAD_SHA: ${{ steps.classify.outputs.head_sha }}
+          FONT_FIX_HEAD_REF: ${{ steps.classify.outputs.head_ref }}
+
+      - name: Upload generated files if PR creation failed
+        id: fallback_artifact
+        if: steps.create_repair.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: font-fix-fallback-pr-${{ steps.classify.outputs.pr_number }}-${{ steps.classify.outputs.head_sha }}
+          path: |
+            ${{ runner.temp }}/font-fix-output/public/fonts/noto-sans-tc-site.woff2
+            ${{ runner.temp }}/font-fix-output/scripts/noto-sans-tc-site.coverage.txt
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Update the original PR comment
+        if: >-
+          always() &&
+          (steps.classify.outputs.status == 'repair' || steps.classify.outputs.status == 'manual') &&
+          steps.app_token.outcome == 'success'
+        run: node .github/scripts/font-fix.mjs comment
+        env:
+          FONT_FIX_APP_TOKEN: ${{ steps.app_token.outputs.token }}
+          FONT_FIX_PR_NUMBER: ${{ steps.classify.outputs.pr_number }}
+          FONT_FIX_ROUTE_STATUS: ${{ steps.classify.outputs.status }}
+          FONT_FIX_RUN_URL: ${{ steps.classify.outputs.run_url }}
+          FONT_FIX_REPAIR_URL: ${{ steps.create_repair.outputs.repair_url }}
+          FONT_FIX_RESULT: ${{ steps.create_repair.outputs.result }}
+          FONT_FIX_ERROR: ${{ steps.prepare.outputs.error || steps.create_repair.outputs.error || (steps.download_report.outcome == 'failure' && 'font report artifact download failed') || (steps.generate.outcome == 'failure' && 'pinned font generation failed') || (steps.verify_generated.outcome == 'failure' && 'generated font verification failed') }}
+          FONT_FIX_ARTIFACT_URL: ${{ steps.fallback_artifact.outputs.artifact-url }}
