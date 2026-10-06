@@ -16,6 +16,7 @@ export default defineConfig({
     }),
   ],
   output: 'static',
+  devToolbar: { enabled: false },
   markdown: {
     shikiConfig: { theme: 'github-dark-default' },
   },
