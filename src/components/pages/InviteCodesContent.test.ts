@@ -49,11 +49,14 @@ test('invite filters keep counts, category selection and empty feedback consiste
   let toggle = () => {};
   const filter = {
     dataset: { active: 'true' },
+    click() { toggle(); },
     setAttribute() {},
     addEventListener(_name: string, listener: () => void) { toggle = listener; },
   };
   const status = { textContent: '', removeAttribute() {} };
   const empty = { hidden: true };
+  let showPast = () => {};
+  const pastButton = { addEventListener(_name: string, listener: () => void) { showPast = listener; } };
   let mobile = true;
   runInNewContext(stripTypeScriptTypes(script), {
     matchMedia: () => ({ matches: mobile }),
@@ -61,7 +64,7 @@ test('invite filters keep counts, category selection and empty feedback consiste
     document: {
       querySelectorAll: (selector: string) => selector === '.tag-tab' ? tabs : selector === '.tag-section' ? sections : cards,
       querySelector: () => ({ removeAttribute() {} }),
-      getElementById: (id: string) => id === 'hide-expired-toggle' ? filter : id === 'filter-status' ? status : empty,
+      getElementById: (id: string) => id === 'hide-expired-toggle' ? filter : id === 'filter-status' ? status : id === 'show-past-codes' ? pastButton : empty,
     },
   });
   assert.deepEqual(edgeStyles[0], { '--fade-left': '40px', '--fade-right': '40px' });
@@ -82,7 +85,8 @@ test('invite filters keep counts, category selection and empty feedback consiste
   clicks[2]();
   assert.deepEqual(pressed, ['false', 'false', 'true']);
   assert.equal(empty.hidden, false);
-  toggle();
+  showPast();
+  assert.equal(filter.dataset.active, 'false');
   assert.equal(empty.hidden, true);
   assert.deepEqual(hidden, [true, false]);
   assert.deepEqual(counts.map(count => count.textContent), ['3', '2', '1']);
