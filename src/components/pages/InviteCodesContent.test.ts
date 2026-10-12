@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { stripTypeScriptTypes } from 'node:module';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
+import { getInviteBrand } from '../../data/invite-brands.ts';
 
 test('invite filters keep counts, category selection and empty feedback consistent', async () => {
   const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
@@ -108,6 +109,51 @@ test('invite filters keep counts, category selection and empty feedback consiste
   assert.equal(expandButtons[0].expanded, 'true');
 });
 
+test('invite detail preserves optional fields, brand artwork and escaped content', async () => {
+  const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
+  const renderer = source.slice(source.indexOf('  function esc('), source.indexOf('  function bindCopyBtns('));
+  const render = (input: Record<string, unknown>) => runInNewContext(
+    stripTypeScriptTypes(renderer) + '\nrenderDetail(input)', { input, getInviteBrand },
+  ) as string;
+  const html = render({
+    title: '遠東銀行 Bankee', group: '銀行開戶', status: 'expired',
+    user_benefit: '新戶禮 <100>', my_benefit: 'NT$100',
+    invite_code: 'A"<B', invite_link: 'https://example.com/?a=1&b=2',
+    official_link: 'https://example.com/event', start_date: '2026-01-01', end_date: '2026-12-31',
+    description: '- 第一項\n- <script>第二項</script>', tags: ['<標籤>'],
+  });
+  assert.match(html, /invite-brands\/bankee\.png/);
+  assert.match(html, /--brand-color: 170 122 224/);
+  assert.match(html, /data-status="expired">已到期/);
+  assert.match(html, /新戶禮 &lt;100&gt;/);
+  assert.match(html, /data-copy="A&quot;&lt;B"/);
+  assert.match(html, /<ul><li>第一項<\/li><li>&lt;script&gt;第二項&lt;\/script&gt;<\/li><\/ul>/);
+  assert.match(html, /貓貓獲得/);
+  assert.match(html, /2026-01-01 → 2026-12-31/);
+  assert.match(html, /https:\/\/example.com\/event/);
+  assert.match(html, /&lt;標籤&gt;/);
+  assert.ok(html.indexOf('新戶禮') < html.indexOf('ic-actions'));
+  assert.ok(html.indexOf('貓貓獲得') < html.indexOf('ic-actions'));
+  assert.match(html, /class="ic-rewards" aria-label="邀請回饋"/);
+  assert.match(html, /class="ic-benefit ic-benefit--owner"/);
+  const linkOnly = render({ title: '服務', invite_link: 'https://example.com/invite' });
+  assert.match(linkOnly, /class="ic-actions"/);
+  assert.match(linkOnly, /class="ic-code-caption">[\s\S]*?<\/svg>邀請連結<\/span>/);
+  assert.match(linkOnly, /ic-link-symbol/);
+  assert.match(linkOnly, /class="ic-link-content">領取回饋<\/span>/);
+  assert.doesNotMatch(linkOnly, /class="ic-code-value"|class="ic-copy-btn"|data-copy=|開啟連結|INVITE \/ LINK/);
+  const codeOnly = render({ title: '服務', invite_code: 'ABC' });
+  assert.match(codeOnly, /data-copy="ABC"/);
+  assert.doesNotMatch(codeOnly, /class="ic-link-btn"/);
+  const ownerOnly = render({ title: '服務', my_benefit: 'NT$100' });
+  assert.match(ownerOnly, /ic-benefit--owner/);
+  assert.doesNotMatch(ownerOnly, /ic-benefit--user/);
+  const minimal = render({ title: '<新服務>', status: 'disabled', description: '說明' });
+  assert.match(minimal, /&lt;新服務&gt;/);
+  assert.match(minimal, /已停用/);
+  assert.doesNotMatch(minimal, /ic-rewards|ic-actions|ic-detail-footer|<img|undefined/);
+});
+
 test('header shade extends only while the filter bar is stuck and follows its height', async () => {
   const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
   const script = source.split('// Extend the header shade only while the filter bar is stuck.')[1]
@@ -155,4 +201,20 @@ test('header shade extends only while the filter bar is stuck and follows its he
   events.scroll();
   frames.shift()!();
   assert.equal(extension, '0px');
+});
+
+test('closing keeps the animation on the open dialog after the viewport changes', async () => {
+  const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
+  const script = source.slice(source.indexOf('  function closeOverlay()'), source.indexOf("  document.querySelectorAll<HTMLButtonElement>('.card-detail')"));
+  for (const mobileDialog of [false, true]) {
+    const modal = { style: {} as Record<string, string> };
+    const sheet = { style: {} as Record<string, string> };
+    runInNewContext(stripTypeScriptTypes(script) + '\ncloseOverlay()', {
+      modal, sheet, activeDialog: mobileDialog ? sheet : modal,
+      isMobile: () => !mobileDialog,
+      backdrop: { style: {} }, setTimeout() {},
+    });
+    assert.equal(mobileDialog ? sheet.style.transform : modal.style.opacity, mobileDialog ? 'translateY(100%)' : '0');
+    assert.equal(mobileDialog ? modal.style.opacity : sheet.style.transform, undefined);
+  }
 });

@@ -121,7 +121,7 @@ const structuredData = {
       <div id="ic-sheet-drag" aria-hidden="true">
         <div class="ic-handle-bar"></div>
       </div>
-      <button id="ic-close-sheet" class="ic-close-btn" aria-label="關閉">✕</button>
+      <button id="ic-close-sheet" class="ic-close-btn" aria-label="關閉"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></svg></button>
       <div id="ic-sheet-scroll">
         <div id="ic-detail-sheet"></div>
       </div>
@@ -240,25 +240,28 @@ const structuredData = {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: min(520px, calc(100vw - 2rem));
-    max-height: min(88vh, 680px);
-    overflow-y: auto;
-    background: rgb(var(--color-bg-medium));
+    width: min(600px, calc(100vw - 2rem));
+    max-height: 90dvh;
+    overflow: hidden;
+    background: rgb(var(--color-bg-dark));
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 1.5rem;
-    padding: 1.75rem;
+    padding: 0;
     box-shadow: 0 32px 80px rgba(0,0,0,0.5);
     scrollbar-width: none;
   }
-  #ic-modal::-webkit-scrollbar { display: none; }
+  #ic-detail-modal { max-height: 90dvh; overflow-y: auto; scrollbar-width: none; }
+  #ic-detail-modal::-webkit-scrollbar { display: none; }
+  #ic-modal:focus, #ic-sheet:focus { outline: none; }
 
   /* Bottom Sheet */
   #ic-sheet {
     display: none;
     position: absolute;
     left: 0; right: 0; bottom: 0;
-    max-height: 90vh;
-    background: rgb(var(--color-bg-medium));
+    max-height: 92dvh;
+    isolation: isolate;
+    background: radial-gradient(ellipse 560px 320px at 0 0, rgb(var(--brand-color) / .2), transparent 75%), rgb(var(--color-bg-dark));
     border-top: 1px solid rgba(255,255,255,0.1);
     border-radius: 1.5rem 1.5rem 0 0;
     flex-direction: column;
@@ -283,7 +286,8 @@ const structuredData = {
   #ic-sheet-scroll {
     flex: 1;
     overflow-y: auto;
-    padding: 0.25rem 1.5rem 2.5rem;
+    padding: 0;
+    min-height: 0;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
@@ -314,92 +318,86 @@ const structuredData = {
 </style>
 
 <style is:global>
-  /* ── Invite Code Detail content (dynamically injected via innerHTML) ── */
-  .ic-detail-status {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    font-size: 0.7rem; font-weight: 600;
-    padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid;
-  }
-  .ic-badge-row {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem;
-    margin-top: 0.4rem;
-  }
-  .ic-detail-title {
-    font-size: 1.15rem; font-weight: 700;
-    color: rgb(var(--color-text-primary));
-    padding-right: 2.5rem;
-  }
-  .ic-event-link {
-    display: inline-flex; align-items: center; gap: 0.3rem;
-    min-height: 44px; font-size: 0.8rem; padding: 0.2rem 0.55rem; border-radius: 99px;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-    color: rgb(var(--color-text-secondary)); text-decoration: none; transition: all 0.15s;
-  }
-  .ic-event-link:hover { background: rgba(255,255,255,0.12); color: rgb(var(--color-text-primary)); }
-  .ic-tag {
-    display: inline-flex; align-items: center;
-    font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 99px;
-    background: rgba(var(--color-accent), 0.12);
-    color: rgb(var(--color-accent));
-    border-width: 1px;
-    border-style: solid;
-    border-color: rgba(var(--color-accent), 0.2);
-  }
-  .ic-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 1rem 0; }
-  .ic-desc { font-size: 0.875rem; color: rgb(var(--color-text-secondary)); line-height: 1.65; word-break: break-word; }
-  .ic-desc ul, .ic-desc ol { padding-left: 1.25rem; margin: 0.35rem 0; }
+  /* Detail markup is rendered in both the modal and the mobile sheet. */
+  .ic-detail { position: relative; isolation: isolate; overflow: hidden; --brand-color: var(--color-primary); color: rgb(var(--color-text-primary)); background: radial-gradient(ellipse 560px 320px at 0 0, rgb(var(--brand-color) / .2), transparent 75%); }
+  .ic-detail-hero { padding: 2rem 2rem 1.5rem; }
+  .ic-detail::before, #ic-sheet::before { position: absolute; z-index: -1; top: -100px; right: -70px; width: 260px; height: 260px; border: 1px solid rgb(var(--brand-color) / .18); border-radius: 50%; box-shadow: 0 0 0 30px rgb(var(--brand-color) / .035), 0 0 0 60px rgb(var(--brand-color) / .025); pointer-events: none; content: ''; }
+  #ic-detail-sheet .ic-detail { background: transparent; }
+  #ic-detail-sheet .ic-detail::before { content: none; }
+  .ic-detail-brand { display: flex; align-items: center; gap: .875rem; padding-right: 3rem; margin-bottom: 1.25rem; }
+  .ic-detail-logo { display: grid; place-items: center; flex-shrink: 0; width: 60px; height: 60px; border: 1px solid rgb(var(--brand-color) / .3); border-radius: 16px; background: rgb(var(--color-bg-dark) / .8); box-shadow: 0 8px 24px rgb(0 0 0 / .18); color: rgb(var(--brand-color)); font-size: 1.25rem; font-weight: 700; }
+  .ic-detail-logo img { width: 40px; height: 40px; border-radius: 9px; object-fit: contain; }
+  .ic-detail-category { margin: 0 0 .35rem; color: rgb(var(--brand-color)); font-size: .75rem; letter-spacing: .06em; }
+  .ic-detail-title { margin: 0; font-size: clamp(1.4rem, 4vw, 1.85rem); font-weight: 700; line-height: 1.4; letter-spacing: -.025em; overflow-wrap: anywhere; }
+  .ic-detail-status { display: inline-flex; align-items: center; gap: .4rem; color: rgb(var(--color-text-secondary)); font-size: .75rem; }
+  .ic-detail-status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ''; }
+  .ic-detail-status[data-status="active"] { color: rgb(var(--brand-color)); }
+  .ic-detail-status[data-status="expired"] { color: #f87171; }
+  .ic-detail-body { display: grid; gap: 1.5rem; padding: 0 2rem 2rem; }
+  .ic-section-label { display: block; margin-bottom: .625rem; color: rgb(var(--color-text-secondary)); font-size: .75rem; font-weight: 500; }
+  .ic-rewards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+  .ic-rewards:has(> :only-child) { grid-template-columns: 1fr; }
+  .ic-benefit { min-width: 0; }
+  .ic-benefit + .ic-benefit { padding-left: 1.5rem; border-left: 1px solid rgb(var(--color-text-primary) / .1); }
+  .ic-benefit .ic-section-label { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; }
+  .ic-section-label svg { width: 20px; height: 20px; flex-shrink: 0; color: rgb(var(--brand-color)); }
+  .ic-benefit p { margin: 0; color: rgb(var(--color-text-primary)); font-size: 1rem; line-height: 1.7; overflow-wrap: anywhere; }
+  .ic-benefit--user p { font-size: 1.2rem; font-weight: 600; letter-spacing: -.02em; }
+  .ic-benefit--owner p { color: rgb(var(--color-text-secondary)); }
+  .ic-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; padding: 1rem 0; border-block: 1px solid rgb(var(--color-text-primary) / .1); }
+  .ic-code-row { display: grid; flex: 1; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: .75rem; min-width: 160px; }
+  .ic-code-caption { display: block; margin-bottom: .35rem; color: rgb(var(--color-text-secondary)); font-size: .75rem; }
+  .ic-code-caption:has(svg) { display: flex; align-items: center; gap: .5rem; }
+  .ic-code-caption svg { width: 20px; height: 20px; flex-shrink: 0; color: rgb(var(--brand-color)); }
+  .ic-code-text { flex: 1; min-width: 0; }
+  .ic-code-value { display: flex; align-items: center; min-height: 44px; overflow-x: auto; scrollbar-width: none; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 500; letter-spacing: .06em; }
+  .ic-code-value::-webkit-scrollbar { display: none; }
+  .ic-copy-btn { flex-shrink: 0; min-width: 44px; min-height: 44px; padding: .5rem; border: 0; background: transparent; color: rgb(var(--color-text-primary)); font-size: .8rem; cursor: pointer; transition: opacity .2s; }
+  .ic-copy-btn:hover { opacity: .7; }
+  .ic-copy-btn.copied { color: #4ade80; }
+  .ic-link-btn { display: flex; align-items: center; gap: .625rem; min-height: 44px; padding: .625rem .875rem; margin-left: auto; border: 1px solid rgb(var(--brand-color) / .35); border-radius: 99px; color: rgb(var(--color-text-primary)); font-size: .8rem; font-weight: 500; text-decoration: none; transition: background .2s, border-color .2s; }
+  .ic-link-btn svg { width: 20px; height: 20px; flex-shrink: 0; color: rgb(var(--brand-color)); }
+  .ic-link-symbol { display: grid; place-items: center; flex-shrink: 0; }
+  .ic-link-btn:hover { background: rgb(var(--brand-color) / .08); border-color: rgb(var(--brand-color) / .6); }
+  .ic-link-btn > svg { transition: transform .2s; }
+  .ic-link-btn:hover > svg { transform: translate(2px, -2px); }
+  .ic-section-label:has(svg) { display: flex; align-items: center; gap: .5rem; }
+  .ic-desc { color: rgb(var(--color-text-secondary)); font-size: .875rem; line-height: 1.9; overflow-wrap: anywhere; }
+  .ic-desc ul, .ic-desc ol { padding-left: 1.25rem; margin: .35rem 0; }
   .ic-desc ul { list-style-type: disc; }
   .ic-desc ol { list-style-type: decimal; }
-  .ic-desc li { margin-bottom: 0.2rem; }
-  .ic-section-label {
-    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em;
-    text-transform: uppercase; color: rgb(var(--color-text-secondary));
-    margin-bottom: 0.4rem;
+  .ic-desc li { margin-bottom: .3rem; }
+  .ic-badge-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .875rem; }
+  .ic-tag { padding: .2rem .5rem; border-radius: 4px; background: rgb(var(--brand-color) / .08); color: rgb(var(--color-text-secondary)); font-size: .75rem; }
+  .ic-detail-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; padding-top: .75rem; border-top: 1px solid rgb(var(--color-text-primary) / .08); }
+  .ic-date-row { display: flex; align-items: center; gap: .5rem; color: rgb(var(--color-text-secondary)); font-size: .75rem; }
+  .ic-event-link { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; color: rgb(var(--color-text-secondary)); font-size: .75rem; text-decoration: none; }
+  .ic-event-link:hover { color: rgb(var(--color-text-primary)); }
+  .ic-detail button:focus-visible, .ic-detail a:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 4px; }
+  @media (max-width: 767px) {
+    .ic-detail-hero { padding: 1.25rem 1.25rem 1.5rem; }
+    .ic-detail-body { padding: 0 1.25rem calc(1.5rem + env(safe-area-inset-bottom)); }
+    .ic-detail-brand { gap: .75rem; }
+    .ic-detail-logo { width: 52px; height: 52px; border-radius: 14px; }
+    .ic-detail-logo img { width: 34px; height: 34px; }
+    .ic-rewards { gap: 1rem; }
+    .ic-benefit + .ic-benefit { padding-left: 1rem; }
+    .ic-benefit--user p { font-size: 1.05rem; }
+    .ic-desc { font-size: 1rem; line-height: 1.75; }
   }
-  .ic-code-row {
-    display: flex; align-items: center; gap: 0.5rem;
-    background: rgba(0,0,0,0.2);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 0.625rem; padding: 0.625rem 0.75rem;
+  @media (max-width: 479px) {
+    .ic-rewards { grid-template-columns: minmax(0, 1fr); }
+    .ic-benefit { display: grid; grid-template-columns: min(6rem, 40%) minmax(0, 1fr); align-items: start; gap: .75rem; }
+    .ic-benefit .ic-section-label { min-height: 1.7rem; margin: 0; line-height: 1.7; }
+    .ic-benefit p { font-size: 1rem; }
+    .ic-benefit + .ic-benefit { padding-left: 0; border-left: 0; }
+    .ic-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+    .ic-code-row { min-width: 0; }
+    .ic-actions .ic-link-btn { width: 100%; margin: 0; padding: .75rem .875rem; border: 0; border-radius: 10px; background: linear-gradient(100deg, rgb(var(--brand-color) / .08), rgb(var(--brand-color) / .025)); }
+    .ic-actions .ic-link-content { flex: 1; }
+    .ic-actions .ic-link-btn:hover { background: rgb(var(--brand-color) / .12); }
   }
-  .ic-code-value {
-    flex: 1; font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9rem; color: rgb(var(--color-primary));
-    letter-spacing: 0.04em; word-break: break-all;
-  }
-  .ic-copy-btn {
-    flex-shrink: 0; min-height: 44px; padding: 0.3rem 0.7rem; border-radius: 0.375rem;
-    font-size: 0.75rem; font-weight: 500;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-    color: rgb(var(--color-text-secondary)); cursor: pointer; transition: all 0.15s;
-  }
-  .ic-copy-btn:hover { background: rgba(255,255,255,0.1); color: rgb(var(--color-text-primary)); }
-  .ic-copy-btn.copied { color: #4ade80; border-color: rgba(74,222,128,0.3); }
-  .ic-link-btn {
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    width: 100%; padding: 0.75rem; border-radius: 0.75rem;
-    font-size: 0.9rem; font-weight: 600;
-    background: rgb(var(--color-primary));
-    border: none;
-    color: rgb(var(--color-bg-dark)); text-decoration: none; transition: opacity 0.15s;
-    margin-top: 0.25rem;
-  }
-  .ic-link-btn:hover { opacity: 0.88; }
-  .ic-benefits-box {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; overflow: hidden;
-  }
-  .ic-benefit-row {
-    display: flex; align-items: flex-start; gap: 0.75rem;
-    padding: 0.65rem 0.875rem; font-size: 0.825rem;
-  }
-  .ic-benefit-row + .ic-benefit-row { border-top: 1px solid rgba(255,255,255,0.06); }
-  .ic-benefit-label { font-size: 0.68rem; color: rgb(var(--color-text-secondary)); margin-bottom: 0.15rem; }
-  .ic-benefit-value { color: rgb(var(--color-text-primary)); }
-  .ic-date-row {
-    display: flex; align-items: center; gap: 0.5rem;
-    font-size: 0.78rem; color: rgb(var(--color-text-secondary));
-  }
+  @media (prefers-reduced-motion: reduce) { .ic-copy-btn, .ic-link-btn, .ic-link-btn > svg { transition: none; } }
 </style>
 
 <script>
@@ -596,70 +594,46 @@ const structuredData = {
   type InviteData = Record<string, unknown>;
 
   function renderDetail(c: InviteData): string {
-    const statusMap: Record<string, [string, string]> = {
-      active:   ['有效',   'color:rgb(74,222,128);border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.1)'],
-      expired:  ['已到期', 'color:rgb(248,113,113);border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.1)'],
-      disabled: ['已停用', 'color:rgb(161,161,170);border-color:rgba(161,161,170,.3);background:rgba(161,161,170,.1)'],
-    };
+    const title = String(c.title ?? '');
+    const brand = getInviteBrand(title);
+    const statusLabels: Record<string, string> = { active: '有效', expired: '已到期', disabled: '已停用' };
     const status = String(c.status ?? 'active');
-    const [label, style] = statusMap[status] ?? statusMap.active;
     const tags = (Array.isArray(c.tags) ? c.tags : []).map((t: unknown) => `<span class="ic-tag">${esc(t)}</span>`).join('');
+    const dateRange = c.start_date && c.end_date
+      ? `${esc(c.start_date)} → ${esc(c.end_date)}`
+      : c.end_date ? `至 ${esc(c.end_date)}` : '';
+    const arrow = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>';
 
-    let dateRange = '';
-    if (c.start_date && c.end_date) dateRange = `${esc(c.start_date)} → ${esc(c.end_date)}`;
-    else if (c.end_date) dateRange = `至 ${esc(c.end_date)}`;
-
-    const hasAction = c.invite_code || c.invite_link;
-    const hasBenefit = c.user_benefit || c.my_benefit;
+    const linkSymbol = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M15 7h2a5 5 0 0 1 0 10h-2M9 17H7A5 5 0 0 1 7 7h2M8 12h8" /></svg>';
 
     return `
-      <h2 class="ic-detail-title">${esc(c.title)}</h2>
-      <div class="ic-badge-row">
-        <span class="ic-detail-status" style="${style}">${label}</span>
-        ${c.official_link ? `
-          <a href="${esc(c.official_link)}" target="_blank" rel="noopener" class="ic-event-link">
-            活動頁面
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M4 1.5H2A1.5 1.5 0 0 0 .5 3v5A1.5 1.5 0 0 0 2 9.5h5A1.5 1.5 0 0 0 8.5 8V6M6 .5h3.5v3.5M9 1 4.5 5.5"
-                stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>` : ''}
-      </div>
-      ${dateRange ? `
-        <div class="ic-date-row" style="margin-top:0.6rem">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <rect x="1" y="2.5" width="11" height="9.5" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-            <path d="M4.5 1v3M8.5 1v3M1 6h11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
-          ${dateRange}
-        </div>` : ''}
-      <hr class="ic-divider" />
-      <div class="ic-desc">${formatDesc(String(c.description ?? ''))}</div>
-      ${tags ? `<div class="ic-badge-row" style="margin-top:0.75rem">${tags}</div>` : ''}
-      ${hasBenefit ? `
-        <hr class="ic-divider" />
-        <div class="ic-section-label">獲得好處</div>
-        <div class="ic-benefits-box">
-          ${c.user_benefit ? `<div class="ic-benefit-row"><div><div class="ic-benefit-label">你獲得</div><div class="ic-benefit-value">${esc(c.user_benefit)}</div></div></div>` : ''}
-          ${c.my_benefit ? `<div class="ic-benefit-row"><div><div class="ic-benefit-label">貓貓獲得</div><div class="ic-benefit-value">${esc(c.my_benefit)}</div></div></div>` : ''}
-        </div>` : ''}
-      ${hasAction ? '<hr class="ic-divider" />' : ''}
-      ${c.invite_code ? `
-        <div style="margin-bottom:0.75rem">
-          <div class="ic-section-label">邀請碼</div>
-          <div class="ic-code-row">
-            <span class="ic-code-value">${esc(c.invite_code)}</span>
-            <button class="ic-copy-btn" data-copy="${esc(c.invite_code)}">複製</button>
+      <div class="ic-detail" style="--brand-color: ${brand.color}">
+        <header class="ic-detail-hero">
+          <div class="ic-detail-brand">
+            <span class="ic-detail-logo" aria-hidden="true">${brand.icon ? `<img src="/images/invite-brands/${brand.icon}.png" width="40" height="40" alt="" />` : esc(title.slice(0, 2))}</span>
+            <div><p class="ic-detail-category">${esc(c.group ?? '其他')}</p><h2 class="ic-detail-title">${esc(title)}</h2></div>
           </div>
-        </div>` : ''}
-      ${c.invite_link ? `
-        <a href="${esc(c.invite_link)}" target="_blank" rel="noopener" class="ic-link-btn">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M6 2H2.5A1.5 1.5 0 0 0 1 3.5v8A1.5 1.5 0 0 0 2.5 13h8A1.5 1.5 0 0 0 12 11.5V8M8 1h5v5M12.5 1.5 6 8"
-              stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          前往邀請連結
-        </a>` : ''}
+          <span class="ic-detail-status" data-status="${esc(status)}">${statusLabels[status] ?? statusLabels.active}</span>
+        </header>
+        <div class="ic-detail-body">
+          ${c.user_benefit || c.my_benefit ? `<section class="ic-rewards" aria-label="邀請回饋">
+            ${c.user_benefit ? `<div class="ic-benefit ic-benefit--user"><h3 class="ic-section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M5 12v9h14v-9M12 8v13M12 8H8a3 3 0 1 1 3-3l1 3Zm0 0h4a3 3 0 1 0-3-3l-1 3Z" /></svg>你能獲得</h3><p>${esc(c.user_benefit)}</p></div>` : ''}
+            ${c.my_benefit ? `<div class="ic-benefit ic-benefit--owner"><h3 class="ic-section-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10V3l5 4a12 12 0 0 1 6 0l5-4v7c1 2 1 5-1 7-3 4-11 4-14 0-2-2-2-5-1-7Z" /><path d="M8 12h.01M16 12h.01m-5 3 1 1 1-1M3 14H1m2 3-2 1m20-4h2m-2 3 2 1" /></svg>貓貓獲得</h3><p>${esc(c.my_benefit)}</p></div>` : ''}
+          </section>` : ''}
+          ${c.invite_code || c.invite_link ? `<div class="ic-actions">
+            <div class="ic-code-row"><div class="ic-code-text">
+              <span class="ic-code-caption">${c.invite_code ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v5a2 2 0 0 0 0 4v5H4v-5a2 2 0 0 0 0-4V5ZM9 5v14" /></svg>邀請碼' : `${linkSymbol}邀請連結`}</span>
+              ${c.invite_code ? `<span class="ic-code-value">${esc(c.invite_code)}</span>` : ''}
+            </div>${c.invite_code ? `<button type="button" class="ic-copy-btn" data-copy="${esc(c.invite_code)}" aria-live="polite">複製</button>` : ''}</div>
+            ${c.invite_link ? `<a href="${esc(c.invite_link)}" target="_blank" rel="noopener noreferrer" class="ic-link-btn" aria-label="透過邀請連結領取回饋（開新分頁）"><span class="ic-link-symbol" aria-hidden="true">${linkSymbol}</span><span class="ic-link-content">領取回饋</span>${arrow}</a>` : ''}
+          </div>` : ''}
+          ${c.description || tags ? `<section><h3 class="ic-section-label"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8M8 16h5" /></svg>服務說明</h3><div class="ic-desc">${formatDesc(String(c.description ?? ''))}</div>${tags ? `<div class="ic-badge-row">${tags}</div>` : ''}</section>` : ''}
+          ${dateRange || c.official_link ? `<footer class="ic-detail-footer">
+            ${dateRange ? `<span class="ic-date-row"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4m10-4v4M3 11h18" /></svg>${dateRange}</span>` : ''}
+            ${c.official_link ? `<a href="${esc(c.official_link)}" target="_blank" rel="noopener noreferrer" class="ic-event-link" aria-label="活動頁面（開新分頁）">活動頁面${arrow}</a>` : ''}
+          </footer>` : ''}
+        </div>
+      </div>
     `;
   }
 
@@ -731,7 +705,9 @@ const structuredData = {
     });
 
     if (!isMobile()) {
+      modal.setAttribute('aria-label', `${String(data.title ?? '')} 邀請碼詳情`);
       detailM.innerHTML = renderDetail(data);
+      detailM.scrollTop = 0;
       bindCopyBtns(detailM);
       modal.style.display = 'block';
       modal.style.opacity = '0';
@@ -742,6 +718,8 @@ const structuredData = {
         modal.style.transform = 'translate(-50%, -50%) scale(1) translateY(0)';
       }));
     } else {
+      sheet.setAttribute('aria-label', `${String(data.title ?? '')} 邀請碼詳情`);
+      sheet.style.setProperty('--brand-color', getInviteBrand(String(data.title ?? '')).color);
       detailS.innerHTML = renderDetail(data);
       bindCopyBtns(detailS);
       sheetScroll.scrollTop = 0;
@@ -760,7 +738,7 @@ const structuredData = {
     backdrop.style.background = 'rgba(0,0,0,0)';
     backdrop.style.backdropFilter = 'blur(0px)';
 
-    if (!isMobile()) {
+    if (activeDialog === modal) {
       modal.style.transition = 'opacity 0.2s ease-in, transform 0.2s ease-in';
       modal.style.opacity = '0';
       modal.style.transform = 'translate(-50%, -50%) scale(0.94) translateY(10px)';
