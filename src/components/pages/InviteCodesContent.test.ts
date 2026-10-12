@@ -54,8 +54,9 @@ test('invite filters keep counts, category selection and empty feedback consiste
   };
   const status = { textContent: '', removeAttribute() {} };
   const empty = { hidden: true };
+  let mobile = true;
   runInNewContext(stripTypeScriptTypes(script), {
-    matchMedia: () => ({ matches: true }),
+    matchMedia: () => ({ matches: mobile }),
     window: { addEventListener() {} },
     document: {
       querySelectorAll: (selector: string) => selector === '.tag-tab' ? tabs : selector === '.tag-section' ? sections : cards,
@@ -104,6 +105,12 @@ test('invite filters keep counts, category selection and empty feedback consiste
   assert.equal(collapsed[0], true);
   assert.equal(expandButtons[0].title, '展開全部');
   assert.equal(expandButtons[0].label, '展開「旅遊」的全部邀請碼');
+  clicks[1]();
+  assert.equal(collapsed[0], true);
+  assert.equal(expandButtons[0].expanded, 'false');
+  expandClicks[0]();
+  assert.equal(collapsed[0], false);
+  mobile = false;
   clicks[1]();
   assert.equal(collapsed[0], false);
   assert.equal(expandButtons[0].expanded, 'true');

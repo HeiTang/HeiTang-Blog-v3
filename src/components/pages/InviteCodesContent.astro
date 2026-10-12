@@ -182,7 +182,7 @@ const structuredData = {
   .tag-tab.active, .filter-btn[data-active="true"] { color: rgb(var(--color-primary)); border-color: rgb(var(--color-primary) / .45); background: rgb(var(--color-primary) / .1); }
   .filter-btn { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; }
   .filter-btn[data-active="false"] .filter-check { visibility: hidden; }
-  .directory-sections { display: grid; gap: 3.5rem; margin-top: 1.5rem; }
+  .directory-sections { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3.5rem; margin-top: 1.5rem; }
   .section-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 1rem; }
   .section-heading h2 { font-size: 1.15rem; font-weight: 600; }
   .section-actions { display: flex; align-items: center; gap: 1rem; }
@@ -208,6 +208,7 @@ const structuredData = {
     .intro-bottom { display: block; }
     .intro-bottom .updated-at { margin-top: 1.25rem; text-align: left; }
     .invite-grid { grid-template-columns: 1fr; }
+    .directory-sections { gap: 2.5rem; }
     .tag-section.is-collapsed .invite-grid { grid-auto-columns: 86%; }
   }
   @media (prefers-reduced-motion: reduce) { .tag-tab, .filter-btn, .section-expand { transition: none; } }
@@ -464,7 +465,7 @@ const structuredData = {
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       activeTag = tab.dataset.tag ?? '__all__';
-      sections.forEach(section => { section.dataset.expanded = String(section.dataset.section === activeTag); });
+      sections.forEach(section => { section.dataset.expanded = String(!matchMedia('(max-width: 700px)').matches && section.dataset.section === activeTag); });
       tabs.forEach(t => {
         t.classList.remove('active');
         t.setAttribute('aria-pressed', String(t === tab));
