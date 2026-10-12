@@ -68,6 +68,7 @@
 
 - 必填欄位：`title`、`group`、`description`、`tags`、`status`。
 - `invite_code`、`invite_link` 至少提供一個。
+- Hero 在每次頁面載入時隨機選最多三筆有效服務：優先有本機 Logo 的服務，再優先同分類；不足三筆才跨分類，Logo 不足時使用文字圖示。沒有回饋文字則顯示描述。使用 sessionStorage 避免連續抽到相同組合（有同等候選時）；完整清單仍保留在靜態 HTML。
 - 服務不會逐筆驗證 API 回應；Google Sheets 欄位可自訂，但 GAS 輸出要轉成上述格式。
 
 | 情況 | 結果 |

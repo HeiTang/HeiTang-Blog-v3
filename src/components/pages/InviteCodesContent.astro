@@ -1,8 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getInviteBrand, selectHeroCodes } from '../../data/invite-brands';
 import socialImage from '../../assets/og/invite-codes.jpg';
 import InviteCodeCard from '../invite-codes/InviteCodeCard.astro';
 import { fetchInviteCodes, extractGroups, groupByGroup } from '../../services/inviteCodes';
+import { siteConfig } from '../../config/site';
 import { copy } from '../../config/copy';
 import { formatDate } from '../../utils/date';
 
@@ -10,47 +12,38 @@ const { codes, updatedAt } = await fetchInviteCodes();
 const groups = extractGroups(codes);
 const groupedCodes = groupByGroup(codes, groups);
 const sectionKeys = Object.keys(groupedCodes);
+const heroCodes = selectHeroCodes(codes);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: copy.inviteCodes.title,
+  description: copy.inviteCodes.description,
+  url: `${siteConfig.url}/invite-codes/`,
+};
 ---
 
-<BaseLayout title={copy.inviteCodes.title} description={copy.inviteCodes.description} currentPath="/invite-codes" image={socialImage.src}>
-  <div class="container mx-auto px-6 py-24">
-
-    <!-- SVG filter for Liquid Glass refraction (hidden, referenced by CSS backdrop-filter) -->
-    <svg style="position:absolute;width:0;height:0;pointer-events:none" aria-hidden="true">
-      <defs>
-        <filter id="lg-refract" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-          <!-- 低頻噪點 → 模擬玻璃厚度不均勻的折射 -->
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.018 0.025"
-            numOctaves="3"
-            seed="42"
-            result="noise"
-          />
-          <!-- 位移背景像素：真實折射扭曲 -->
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="noise"
-            scale="10"
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-      </defs>
-    </svg>
-
-    <!-- Page header -->
-    <div class="mb-8">
-      <h1 class="font-display text-4xl font-bold mb-3 text-[rgb(var(--color-text-primary))]">
-        🎫 {copy.inviteCodes.title}
-      </h1>
-      <p class="text-[rgb(var(--color-text-secondary))] mb-2">
-        {copy.inviteCodes.description}
-      </p>
-      <p class="text-xs text-[rgb(var(--color-text-secondary))]">
-        {copy.inviteCodes.lastUpdated}：{formatDate(updatedAt)}
-      </p>
-    </div>
+<BaseLayout title={copy.inviteCodes.title} description={copy.inviteCodes.description} currentPath="/invite-codes" image={socialImage.src} structuredData={structuredData} hasPointerGlow={false}>
+  <article class="invite-directory" data-pagefind-body>
+    <header class="page-intro">
+      <p class="eyebrow">INVITE CODES / 黑糖的邀請碼清單</p>
+      <div class="hero-layout">
+        <h1>各種邀請碼，<br />收在<span>這裡。</span></h1>
+        {heroCodes.length > 0 && <div class="pocket-art" role="group" aria-label="服務卡片，可左右拖曳或點選切換" data-pagefind-ignore>
+          {heroCodes.map((code, index) => {
+            const brand = getInviteBrand(code.title);
+            return <button type="button" disabled class="pocket-ticket" aria-label={`將 ${code.title} 卡片帶到前面`} aria-pressed="false" style={`--ticket-color: ${brand.color}; --ticket-index: ${index}`}>
+            <span class="ticket-brand">{brand.icon ? <img src={`/images/invite-brands/${brand.icon}.png`} alt="" width="32" height="32" /> : <span class="ticket-monogram">{code.title.slice(0, 2)}</span>}<span class="ticket-title">{code.title}</span><span class="ticket-arrow">↗</span></span>
+            <span class="ticket-benefit">{code.user_benefit ?? code.description}</span>
+            <span class="ticket-stub"><span>INVITE / {String(index + 1).padStart(2, '0')}</span><span class="ticket-barcode"></span></span>
+          </button>;
+          })}
+        </div>}
+      </div>
+      <div class="intro-bottom">
+        <p>{copy.inviteCodes.description}。<br />收錄不等於推薦，使用前請確認服務與活動條件。</p>
+        <p class="updated-at">{copy.inviteCodes.lastUpdated}<br /><time datetime={updatedAt}>{formatDate(updatedAt)}</time></p>
+      </div>
+    </header>
 
     {codes.length === 0 ? (
       <div class="glass p-12 rounded-2xl text-center">
@@ -58,81 +51,46 @@ const sectionKeys = Object.keys(groupedCodes);
         <p class="text-[rgb(var(--color-text-secondary))] text-sm mt-3">
           {import.meta.env.INVITE_CODES_API_URL
             ? copy.inviteCodes.loadError
-            : copy.inviteCodes.noApiUrl}
+            : '有新的服務邀請碼時，會更新在這裡。'}
         </p>
       </div>
     ) : (
       <>
-        <!-- Tag filter tabs + toggle -->
-        <div class="tag-tabs-wrapper sticky top-16 z-20 mb-8 -mx-2 px-2 py-2">
-          <div class="flex items-center gap-3">
-
-            <!-- Scrollable tabs -->
-            <div class="relative flex-1 min-w-0">
-              <div class="tag-tabs-scroll flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                <button
-                  class="tag-tab active flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium
-                    transition-all duration-200 whitespace-nowrap"
-                  data-tag="__all__"
-                >
-                  {copy.inviteCodes.allFilter}
-                  <span class="ml-1.5 text-xs opacity-70">({codes.length})</span>
-                </button>
-                {sectionKeys.map(tag => (
-                  <button
-                    class="tag-tab flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium
-                      transition-all duration-200 whitespace-nowrap"
-                    data-tag={tag}
-                  >
-                    {tag}
-                    <span class="ml-1.5 text-xs opacity-70">({groupedCodes[tag].length})</span>
-                  </button>
-                ))}
-              </div>
-              <!-- 右側 fade -->
-              <div class="tag-tabs-fade pointer-events-none absolute right-0 top-0 bottom-0 w-12
-                bg-gradient-to-l from-[rgb(var(--color-bg-dark))] to-transparent opacity-0
-                transition-opacity duration-300" aria-hidden="true"></div>
-            </div>
-
-            <!-- Hide expired toggle: filter icon button -->
-            <button
-              id="hide-expired-toggle"
-              class="filter-btn flex-shrink-0 relative w-9 h-9 rounded-xl flex items-center justify-center
-                transition-all duration-250
-                bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.10)]
-                text-[rgb(var(--color-text-secondary))]
-                hover:bg-[rgba(255,255,255,0.10)] hover:text-[rgb(var(--color-text-primary))]"
-              aria-label="篩選有效邀請碼"
-              aria-pressed="true"
-              title="僅顯示有效邀請碼"
-              data-active="true"
-            >
-              <!-- Filter funnel SVG -->
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M1.5 2.5A.5.5 0 0 1 2 2h12a.5.5 0 0 1 .39.812L9.5 8.955V13.5a.5.5 0 0 1-.276.447l-3 1.5A.5.5 0 0 1 5.5 15V8.955L1.61 3.312A.5.5 0 0 1 1.5 2.5z"/>
-              </svg>
-              <!-- Active indicator dot -->
-              <span class="filter-dot absolute top-1 right-1 w-2 h-2 rounded-full
-                bg-[rgb(var(--color-primary))] ring-1 ring-[rgb(var(--color-bg-dark))]
-                transition-opacity duration-200"></span>
-            </button>
-
+        <div class="tag-tabs-wrapper" role="group" aria-label="邀請碼篩選" hidden>
+          <button class="tag-tab active" data-tag="__all__" aria-pressed="true">
+            {copy.inviteCodes.allFilter} <span data-count>{codes.length}</span>
+          </button>
+          <div class="tag-tabs-scroll" role="group" aria-label="服務分類">
+            {sectionKeys.map(tag => (
+              <button class="tag-tab" data-tag={tag} aria-pressed="false">
+                {tag} <span data-count>{groupedCodes[tag].length}</span>
+              </button>
+            ))}
           </div>
+          <button id="hide-expired-toggle" class="filter-btn" aria-label="只看有效" title="只看有效" aria-pressed="true" data-active="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6 7v5l-4 3v-8z" /><path class="filter-check" d="m16 19 2 2 4-5" /></svg>
+          </button>
+        </div>
+        <p id="filter-status" class="sr-only" role="status" hidden></p>
+        <div id="filter-empty" class="filter-empty" hidden>
+          <h2>這個分類目前沒有有效邀請碼</h2>
+          <p>關閉「只看有效」，就能查看過往收錄的服務。</p>
         </div>
 
         <!-- Sections -->
-        <div class="flex flex-col gap-12">
-          {sectionKeys.map(tag => (
+        <div class="directory-sections">
+          {sectionKeys.map((tag, index) => (
             <section class="tag-section" data-section={tag}>
-              <h2 class="font-display text-lg font-semibold text-[rgb(var(--color-text-primary))] mb-4 flex items-center gap-2">
-                <span class="inline-block w-1 h-5 rounded-full bg-[rgb(var(--color-primary))]"></span>
-                {tag}
-                <span class="text-xs font-normal text-[rgb(var(--color-text-secondary))] ml-1">
-                  ({groupedCodes[tag].length})
-                </span>
-              </h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <header class="section-heading">
+                <h2>{tag}</h2>
+                <div class="section-actions">
+                  <span><span data-section-count>{groupedCodes[tag].length}</span> 個服務</span>
+                  <button type="button" class="section-expand" aria-expanded="false" aria-label={`展開「${tag}」的全部邀請碼`} title="展開全部" aria-controls={`invite-group-${index}`} hidden>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 8 5 5 5-5M7 14l5 5 5-5" /></svg>
+                  </button>
+                </div>
+              </header>
+              <div class="invite-grid" id={`invite-group-${index}`}>
                 {groupedCodes[tag].map(code => (
                   <InviteCodeCard code={code} />
                 ))}
@@ -142,14 +100,14 @@ const sectionKeys = Object.keys(groupedCodes);
         </div>
       </>
     )}
-  </div>
+  </article>
 
   <!-- ── Invite Code Detail Overlay ── -->
   <div id="ic-overlay" aria-hidden="true">
     <div id="ic-backdrop"></div>
 
     <!-- Desktop: Modal -->
-    <div id="ic-modal" role="dialog" aria-modal="true">
+    <div id="ic-modal" role="dialog" aria-modal="true" aria-label="邀請碼詳情" tabindex="-1">
       <button id="ic-close-modal" class="ic-close-btn" aria-label="關閉">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -159,10 +117,11 @@ const sectionKeys = Object.keys(groupedCodes);
     </div>
 
     <!-- Mobile: Bottom Sheet -->
-    <div id="ic-sheet" role="dialog" aria-modal="true">
+    <div id="ic-sheet" role="dialog" aria-modal="true" aria-label="邀請碼詳情" tabindex="-1">
       <div id="ic-sheet-drag" aria-hidden="true">
         <div class="ic-handle-bar"></div>
       </div>
+      <button id="ic-close-sheet" class="ic-close-btn" aria-label="關閉">✕</button>
       <div id="ic-sheet-scroll">
         <div id="ic-detail-sheet"></div>
       </div>
@@ -171,47 +130,90 @@ const sectionKeys = Object.keys(groupedCodes);
 </BaseLayout>
 
 <style>
-  /* Tab inactive */
-  .tag-tab {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    color: rgb(var(--color-text-secondary));
+  /* overflow-x: hidden creates a scroll container that prevents the filter bar from sticking. */
+  :global(body:has(.invite-directory)) { overflow-x: clip; }
+  .invite-directory { max-width: 1080px; margin: auto; padding: 8rem 1.25rem 5rem; }
+  .eyebrow { margin-bottom: 1.8rem; color: rgb(var(--color-primary)); font-family: 'JetBrains Mono', monospace; font-size: .75rem; letter-spacing: .14em; }
+  h1 { font-size: clamp(2.2rem, 5.3vw, 4.1rem); font-weight: 700; line-height: 1.3; letter-spacing: -.035em; }
+  h1 span { color: rgb(var(--color-primary)); }
+  .hero-layout { display: grid; grid-template-columns: 1fr 340px; align-items: center; gap: 2rem; }
+  .pocket-art { position: relative; height: 240px; isolation: isolate; }
+  .pocket-ticket { position: absolute; top: 0; left: 0; width: 270px; height: 158px; padding: 1rem 1.2rem .75rem; border: 1px solid rgb(var(--ticket-color) / .35); border-radius: 14px; background: linear-gradient(120deg, rgb(var(--ticket-color) / .14), transparent), rgb(var(--color-bg-dark)); box-shadow: 0 12px 28px rgb(0 0 0 / .3); transform: translate(calc(var(--ticket-index) * 14px), calc(var(--ticket-index) * 40px)); text-align: left; cursor: grab; touch-action: pan-y; user-select: none; will-change: transform; }
+  @media (hover: hover) and (pointer: fine) {
+    .pocket-ticket:hover { box-shadow: 0 20px 40px rgb(0 0 0 / .4), 0 0 0 1px rgb(var(--ticket-color) / .55); }
   }
-  .tag-tab:hover {
-    background: rgba(255, 255, 255, 0.10);
-    border-color: rgba(255, 255, 255, 0.18);
-    color: rgb(var(--color-text-primary));
-  }
-  /* Tab active */
-  .tag-tab.active {
-    background: rgba(var(--color-primary), 0.18);
-    border-color: rgba(var(--color-primary), 0.40);
-    color: rgb(var(--color-primary));
-  }
-
-  /* Sticky tab bar background blur */
-  .tag-tabs-wrapper {
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-  }
-
-  /* Hide scrollbar cross-browser */
-  .scrollbar-hide { scrollbar-width: none; }
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-
-  /* Filter button active state */
-  .filter-btn[data-active="true"] {
-    background: rgba(var(--color-primary), 0.15);
-    border-color: rgba(var(--color-primary), 0.35);
-    color: rgb(var(--color-primary));
-  }
-  .filter-btn[data-active="false"] .filter-dot {
+  .pocket-ticket img { pointer-events: none; }
+  .is-dragging .pocket-ticket { cursor: grabbing; }
+  .pocket-ticket:focus-visible { outline: 2px solid rgb(var(--ticket-color)); outline-offset: 4px; }
+  .ticket-brand { display: flex; align-items: center; gap: .6rem; color: rgb(var(--ticket-color)); font-size: .85rem; font-weight: 600; }
+  .ticket-brand img { width: 28px; height: 28px; object-fit: contain; border-radius: 5px; }
+  .ticket-monogram { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid currentColor; border-radius: 5px; font-size: .65rem; }
+  .ticket-arrow { margin-left: auto; }
+  .ticket-benefit { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.8em; margin: .75rem 0; color: rgb(var(--color-text-primary)); font-size: .8rem; line-height: 1.4; }
+  .ticket-stub { display: flex; justify-content: space-between; align-items: center; padding-top: .6rem; border-top: 1px dashed rgb(var(--ticket-color) / .3); color: rgb(var(--ticket-color)); font-family: 'JetBrains Mono', monospace; font-size: .6rem; }
+  .ticket-barcode { width: 58px; height: 15px; opacity: .65; background: repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 3px, currentColor 3px 5px, transparent 5px 7px); }
+  .intro-bottom { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-top: 2rem; }
+  .intro-bottom p { margin: 0; color: rgb(var(--color-text-secondary)); line-height: 1.9; }
+  .intro-bottom .updated-at { flex-shrink: 0; font-size: .75rem; text-align: right; }
+  .updated-at time { font-family: 'JetBrains Mono', monospace; }
+  .page-intro { margin-bottom: 2.5rem; }
+  .tag-tabs-wrapper { position: sticky; top: 5rem; z-index: 41; display: flex; align-items: center; gap: .5rem; padding: .75rem 0; }
+  :global(body:has(.invite-directory) .site-header)::before { transition: bottom .24s ease; }
+  :global(body:has(.invite-directory) .site-header)::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 calc(-2rem - var(--header-shade-extension, 0px));
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgb(var(--color-bg-dark)) calc(100% - 3rem), rgb(var(--color-bg-dark) / 0));
     opacity: 0;
+    transition: bottom .24s ease, opacity .24s ease;
   }
-  .filter-btn[data-active="false"] {
-    color: rgb(var(--color-text-secondary));
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.10);
+  :global(body:has(.invite-directory) .site-header.has-sticky-filter)::after { opacity: 1; }
+  :global(body:has(.invite-directory) .site-header:has(#mobile-menu:not(.hidden), [data-nav-dropdown][open])) { z-index: 42; }
+  @media (hover: hover) and (pointer: fine) {
+    :global(body:has(.invite-directory) .site-header:has(.nav-dropdown:hover)) { z-index: 42; }
+  }
+  .tag-tabs-scroll { display: flex; flex: 1; min-width: 0; gap: .5rem; overflow-x: auto; scrollbar-width: none; }
+  .tag-tabs-scroll::-webkit-scrollbar, .tag-section.is-collapsed .invite-grid::-webkit-scrollbar { display: none; }
+  .tag-tab, .filter-btn { min-height: 44px; flex-shrink: 0; padding: .5rem .875rem; border: 1px solid rgb(var(--color-text-primary) / .14); border-radius: 6px; color: rgb(var(--color-text-secondary)); font-size: .85rem; cursor: pointer; transition: border-color .2s, background .2s; white-space: nowrap; }
+  .tag-tab span { margin-left: .4rem; font-family: 'JetBrains Mono', monospace; font-size: .7rem; }
+  .tag-tab:hover, .filter-btn:hover { border-color: rgb(var(--color-primary) / .5); }
+  .tag-tab.active, .filter-btn[data-active="true"] { color: rgb(var(--color-primary)); border-color: rgb(var(--color-primary) / .45); background: rgb(var(--color-primary) / .1); }
+  .filter-btn { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; }
+  .filter-btn[data-active="false"] .filter-check { visibility: hidden; }
+  .directory-sections { display: grid; gap: 3.5rem; margin-top: 1.5rem; }
+  .section-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 1rem; }
+  .section-heading h2 { font-size: 1.15rem; font-weight: 600; }
+  .section-actions { display: flex; align-items: center; gap: 1rem; }
+  .section-expand { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: rgb(var(--color-primary)); cursor: pointer; transition: opacity .2s; }
+  .section-expand:hover { opacity: .7; }
+  .section-expand[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .section-actions > span { color: rgb(var(--color-text-secondary)); font-size: .75rem; }
+  .invite-grid { display: grid; align-items: stretch; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .tag-section.is-collapsed .invite-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 2rem) / 3.15); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: .75rem; }
+  .tag-section.is-collapsed .invite-grid { mask-image: linear-gradient(to right, transparent, #000 var(--fade-left, 0px), #000 calc(100% - var(--fade-right, 0px)), transparent); }
+  .tag-section.is-collapsed .invite-grid > :global(.ic-card) { scroll-snap-align: start; }
+  .filter-empty { padding: 3rem 0; border-block: 1px solid rgb(var(--color-text-primary) / .12); }
+  .filter-empty h2 { margin-bottom: .75rem; font-size: 1.15rem; }
+  .filter-empty p { color: rgb(var(--color-text-secondary)); font-size: .875rem; }
+  [hidden] { display: none !important; }
+  button:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 4px; }
+  @media (max-width: 850px) { .invite-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tag-section.is-collapsed .invite-grid { grid-auto-columns: calc((100% - 1rem) / 2.15); } }
+  @media (max-width: 700px) {
+    .invite-directory { padding-top: 6rem; }
+    .hero-layout { grid-template-columns: 1fr; gap: 2rem; }
+    .pocket-art { width: 300px; max-width: 100%; height: 240px; margin: 0 auto; }
+    .pocket-ticket { width: calc(100% - 30px); }
+    .intro-bottom { display: block; }
+    .intro-bottom .updated-at { margin-top: 1.25rem; text-align: left; }
+    .invite-grid { grid-template-columns: 1fr; }
+    .tag-section.is-collapsed .invite-grid { grid-auto-columns: 86%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .tag-tab, .filter-btn, .section-expand { transition: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    :global(body:has(.invite-directory) .site-header)::before,
+    :global(body:has(.invite-directory) .site-header)::after { transition: none; }
   }
 
   /* ── Overlay ── */
@@ -291,7 +293,7 @@ const sectionKeys = Object.keys(groupedCodes);
   .ic-close-btn {
     position: absolute;
     top: 1.25rem; right: 1.25rem;
-    width: 2rem; height: 2rem;
+    width: 44px; height: 44px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     background: rgba(255,255,255,0.06);
@@ -306,6 +308,9 @@ const sectionKeys = Object.keys(groupedCodes);
     color: rgb(var(--color-text-primary));
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    #ic-overlay, #ic-overlay * { transition: none !important; }
+  }
 </style>
 
 <style is:global>
@@ -326,7 +331,7 @@ const sectionKeys = Object.keys(groupedCodes);
   }
   .ic-event-link {
     display: inline-flex; align-items: center; gap: 0.3rem;
-    font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 99px;
+    min-height: 44px; font-size: 0.8rem; padding: 0.2rem 0.55rem; border-radius: 99px;
     background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
     color: rgb(var(--color-text-secondary)); text-decoration: none; transition: all 0.15s;
   }
@@ -349,7 +354,7 @@ const sectionKeys = Object.keys(groupedCodes);
   .ic-section-label {
     font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em;
     text-transform: uppercase; color: rgb(var(--color-text-secondary));
-    opacity: 0.6; margin-bottom: 0.4rem;
+    margin-bottom: 0.4rem;
   }
   .ic-code-row {
     display: flex; align-items: center; gap: 0.5rem;
@@ -359,11 +364,11 @@ const sectionKeys = Object.keys(groupedCodes);
   }
   .ic-code-value {
     flex: 1; font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9rem; color: rgb(var(--color-accent));
+    font-size: 0.9rem; color: rgb(var(--color-primary));
     letter-spacing: 0.04em; word-break: break-all;
   }
   .ic-copy-btn {
-    flex-shrink: 0; padding: 0.3rem 0.7rem; border-radius: 0.375rem;
+    flex-shrink: 0; min-height: 44px; padding: 0.3rem 0.7rem; border-radius: 0.375rem;
     font-size: 0.75rem; font-weight: 500;
     background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
     color: rgb(var(--color-text-secondary)); cursor: pointer; transition: all 0.15s;
@@ -389,38 +394,39 @@ const sectionKeys = Object.keys(groupedCodes);
     padding: 0.65rem 0.875rem; font-size: 0.825rem;
   }
   .ic-benefit-row + .ic-benefit-row { border-top: 1px solid rgba(255,255,255,0.06); }
-  .ic-benefit-icon { font-size: 0.9rem; flex-shrink: 0; margin-top: 0.1rem; }
-  .ic-benefit-label { font-size: 0.68rem; color: rgb(var(--color-text-secondary)); opacity: 0.6; margin-bottom: 0.15rem; }
+  .ic-benefit-label { font-size: 0.68rem; color: rgb(var(--color-text-secondary)); margin-bottom: 0.15rem; }
   .ic-benefit-value { color: rgb(var(--color-text-primary)); }
   .ic-date-row {
     display: flex; align-items: center; gap: 0.5rem;
-    font-size: 0.78rem; color: rgb(var(--color-text-secondary)); opacity: 0.65;
+    font-size: 0.78rem; color: rgb(var(--color-text-secondary));
   }
 </style>
 
 <script>
   const tabs = document.querySelectorAll<HTMLButtonElement>('.tag-tab');
   const sections = document.querySelectorAll<HTMLElement>('.tag-section');
-  const scrollEl = document.querySelector<HTMLElement>('.tag-tabs-scroll');
-  const fadeEl = document.querySelector<HTMLElement>('.tag-tabs-fade');
   const filterBtn = document.getElementById('hide-expired-toggle') as HTMLButtonElement;
 
   let activeTag = '__all__';
   let hideInactive = true;
 
-  function updateFade() {
-    if (!scrollEl || !fadeEl) return;
-    const hasOverflow = scrollEl.scrollWidth > scrollEl.clientWidth;
-    const atEnd = scrollEl.scrollLeft + scrollEl.clientWidth >= scrollEl.scrollWidth - 4;
-    fadeEl.style.opacity = (hasOverflow && !atEnd) ? '1' : '0';
+  const filterStatus = document.getElementById('filter-status');
+  const filterEmpty = document.getElementById('filter-empty');
+  document.querySelector<HTMLElement>('.tag-tabs-wrapper')?.removeAttribute('hidden');
+  filterStatus?.removeAttribute('hidden');
+
+  function updateScrollEdges(grid: HTMLElement) {
+    const left = Math.max(0, Math.min(40, grid.scrollLeft));
+    const right = Math.max(0, Math.min(40, grid.scrollWidth - grid.clientWidth - grid.scrollLeft));
+    grid.style.setProperty('--fade-left', `${left}px`);
+    grid.style.setProperty('--fade-right', `${right}px`);
   }
 
   function applyFilter() {
+    let total = 0;
     sections.forEach(section => {
       const sectionTag = section.dataset.section;
       const tagMatch = activeTag === '__all__' || sectionTag === activeTag;
-
-      if (!tagMatch) { section.classList.add('hidden'); return; }
 
       const cards = section.querySelectorAll<HTMLElement>('[data-status]');
       let visibleCount = 0;
@@ -431,18 +437,40 @@ const sectionKeys = Object.keys(groupedCodes);
         if (!shouldHide) visibleCount++;
       });
 
-      section.classList.toggle('hidden', visibleCount === 0);
+      section.classList.toggle('hidden', !tagMatch || visibleCount === 0);
+      if (tagMatch) total += visibleCount;
+      const expanded = section.dataset.expanded === 'true';
+      section.classList.toggle('is-collapsed', !expanded);
+      const expandButton = section.querySelector<HTMLButtonElement>('.section-expand');
+      const columns = matchMedia('(max-width: 700px)').matches ? 1 : matchMedia('(max-width: 850px)').matches ? 2 : 3;
+      if (expandButton) {
+        expandButton.hidden = visibleCount <= columns;
+        expandButton.setAttribute('title', expanded ? '收合' : '展開全部');
+        expandButton.setAttribute('aria-expanded', String(expanded));
+        expandButton.setAttribute('aria-label', `${expanded ? '收合' : '展開'}「${sectionTag}」的全部邀請碼`);
+      }
+      const grid = section.querySelector<HTMLElement>('.invite-grid');
+      if (grid) updateScrollEdges(grid);
+      const count = section.querySelector('[data-section-count]');
+      if (count) count.textContent = String(visibleCount);
+      const tab = Array.from(tabs).find(tab => tab.dataset.tag === sectionTag);
+      const tabCount = tab?.querySelector('[data-count]');
+      if (tabCount) tabCount.textContent = String(visibleCount);
     });
+    const allCount = tabs[0]?.querySelector('[data-count]');
+    if (allCount) allCount.textContent = String(Array.from(document.querySelectorAll<HTMLElement>('.ic-card')).filter(card => !hideInactive || card.dataset.status === 'active').length);
+    if (filterStatus) filterStatus.textContent = `顯示 ${total} 個${hideInactive ? '有效' : ''}服務`;
+    if (filterEmpty) filterEmpty.hidden = total > 0;
   }
-
-  scrollEl?.addEventListener('scroll', updateFade);
-  window.addEventListener('resize', updateFade);
-  updateFade();
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       activeTag = tab.dataset.tag ?? '__all__';
-      tabs.forEach(t => t.classList.remove('active'));
+      sections.forEach(section => { section.dataset.expanded = String(section.dataset.section === activeTag); });
+      tabs.forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-pressed', String(t === tab));
+      });
       tab.classList.add('active');
       applyFilter();
     });
@@ -455,9 +483,96 @@ const sectionKeys = Object.keys(groupedCodes);
     applyFilter();
   });
 
+  sections.forEach(section => {
+    const grid = section.querySelector<HTMLElement>('.invite-grid');
+    grid?.addEventListener('scroll', () => updateScrollEdges(grid), { passive: true });
+    section.querySelector('.section-expand')?.addEventListener('click', () => {
+      const grid = section.querySelector<HTMLElement>('.invite-grid');
+      const expanded = section.dataset.expanded !== 'true';
+      if (expanded && grid) section.dataset.scrollLeft = String(grid.scrollLeft);
+      section.dataset.expanded = String(expanded);
+      applyFilter();
+      if (!expanded && grid) {
+        grid.scrollLeft = Number(section.dataset.scrollLeft ?? 0);
+        updateScrollEdges(grid);
+      }
+    });
+  });
+  window.addEventListener('resize', applyFilter);
   applyFilter();
 
+  // Extend the header shade only while the filter bar is stuck.
+  const filterBar = document.querySelector<HTMLElement>('.tag-tabs-wrapper');
+  const siteHeader = document.querySelector<HTMLElement>('.site-header');
+  if (filterBar && siteHeader) {
+    let pending = false;
+    let previousExtension = '';
+    const updateHeaderShade = () => {
+      pending = false;
+      const rect = filterBar.getBoundingClientRect();
+      const stickyTop = parseFloat(getComputedStyle(filterBar).top);
+      const fadeLength = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const extension = Math.abs(rect.top - stickyTop) <= 1 && rect.height > 0
+        ? `${Math.max(0, rect.bottom - siteHeader.getBoundingClientRect().bottom + fadeLength)}px`
+        : '0px';
+      if (extension !== previousExtension) {
+        siteHeader.style.setProperty('--header-shade-extension', extension);
+        siteHeader.classList.toggle('has-sticky-filter', extension !== '0px');
+        previousExtension = extension;
+      }
+    };
+    const scheduleHeaderShade = () => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(updateHeaderShade);
+    };
+    window.addEventListener('scroll', scheduleHeaderShade, { passive: true });
+    window.addEventListener('resize', scheduleHeaderShade);
+    updateHeaderShade();
+  }
+
   // ── Invite Code Overlay ────────────────────────────────────────────────────
+  import { getInviteBrand, selectHeroCodes } from '../../data/invite-brands';
+  import type { InviteCode } from '../../types/invite';
+  import { initHeroWallet } from '../invite-codes/heroWallet';
+
+  const heroTickets = document.querySelectorAll<HTMLElement>('.pocket-ticket');
+  if (heroTickets.length) {
+    const codes: InviteCode[] = Array.from(document.querySelectorAll<HTMLElement>('.ic-card'))
+      .map(card => JSON.parse(card.dataset.invite!));
+    let previousTitles: string[] = [];
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('invite-hero') ?? '[]');
+      if (Array.isArray(saved)) previousTitles = saved.filter(title => typeof title === 'string');
+    } catch { /* Storage may be unavailable; still show a random selection. */ }
+    const chosen = selectHeroCodes(codes, Math.random, previousTitles);
+    try {
+      sessionStorage.setItem('invite-hero', JSON.stringify(chosen.map(code => code.title)));
+    } catch { /* Hero works without storage, but may repeat on reload. */ }
+
+    heroTickets.forEach((ticket, index) => {
+      const code = chosen[index];
+      ticket.hidden = !code;
+      if (!code) return;
+      const brand = getInviteBrand(code.title);
+      ticket.style.setProperty('--ticket-color', brand.color);
+      ticket.querySelector('.ticket-title')!.textContent = code.title;
+      ticket.setAttribute('aria-label', `將 ${code.title} 卡片帶到前面`);
+      ticket.querySelector('.ticket-benefit')!.textContent = code.user_benefit || code.description;
+      const mark = document.createElement(brand.icon ? 'img' : 'span');
+      if (mark instanceof HTMLImageElement) {
+        mark.src = `/images/invite-brands/${brand.icon}.png`;
+        mark.alt = '';
+        mark.width = mark.height = 32;
+      } else {
+        mark.className = 'ticket-monogram';
+        mark.textContent = code.title.slice(0, 2);
+      }
+      ticket.querySelector('.ticket-brand')!.firstElementChild!.replaceWith(mark);
+    });
+    initHeroWallet(Array.from(heroTickets).filter(ticket => !ticket.hidden));
+  }
+
   const overlay   = document.getElementById('ic-overlay')!;
   const backdrop  = document.getElementById('ic-backdrop')!;
   const modal     = document.getElementById('ic-modal')!;
@@ -525,8 +640,8 @@ const sectionKeys = Object.keys(groupedCodes);
         <hr class="ic-divider" />
         <div class="ic-section-label">獲得好處</div>
         <div class="ic-benefits-box">
-          ${c.user_benefit ? `<div class="ic-benefit-row"><span class="ic-benefit-icon">🎁</span><div><div class="ic-benefit-label">你獲得</div><div class="ic-benefit-value">${esc(c.user_benefit)}</div></div></div>` : ''}
-          ${c.my_benefit ? `<div class="ic-benefit-row"><span class="ic-benefit-icon">🐟</span><div><div class="ic-benefit-label">貓貓獲得</div><div class="ic-benefit-value">${esc(c.my_benefit)}</div></div></div>` : ''}
+          ${c.user_benefit ? `<div class="ic-benefit-row"><div><div class="ic-benefit-label">你獲得</div><div class="ic-benefit-value">${esc(c.user_benefit)}</div></div></div>` : ''}
+          ${c.my_benefit ? `<div class="ic-benefit-row"><div><div class="ic-benefit-label">貓貓獲得</div><div class="ic-benefit-value">${esc(c.my_benefit)}</div></div></div>` : ''}
         </div>` : ''}
       ${hasAction ? '<hr class="ic-divider" />' : ''}
       ${c.invite_code ? `
@@ -584,7 +699,12 @@ const sectionKeys = Object.keys(groupedCodes);
     root.querySelectorAll<HTMLButtonElement>('.ic-copy-btn').forEach(btn => {
       btn.addEventListener('click', async e => {
         e.stopPropagation();
-        await navigator.clipboard.writeText(btn.dataset.copy ?? '');
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copy ?? '');
+        } catch {
+          btn.textContent = '複製失敗，請手動複製';
+          return;
+        }
         btn.textContent = '✓ 已複製';
         btn.classList.add('copied');
         setTimeout(() => { btn.textContent = '複製'; btn.classList.remove('copied'); }, 1800);
@@ -593,7 +713,12 @@ const sectionKeys = Object.keys(groupedCodes);
   }
 
   // ── Open / Close ──────────────────────────────────────────────────────────
+  let returnFocus: HTMLElement | null = null;
+  let activeDialog: HTMLElement = modal;
+
   function openOverlay(data: InviteData) {
+    returnFocus = document.activeElement as HTMLElement;
+    activeDialog = isMobile() ? sheet : modal;
     overlay.classList.add('ic-open');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -627,6 +752,7 @@ const sectionKeys = Object.keys(groupedCodes);
         sheet.style.transform = 'translateY(0)';
       }));
     }
+    activeDialog.focus();
   }
 
   function closeOverlay() {
@@ -650,23 +776,32 @@ const sectionKeys = Object.keys(groupedCodes);
       modal.style.cssText = '';
       sheet.style.cssText = '';
       backdrop.style.cssText = '';
+      returnFocus?.focus();
     }, 320);
   }
 
-  // ── Card click ───────────────────────────────────────────────────────────
-  document.querySelectorAll<HTMLElement>('.ic-card').forEach(card => {
-    const activate = () => {
-      try { openOverlay(JSON.parse(card.dataset.invite ?? '{}')); } catch {}
-    };
-    card.addEventListener('click', activate);
-    card.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+  document.querySelectorAll<HTMLButtonElement>('.card-detail').forEach(button => {
+    button.addEventListener('click', () => {
+      const card = button.closest<HTMLElement>('.ic-card');
+      if (card?.dataset.invite) openOverlay(JSON.parse(card.dataset.invite));
     });
   });
 
   backdrop.addEventListener('click', closeOverlay);
   document.getElementById('ic-close-modal')?.addEventListener('click', closeOverlay);
+  document.getElementById('ic-close-sheet')?.addEventListener('click', closeOverlay);
   document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (!overlay.classList.contains('ic-open')) return;
+    if (e.key === 'Tab') {
+      const controls = Array.from(activeDialog.querySelectorAll<HTMLElement>('button, a[href]'));
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === activeDialog)) {
+        e.preventDefault(); last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first?.focus();
+      }
+    }
     if (e.key === 'Escape' && overlay.classList.contains('ic-open')) closeOverlay();
   });
 

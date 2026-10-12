@@ -1,8 +1,5 @@
 ---
-/**
- * InviteCodeCard — Minimal card; details open in Modal (desktop) or Bottom Sheet (mobile)
- * Single Responsibility: preview only, no inline actions
- */
+import { getInviteBrand } from '../../data/invite-brands';
 import type { InviteCode } from '../../types/invite';
 
 export interface Props {
@@ -10,86 +7,59 @@ export interface Props {
 }
 
 const { code } = Astro.props;
-
-const statusConfig = {
-  active:   { label: '有效',   color: 'text-green-400 border-green-500/30 bg-green-500/10' },
-  expired:  { label: '已到期', color: 'text-red-400 border-red-500/30 bg-red-500/10' },
-  disabled: { label: '已停用', color: 'text-zinc-400 border-zinc-500/30 bg-zinc-500/10' },
-};
-const s = statusConfig[code.status];
-
-/** Parse description: convert `- item` / `1. item` lines into HTML list for card preview */
-function descPreviewHtml(raw: string): string {
-  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const isList = lines.every(l => /^[-*]\s+/.test(l) || /^\d+\.\s+/.test(l));
-
-  if (isList) {
-    const tag = /^\d+\./.test(lines[0]) ? 'ol' : 'ul';
-    const items = lines.map(l => `<li>${l.replace(/^[-*\d.]\s+/, '')}</li>`).join('');
-    return `<${tag}>${items}</${tag}>`;
-  }
-  // Plain text: just return escaped, newlines become space
-  return lines.join(' ');
-}
-
-const descHtml = descPreviewHtml(code.description);
+const brand = getInviteBrand(code.title);
+const statusLabels = { active: '有效', expired: '已到期', disabled: '已停用' };
+const description = code.description.split(/\r?\n/).map(line => line.trim().replace(/^(?:[-*]|\d+\.)\s+/, '')).filter(Boolean).join(' · ');
 ---
 
-<div class:list={[
-  "liquid-glass-card card-interactive ic-card cursor-pointer p-5 flex flex-col gap-3 select-none",
-  code.status === 'disabled' && "opacity-55",
-]}
-  data-status={code.status}
-  data-invite={JSON.stringify(code)}
-  role="button"
-  tabindex="0"
-  aria-label={`查看 ${code.title} 邀請碼詳情`}
->
-  <!-- Title -->
-  <h3 class="font-display font-bold text-sm text-[rgb(var(--color-text-primary))] leading-snug">
-    {code.title}
-  </h3>
-
-  <!-- Status badge + detail tags -->
-  <div class="flex flex-wrap items-center gap-1.5">
-    <span class={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${s.color}`}>
-      {s.label}
-    </span>
-    {code.tags && code.tags.length > 0 && code.tags.map(tag => (
-      <span class="text-xs px-2 py-0.5 rounded-full
-        bg-[rgba(var(--color-accent),0.12)] text-[rgb(var(--color-accent))]
-        border border-[rgba(var(--color-accent),0.2)]">
-        {tag}
-      </span>
-    ))}
+<article style={`--brand-color: ${brand.color}`} class="ic-card" data-status={code.status} data-invite={JSON.stringify(code)}>
+  <div class="card-visual" aria-hidden="true">
+    <div class="brand-mark">
+      {brand.icon ? <img src={`/images/invite-brands/${brand.icon}.png`} alt="" width="64" height="64" loading="lazy" /> : <span>{code.title.slice(0, 2)}</span>}
+    </div>
+    <span class="visual-category">{code.group ?? '其他'}</span>
+    <span class="visual-orbit"></span>
   </div>
-
-  <!-- Description preview -->
-  <div class="ic-card-desc text-xs text-[rgb(var(--color-text-secondary))] leading-relaxed flex-1"
-    set:html={descHtml} />
-
-  <!-- Footer hint -->
-  <div class="flex items-center justify-end pt-1.5 border-t border-[rgba(255,255,255,0.06)]">
-    <span class="text-xs text-[rgb(var(--color-primary))] font-medium opacity-80 flex items-center gap-1">
-      查看詳情
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <path d="M4.5 2.5L7.5 6l-3 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </span>
+  <div class="card-heading">
+    <h3>{code.title}</h3>
+    <span class="card-status">{statusLabels[code.status]}</span>
   </div>
-</div>
+  <p class="card-description">{description}</p>
+  {code.tags?.length > 0 && <ul class="card-tags" aria-label="服務標籤">{code.tags.map(tag => <li>{tag}</li>)}</ul>}
+  {code.user_benefit && <p class="card-benefit"><span>你能獲得</span><span class="benefit-value">{code.user_benefit}</span></p>}
+  <div class="card-footer">
+    <span class="card-date">{code.end_date ? <>至 <time datetime={code.end_date}>{code.end_date}</time></> : '未提供期限'}</span>
+    <button type="button" class="card-detail" aria-label={`查看 ${code.title} 邀請碼詳情`}>
+      查看詳情 <span aria-hidden="true">↗</span>
+    </button>
+  </div>
+</article>
 
 <style>
-  .ic-card-desc ul,
-  .ic-card-desc ol {
-    padding-left: 1.1rem;
-    margin: 0;
-  }
-  .ic-card-desc ul { list-style-type: disc; }
-  .ic-card-desc ol { list-style-type: decimal; }
-  .ic-card-desc li {
-    margin-bottom: 0.15rem;
-    line-height: 1.5;
-  }
+  .ic-card { position: relative; display: flex; min-width: 0; flex-direction: column; gap: .75rem; padding: 1.25rem; border: 1px solid rgb(var(--color-text-primary) / .05); border-radius: 14px; background: rgb(var(--color-bg-medium) / .38); --brand-color: var(--color-primary); transition: border-color .2s, box-shadow .2s; }
+  .ic-card:hover, .ic-card:focus-within { border-color: rgb(var(--brand-color) / .25); box-shadow: 0 12px 32px rgb(0 0 0 / .12); }
+  .card-visual { position: relative; isolation: isolate; display: flex; align-items: center; justify-content: space-between; height: 80px; flex-shrink: 0; margin: -1.25rem -1.25rem .25rem; padding: 1.25rem; overflow: hidden; border-radius: 13px 13px 0 0; border-bottom: 1px solid rgb(var(--brand-color) / .07); background: radial-gradient(ellipse at 15% 100%, rgb(var(--brand-color) / .22), transparent 75%), rgb(var(--brand-color) / .04); }
+  .brand-mark { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border: 1px solid rgb(var(--brand-color) / .3); border-radius: 12px; background: rgb(var(--color-bg-dark) / .75); box-shadow: 0 8px 18px rgb(0 0 0 / .15); }
+  .brand-mark img { width: 32px; height: 32px; object-fit: contain; border-radius: 8px; }
+  .brand-mark > span { color: rgb(var(--brand-color)); font-weight: 700; font-size: 1.3rem; }
+  .visual-category { z-index: 1; color: rgb(var(--brand-color)); font-size: .7rem; letter-spacing: .06em; }
+  .visual-orbit { position: absolute; z-index: -1; right: -12px; top: -75px; width: 190px; height: 190px; border: 1px solid rgb(var(--brand-color) / .18); border-radius: 50%; box-shadow: 0 0 0 24px rgb(var(--brand-color) / .035), 0 0 0 48px rgb(var(--brand-color) / .025); }
+  .card-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; }
+  h3 { margin: 0; font-size: 1.1rem; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+  .card-status { flex-shrink: 0; color: rgb(var(--color-text-secondary)); font-size: .7rem; }
+  [data-status='active'] .card-status { color: rgb(var(--brand-color)); }
+  .card-status::before { display: inline-block; width: 5px; height: 5px; margin-right: .35rem; border-radius: 50%; background: currentColor; content: ''; }
+  .card-description { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 0; color: rgb(var(--color-text-secondary)); font-size: .875rem; line-height: 1.8; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+  .card-tags li { padding: .15rem .5rem; border-radius: 4px; background: rgb(var(--color-primary) / .06); color: rgb(var(--color-text-secondary)); font-size: .7rem; }
+  .card-benefit { margin: 0; padding: .75rem .875rem; border-left: 2px solid rgb(var(--brand-color) / .65); border-radius: 0 6px 6px 0; background: rgb(var(--brand-color) / .06); color: rgb(var(--brand-color)); font-size: 1rem; font-weight: 600; line-height: 1.7; overflow-wrap: anywhere; }
+  .card-benefit > span:first-child { display: block; margin-bottom: .25rem; color: rgb(var(--color-text-secondary)); font-size: .7rem; }
+  .benefit-value { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: auto; padding-top: .25rem; border-top: 1px solid rgb(var(--color-text-primary) / .07); }
+  .card-date { color: rgb(var(--color-text-secondary)); font-family: 'JetBrains Mono', monospace; font-size: .7rem; }
+  .card-detail { display: inline-flex; min-height: 44px; align-items: center; gap: .5rem; color: rgb(var(--color-primary)); font-size: .8rem; cursor: pointer; }
+  .card-detail::after { position: absolute; inset: 0; border-radius: 14px; content: ''; }
+  .card-detail:focus-visible { outline: none; }
+  .card-detail:focus-visible::after { outline: 2px solid rgb(var(--color-primary)); outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) { .ic-card { transition: none; } }
 </style>
-
