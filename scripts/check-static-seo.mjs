@@ -262,4 +262,28 @@ for (const file of htmlFiles) {
   assert.doesNotMatch(html, /(?:href|src|content)="(?:https:\/\/purr\.tw)?(?:\/favicon\.(?:svg|ico)|\/images\/icon\.png|\/images\/og\/(?:concerts|default|japan)\.(?:png|svg))"/);
 }
 
+const inviteHtml = await readFile(new URL('invite-codes/index.html', dist), 'utf8');
+const inviteTitles = [...inviteHtml.matchAll(/data-invite="([^"]+)"/g)]
+  .map(([, value]) => JSON.parse(decodeAttribute(value)).title);
+const inviteSharePages = htmlFiles.filter(file => /^invite-codes\/[^/]+\/index\.html$/.test(file));
+assert.equal(inviteSharePages.length, inviteTitles.length, 'Every invite service needs a static share page');
+for (const file of inviteSharePages) {
+  const html = await readFile(new URL(file, dist), 'utf8');
+  const title = decodeAttribute(html.match(/data-shared-service="([^"]+)"/)?.[1] ?? '');
+  assert.ok(inviteTitles.includes(title), `${file}: unknown shared service`);
+  const ogTitle = decodeAttribute(html.match(/<meta property="og:title" content="([^"]+)">/)?.[1] ?? '');
+  assert.ok(ogTitle.startsWith(`${title} 邀請碼與回饋`), `${file}: wrong OG title`);
+  assert.match(html, /<meta property="og:description" content="[^"]+">/);
+  assert.match(html, /<meta name="robots" content="noindex/);
+  assert.match(html, /data-pagefind-ignore/);
+  const canonical = new URL(file.replace(/index\.html$/, ''), site).href;
+  assert.ok(html.includes(`<meta property="og:url" content="${canonical}">`));
+  const imageUrl = html.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
+  assert.ok(imageUrl?.startsWith('https://purr.tw/invite-codes/og/'), `${file}: missing service OG image`);
+  const metadata = await sharp(await readFile(new URL(decodeURIComponent(new URL(imageUrl).pathname.slice(1)), dist))).metadata();
+  assert.equal(metadata.format, 'png');
+  assert.equal(metadata.width, 1200);
+  assert.equal(metadata.height, 630);
+}
+console.log(`Invite share output checks passed: ${inviteSharePages.length} service pages and PNG previews.`);
 console.log('Static SEO and public-output checks passed.');

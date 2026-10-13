@@ -67,7 +67,11 @@
 資料需符合 [`InviteCode`](../src/types/invite.ts)：
 
 - 必填欄位：`title`、`group`、`description`、`tags`、`status`。
+- `group` 作為頁面子分類，無須在 Sheet 新增主分類或子分類欄位。`src/data/invite-categories.ts` 將它對應到「銀行與信用卡／支付與投資／旅遊與交通／飲食與購物／生活與工具」五個主分類；未知分類保留名稱並放入生活與工具。原始 `服務` 中的 Dynadot、Muse.ai 顯示為數位工具，其餘顯示為生活服務；這些規則只作用於頁面資料副本。
+- 分享網址為 `/invite-codes/<服務名稱 slug>/`，建置時產生獨立 OG 標籤與 1200×630 PNG（品牌圖示、名稱、使用者回饋、狀態及期限；右側存根有邀請碼時顯示完整代碼，超過可讀寬度時顯示「點開複製邀請碼」，僅有連結則顯示「查看詳情」）。分享頁沿用清單並直接開啟指定詳情；設為 noindex、排除 sitemap 與 Pagefind，避免重複索引。舊的 `?service=` 連結仍可使用。服務改名會改變分享路徑，已公開名稱若要變更，需先保留舊路徑的轉址。
+- 分享圖片以 fontkit 讀取 `src/assets/fonts/` 的 Inter、Noto Sans TC、JetBrains Mono，將字型輪廓交給 sharp 繪製，不依賴部署主機的系統字型。這些 TTF 由對應的既有 WOFF2 解壓產生；`noto-font-tool.py generate` 同時更新 Noto 的 WOFF2 與建置用 TTF，Inter／JetBrains Mono 若更新也需同步轉換。
 - `invite_code`、`invite_link` 至少提供一個。
+- Hero 在每次頁面載入時隨機選最多三筆有效服務：優先有本機 Logo 的服務，再優先同分類；不足三筆才跨分類，Logo 不足時使用文字圖示。沒有回饋文字則顯示描述。使用 sessionStorage 避免連續抽到相同組合（有同等候選時）；完整清單仍保留在靜態 HTML。
 - 服務不會逐筆驗證 API 回應；Google Sheets 欄位可自訂，但 GAS 輸出要轉成上述格式。
 
 | 情況 | 結果 |

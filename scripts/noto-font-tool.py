@@ -163,6 +163,10 @@ def generate(args: argparse.Namespace) -> int:
     check_weight_axis(font)
     args.font_output.parent.mkdir(parents=True, exist_ok=True)
     font.save(args.font_output, reorderTables=False)
+    image_font_output = ROOT / "src/assets/fonts/noto-sans-tc-site.ttf"
+    image_font_output.parent.mkdir(parents=True, exist_ok=True)
+    font.flavor = None
+    font.save(image_font_output, reorderTables=False)
     args.coverage_output.parent.mkdir(parents=True, exist_ok=True)
     args.coverage_output.write_text("".join(chr(codepoint) for codepoint in sorted(target)) + "\n", encoding="utf-8")
     print(f"Generated {args.font_output} with {len(target)} coverage code points.")

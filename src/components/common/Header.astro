@@ -198,7 +198,7 @@ const navItems = siteConfig.nav;
 
   .site-header::before {
     position: absolute;
-    inset: 0 0 -2rem;
+    inset: 0 0 calc(-2rem - var(--header-shade-extension, 0px));
     z-index: -1;
     content: '';
     pointer-events: none;

@@ -13,6 +13,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# local browser verification artifacts
+.playwright-mcp/
+
 
 # environment variables
 .env
