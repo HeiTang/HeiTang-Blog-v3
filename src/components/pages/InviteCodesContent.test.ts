@@ -8,8 +8,8 @@ import { getInviteBrand } from '../../data/invite-brands.ts';
 test('invite filters keep counts, category selection and empty feedback consistent', async () => {
   const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
   const script = source.split('<script>')[1].split('// Extend the header shade')[0];
-  const card = (status: string) => ({ dataset: { status }, style: { display: '' } });
-  const cards = [card('active'), card('expired'), card('disabled')];
+  const card = (status: string, subcategory: string) => ({ dataset: { status, subcategory }, style: { display: '' } });
+  const cards = [card('active', '自由行'), card('expired', '住宿'), card('disabled', '其他')];
   const counts = [{ textContent: '' }, { textContent: '' }, { textContent: '' }];
   const clicks: Array<() => void> = [];
   const pressed: string[] = [];
@@ -46,6 +46,18 @@ test('invite filters keep counts, category selection and empty feedback consiste
     querySelector: (selector: string) => selector === '.section-expand' ? expandButtons[index] : selector === '.invite-grid' ? grids[index] : sectionCounts[index],
     classList: { toggle(name: string, value: boolean) { (name === 'hidden' ? hidden : collapsed)[index] = value; } },
   }));
+  const subClicks: Array<Array<() => void>> = [[], []];
+  const subCounts = [[{ textContent: '' }, { textContent: '' }], [{ textContent: '' }]];
+  const subButtons = [['__all__', '自由行', '住宿'], ['__all__', '其他']].map((names, panel) => names.map((subcategory, index) => ({
+    dataset: { subcategory }, pressed: '',
+    classList: { toggle() {} },
+    setAttribute(_name: string, value: string) { this.pressed = value; },
+    querySelector: () => index === 0 ? null : subCounts[panel][index - 1],
+    addEventListener(_name: string, listener: () => void) { subClicks[panel][index] = listener; },
+  })));
+  const subPanels = ['旅遊', '歷史'].map((parentCategory, index) => ({
+    dataset: { parentCategory }, hidden: true, querySelectorAll: () => subButtons[index],
+  }));
   let toggle = () => {};
   const filter = {
     dataset: { active: 'true' },
@@ -62,7 +74,7 @@ test('invite filters keep counts, category selection and empty feedback consiste
     matchMedia: () => ({ matches: mobile }),
     window: { addEventListener() {} },
     document: {
-      querySelectorAll: (selector: string) => selector === '.tag-tab' ? tabs : selector === '.tag-section' ? sections : cards,
+      querySelectorAll: (selector: string) => selector === '.tag-tab' ? tabs : selector === '.tag-section' ? sections : selector === '.subcategory-tabs' ? subPanels : selector === '.subcategory-tab' ? subButtons.flat() : cards,
       querySelector: () => ({ removeAttribute() {} }),
       getElementById: (id: string) => id === 'hide-expired-toggle' ? filter : id === 'filter-status' ? status : id === 'show-past-codes' ? pastButton : empty,
     },
@@ -80,6 +92,7 @@ test('invite filters keep counts, category selection and empty feedback consiste
   grids[0].scrollLeft = 65;
   assert.deepEqual(counts.map(count => count.textContent), ['1', '1', '0']);
   assert.deepEqual(hidden, [false, true]);
+  assert.deepEqual(subPanels.map(panel => panel.hidden), [true, true]);
   assert.equal(cards[1].style.display, 'none');
   assert.match(status.textContent, /顯示 1 個有效服務/);
   clicks[2]();
@@ -118,6 +131,23 @@ test('invite filters keep counts, category selection and empty feedback consiste
   clicks[1]();
   assert.equal(collapsed[0], false);
   assert.equal(expandButtons[0].expanded, 'true');
+  assert.deepEqual(subPanels.map(panel => panel.hidden), [false, true]);
+  toggle();
+  subClicks[0][2]();
+  assert.equal(empty.hidden, false);
+  assert.equal(subCounts[0][1].textContent, '0');
+  assert.equal(counts[1].textContent, '1');
+  assert.equal(subButtons[0][2].pressed, 'true');
+  assert.equal(subPanels[0].hidden, false);
+  showPast();
+  assert.equal(empty.hidden, true);
+  assert.equal(cards[0].style.display, 'none');
+  assert.equal(cards[1].style.display, '');
+  assert.equal(sectionCounts[0].textContent, '1');
+  assert.equal(counts[1].textContent, '2');
+  clicks[0]();
+  assert.deepEqual(subPanels.map(panel => panel.hidden), [true, true]);
+  assert.deepEqual(hidden, [false, false]);
 });
 
 test('invite detail preserves optional fields, brand artwork and escaped content', async () => {

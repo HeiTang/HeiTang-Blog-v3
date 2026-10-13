@@ -67,6 +67,7 @@
 資料需符合 [`InviteCode`](../src/types/invite.ts)：
 
 - 必填欄位：`title`、`group`、`description`、`tags`、`status`。
+- `group` 作為頁面子分類，無須在 Sheet 新增主分類或子分類欄位。`src/data/invite-categories.ts` 將它對應到「銀行與信用卡／支付與投資／旅遊與交通／飲食與購物／生活與工具」五個主分類；未知分類保留名稱並放入生活與工具。原始 `服務` 中的 Dynadot、Muse.ai 顯示為數位工具，其餘顯示為生活服務；這些規則只作用於頁面資料副本。
 - `invite_code`、`invite_link` 至少提供一個。
 - Hero 在每次頁面載入時隨機選最多三筆有效服務：優先有本機 Logo 的服務，再優先同分類；不足三筆才跨分類，Logo 不足時使用文字圖示。沒有回饋文字則顯示描述。使用 sessionStorage 避免連續抽到相同組合（有同等候選時）；完整清單仍保留在靜態 HTML。
 - 服務不會逐筆驗證 API 回應；Google Sheets 欄位可自訂，但 GAS 輸出要轉成上述格式。
