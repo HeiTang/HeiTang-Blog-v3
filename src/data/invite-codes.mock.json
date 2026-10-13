@@ -13,7 +13,8 @@
       "start_date": "2024-01-01",
       "end_date": "2024-06-30",
       "user_benefit": "新戶禮 NT$100 + 開戶禮 NT$50",
-      "my_benefit": "NT$100"
+      "my_benefit": "NT$100",
+      "group": "銀行開戶"
     },
     {
       "title": "華南銀行 SnY",
@@ -27,7 +28,8 @@
       "start_date": "2024-09-02",
       "end_date": "2024-11-30",
       "user_benefit": "NT$200",
-      "my_benefit": "NT$100"
+      "my_benefit": "NT$100",
+      "group": "銀行開戶"
     },
     {
       "title": "台北富邦 myMoney",
@@ -41,7 +43,8 @@
       "start_date": "2022-12-20",
       "end_date": "2023-02-24",
       "user_benefit": "NT$100",
-      "my_benefit": "NT$100"
+      "my_benefit": "NT$100",
+      "group": "銀行開戶"
     },
     {
       "title": "國泰世華",
@@ -55,7 +58,8 @@
       "official_link": "https://www.cathaybk.com.tw/cathaybk/campaign/ebanking/mmball/",
       "start_date": "2023-07-01",
       "end_date": "2023-09-30",
-      "user_benefit": "抽 500 元百貨量販即享券 & 完成指定條件抽 NT$ 9,000"
+      "user_benefit": "抽 500 元百貨量販即享券 & 完成指定條件抽 NT$ 9,000",
+      "group": "銀行開戶"
     },
     {
       "title": "聯邦銀行 New New Bank",
@@ -69,7 +73,8 @@
       "official_link": "https://newnewbank.com.tw/ntd_demand_deposits10percent.htm",
       "start_date": "2024-07-21",
       "end_date": "2025-01-20",
-      "my_benefit": "次月優惠利率加碼 1% ，最高享台幣活儲年利率 3%。"
+      "my_benefit": "次月優惠利率加碼 1% ，最高享台幣活儲年利率 3%。",
+      "group": "銀行開戶"
     },
     {
       "title": "遠東銀行 Bankee",
@@ -84,7 +89,8 @@
       "start_date": "2026-01-01",
       "end_date": "2026-12-31",
       "user_benefit": "半年 5 萬內 2.6% 活存",
-      "my_benefit": "半年 5 萬內 2.6% 活存"
+      "my_benefit": "半年 5 萬內 2.6% 活存",
+      "group": "銀行開戶"
     },
     {
       "title": "永豐銀行 DAWHO",
@@ -98,7 +104,8 @@
       "start_date": "2026-01-01",
       "end_date": "2026-06-30",
       "user_benefit": "NT$200",
-      "my_benefit": "NT$200"
+      "my_benefit": "NT$200",
+      "group": "銀行開戶"
     },
     {
       "title": "玉山銀行 e.Fingo",
@@ -113,7 +120,8 @@
       "start_date": "2026-01-01",
       "end_date": "2026-03-31",
       "user_benefit": "10 點 e.Fingo 點數",
-      "my_benefit": "10 點 e.Fingo 點數"
+      "my_benefit": "10 點 e.Fingo 點數",
+      "group": "銀行開戶"
     },
     {
       "title": "台新銀行 Richart",
@@ -127,7 +135,8 @@
       "start_date": "2026-01-01",
       "end_date": "2026-03-31",
       "user_benefit": "NT$100",
-      "my_benefit": "NT$200"
+      "my_benefit": "NT$200",
+      "group": "銀行開戶"
     },
     {
       "title": "將來銀行 Next Bank",
@@ -141,7 +150,8 @@
       "official_link": "https://www.nextbank.com.tw/announcement/45c1e31fa40000000285cadc56793797/MGM0002",
       "start_date": "2026-04-01",
       "end_date": "2026-06-30",
-      "my_benefit": "NT$300"
+      "my_benefit": "NT$300",
+      "group": "銀行開戶"
     },
     {
       "title": "連線銀行 LINE BanK",
@@ -154,7 +164,8 @@
       "official_link": "https://www.linebank.com.tw/notice/events/1187364",
       "start_date": "2026-01-01",
       "end_date": "2026-12-31",
-      "my_benefit": "NT$100 / NT$188 (被推薦人 25 歲以下)"
+      "my_benefit": "NT$100 / NT$188 (被推薦人 25 歲以下)",
+      "group": "銀行開戶"
     },
     {
       "title": "富邦 J 卡",
@@ -167,7 +178,8 @@
       "official_link": "https://www.fubon.com/banking/event/hot/omiyagecard/index.html",
       "start_date": "2025-01-01",
       "end_date": "2025-03-31",
-      "my_benefit": "刷卡金 300 元"
+      "my_benefit": "刷卡金 300 元",
+      "group": "信用卡"
     },
     {
       "title": "國泰 CUBE 卡",
@@ -181,7 +193,8 @@
       "start_date": "2026-01-01",
       "end_date": "2026-03-31",
       "user_benefit": "200 小樹點",
-      "my_benefit": "200 小樹點"
+      "my_benefit": "200 小樹點",
+      "group": "信用卡"
     },
     {
       "title": "匯豐信用卡",
@@ -195,7 +208,8 @@
       "start_date": "2026-01-01",
       "end_date": "2026-12-31",
       "user_benefit": "各卡別當季新戶首刷活動",
-      "my_benefit": "刷卡金 1,000 元"
+      "my_benefit": "刷卡金 1,000 元",
+      "group": "信用卡"
     },
     {
       "title": "聯邦賴點卡",
@@ -208,7 +222,8 @@
       "official_link": "https://card.ubot.com.tw/eCard/activity/LPM_QRcode/login.aspx",
       "start_date": "2026-01-01",
       "end_date": "2026-12-31",
-      "my_benefit": "刷卡金 300 元"
+      "my_benefit": "刷卡金 300 元",
+      "group": "信用卡"
     },
     {
       "title": "聯邦吉鶴卡悠遊晶緻卡",
@@ -221,7 +236,8 @@
       "official_link": "https://activity.ubot.com.tw/2023JiHoCard/index.htm",
       "start_date": "2026-01-01",
       "end_date": "2026-12-31",
-      "my_benefit": "刷卡金 300 元"
+      "my_benefit": "刷卡金 300 元",
+      "group": "信用卡"
     },
     {
       "title": "永豐信用卡",
@@ -235,7 +251,8 @@
       "official_link": "https://bank.sinopac.com/sinopacBT/personal/credit-card/online-apply/activity.html",
       "start_date": "2026-01-01",
       "end_date": "2026-06-30",
-      "my_benefit": "刷卡金 300 元"
+      "my_benefit": "刷卡金 300 元",
+      "group": "信用卡"
     },
     {
       "title": "玉山熊本熊卡",
@@ -248,7 +265,8 @@
       "official_link": "https://www.esunbank.com/zh-tw/personal/credit-card/intro/bank-card/kumamon_card#5",
       "start_date": "2025-01-01",
       "end_date": "2025-03-31",
-      "my_benefit": "300 元刷卡金"
+      "my_benefit": "300 元刷卡金",
+      "group": "信用卡"
     },
     {
       "title": "全盈+PAY",
@@ -262,7 +280,8 @@
       "start_date": "2026-01-01",
       "end_date": "2026-12-31",
       "user_benefit": "Let's Cafe 中杯經典美式",
-      "my_benefit": "50 元全盈儲值金"
+      "my_benefit": "50 元全盈儲值金",
+      "group": "電子支付"
     },
     {
       "title": "全支付",
@@ -277,7 +296,8 @@
       "start_date": "2026-01-01",
       "end_date": "2026-12-31",
       "user_benefit": "完成首筆不限金額消費，享 50 點全點",
-      "my_benefit": "50 點全點"
+      "my_benefit": "50 點全點",
+      "group": "電子支付"
     },
     {
       "title": "icash Pay",
@@ -291,7 +311,8 @@
       "official_link": "https://www.icashpay.com.tw/advertMessage/view/id/1962",
       "start_date": "2026-01-01",
       "end_date": "2026-06-30",
-      "user_benefit": "新戶註冊當月任意消費，享 50 點 OPENPOINT"
+      "user_benefit": "新戶註冊當月任意消費，享 50 點 OPENPOINT",
+      "group": "電子支付"
     },
     {
       "title": "街口支付",
@@ -304,7 +325,8 @@
       "official_link": "https://mkt.jkopay.com/zh-TW/event/welcomegift100out",
       "start_date": "2026-01-01",
       "end_date": "2026-06-30",
-      "user_benefit": "註冊送 $50 街口券"
+      "user_benefit": "註冊送 $50 街口券",
+      "group": "電子支付"
     },
     {
       "title": "國泰證券",
@@ -318,7 +340,8 @@
       "start_date": "2023-05-02",
       "end_date": "2023-12-31",
       "user_benefit": "7-ELEVEN 商品卡 100 元",
-      "my_benefit": "7-ELEVEN 商品卡 100 元"
+      "my_benefit": "7-ELEVEN 商品卡 100 元",
+      "group": "證券 & 投資"
     },
     {
       "title": "永豐大戶投",
@@ -333,7 +356,8 @@
       "start_date": "2025-01-01",
       "end_date": "2025-06-30",
       "user_benefit": "200 元 7-11 電子禮券",
-      "my_benefit": "200 元 7-11 電子禮券"
+      "my_benefit": "200 元 7-11 電子禮券",
+      "group": "證券 & 投資"
     },
     {
       "title": "Wise",
@@ -344,7 +368,8 @@
       "status": "active",
       "invite_link": "https://wise.com/invite/irhc/yuchenl204",
       "official_link": "https://wise.com/zh/help/articles/2487043",
-      "my_benefit": "£50"
+      "my_benefit": "£50",
+      "group": "其他金融"
     },
     {
       "title": "Binance 幣安",
@@ -357,7 +382,8 @@
       "invite_link": "https://www.binance.com/referral/earn-together/refer2earn-usdc/claim?hl=zh-TC&ref=GRO_28502_4G8Y4&utm_source=default",
       "official_link": "https://www.binance.com/zh-TC/support/announcement/detail/0a82f860f7d64abe9593f4c2b0044235?utm_source=new_share&ref=CPA_00U4X0P37O&utm_medium=web_share_copy",
       "user_benefit": "USDC",
-      "my_benefit": "USDC"
+      "my_benefit": "USDC",
+      "group": "其他金融"
     }
   ],
   "updatedAt": "2026-03-29T14:16:15.025Z"

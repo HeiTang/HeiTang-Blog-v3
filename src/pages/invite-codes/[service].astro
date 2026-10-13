@@ -1,0 +1,13 @@
+---
+import InviteCodesContent from '../../components/pages/InviteCodesContent.astro';
+import { fetchInviteCodes } from '../../services/inviteCodes';
+import { getInviteShareEntries } from '../../data/invite-share';
+
+export async function getStaticPaths() {
+  const data = await fetchInviteCodes();
+  return getInviteShareEntries(data.codes).map(({ slug, code }) => ({
+    params: { service: slug }, props: { data, service: code },
+  }));
+}
+---
+<InviteCodesContent {...Astro.props} />

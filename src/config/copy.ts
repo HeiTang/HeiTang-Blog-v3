@@ -31,7 +31,7 @@ export const copy: SiteCopy = {
   },
   inviteCodes: {
     title: '邀請碼',
-    description: '分享我使用並推薦的各類服務邀請碼',
+    description: '整理我持有的各類服務邀請碼與回饋資訊',
     noData: '目前暫無邀請碼',
     lastUpdated: '最後更新',
     allFilter: '全部',
