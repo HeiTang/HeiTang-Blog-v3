@@ -8,8 +8,12 @@ import { fetchInviteCodes, extractGroups } from '../../services/inviteCodes';
 import { siteConfig } from '../../config/site';
 import { copy } from '../../config/copy';
 import { formatDate } from '../../utils/date';
+import { getInviteSlug, getInviteShareDescription } from '../../data/invite-share';
+import type { InviteCode, InviteCodesResponse } from '../../types/invite';
 
-const { codes: sourceCodes, updatedAt } = await fetchInviteCodes();
+interface Props { data?: InviteCodesResponse; service?: InviteCode; }
+const { data, service } = Astro.props;
+const { codes: sourceCodes, updatedAt } = data ?? await fetchInviteCodes();
 const codes = sourceCodes.map(code => ({ ...code, group: getInviteSubcategory(code) }));
 const groupedCodes = Object.fromEntries(Object.keys(inviteCategories).map(category => [category, codes.filter(code => getInviteCategory(code) === category)]));
 const sectionKeys = Object.keys(groupedCodes).filter(category => groupedCodes[category].length > 0);
@@ -23,8 +27,8 @@ const structuredData = {
 };
 ---
 
-<BaseLayout title={copy.inviteCodes.title} description={copy.inviteCodes.description} currentPath="/invite-codes" image={socialImage.src} structuredData={structuredData} hasPointerGlow={false}>
-  <article class="invite-directory" data-pagefind-body>
+<BaseLayout title={service ? `${service.title} 邀請碼與回饋` : copy.inviteCodes.title} description={service ? getInviteShareDescription(service) : copy.inviteCodes.description} currentPath="/invite-codes" image={service ? `/invite-codes/og/${getInviteSlug(service.title)}.png` : socialImage.src} structuredData={service ? undefined : structuredData} noindex={!!service} hasPointerGlow={false}>
+  <article class="invite-directory" data-shared-service={service?.title} data-pagefind-body={service ? undefined : true} data-pagefind-ignore={service ? true : undefined}>
     <header class="page-intro">
       <p class="eyebrow">INVITE CODES / 黑糖的邀請碼清單</p>
       <div class="hero-layout">
@@ -355,6 +359,11 @@ const structuredData = {
   .ic-detail-status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ''; }
   .ic-detail-status[data-status="active"] { color: rgb(var(--brand-color)); }
   .ic-detail-status[data-status="expired"] { color: #f87171; }
+  .ic-detail-meta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .ic-share-btn { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: 0 .75rem; border-radius: 8px; color: rgb(var(--color-text-secondary)); cursor: pointer; transition: background .2s, color .2s; font-size: .8rem; }
+  .ic-share-btn:hover { background: rgb(var(--brand-color) / .08); color: rgb(var(--color-text-primary)); }
+  .ic-share-btn:focus-visible { outline: 2px solid rgb(var(--brand-color)); outline-offset: 2px; }
+  .ic-share-feedback { margin: .5rem 0 0; color: rgb(var(--color-text-secondary)); font-size: .8rem; overflow-wrap: anywhere; }
   .ic-detail-body { display: grid; gap: 1.5rem; padding: 0 2rem 2rem; }
   .ic-section-label { display: block; margin-bottom: .625rem; color: rgb(var(--color-text-secondary)); font-size: .75rem; font-weight: 500; }
   .ic-rewards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
@@ -592,6 +601,7 @@ const structuredData = {
   import { getInviteBrand, selectHeroCodes } from '../../data/invite-brands';
   import type { InviteCode } from '../../types/invite';
   import { initHeroWallet } from '../invite-codes/heroWallet';
+  import { getInviteSlug } from '../../data/invite-share';
 
   const heroTickets = document.querySelectorAll<HTMLElement>('.pocket-ticket');
   if (heroTickets.length) {
@@ -672,7 +682,9 @@ const structuredData = {
             <span class="ic-detail-logo" aria-hidden="true">${brand.icon ? `<img src="/images/invite-brands/${brand.icon}.png" width="40" height="40" alt="" />` : esc(title.slice(0, 2))}</span>
             <div><p class="ic-detail-category">${esc(c.group ?? '其他')}</p><h2 class="ic-detail-title">${esc(title)}</h2></div>
           </div>
-          <span class="ic-detail-status" data-status="${esc(status)}">${statusLabels[status] ?? statusLabels.active}</span>
+          <div class="ic-detail-meta"><span class="ic-detail-status" data-status="${esc(status)}">${statusLabels[status] ?? statusLabels.active}</span>
+            <button type="button" class="ic-share-btn" data-share="${esc(title)}" aria-label="分享 ${esc(title)}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8" /></svg>分享</button>
+          </div><p class="ic-share-feedback" role="status" hidden></p>
         </header>
         <div class="ic-detail-body">
           ${c.user_benefit || c.my_benefit ? `<section class="ic-rewards" aria-label="邀請回饋">
@@ -746,6 +758,46 @@ const structuredData = {
   }
 
   // ── Open / Close ──────────────────────────────────────────────────────────
+  function getShareUrl(title: string): string {
+    return new URL(`/invite-codes/${getInviteSlug(title)}/`, window.location.href).href;
+  }
+
+  async function shareService(title: string, feedback: HTMLElement) {
+    const url = getShareUrl(title);
+    feedback.hidden = true;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `${title} 邀請碼與回饋`, url });
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      feedback.textContent = '分享連結已複製';
+    } catch {
+      feedback.textContent = `請複製分享連結：${url}`;
+    }
+    feedback.hidden = false;
+  }
+
+  function bindShareBtn(root: HTMLElement) {
+    const button = root.querySelector<HTMLButtonElement>('.ic-share-btn');
+    const feedback = root.querySelector<HTMLElement>('.ic-share-feedback');
+    button?.addEventListener('click', () => {
+      if (feedback) void shareService(button.dataset.share ?? '', feedback);
+    });
+  }
+
+  function clearSharedService() {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('service') && url.pathname === '/invite-codes/') return;
+    url.searchParams.delete('service');
+    url.pathname = '/invite-codes/';
+    window.history.replaceState(window.history.state, '', url);
+  }
+
   let returnFocus: HTMLElement | null = null;
   let activeDialog: HTMLElement = modal;
 
@@ -768,6 +820,7 @@ const structuredData = {
       detailM.innerHTML = renderDetail(data);
       detailM.scrollTop = 0;
       bindCopyBtns(detailM);
+      bindShareBtn(detailM);
       modal.style.display = 'block';
       modal.style.opacity = '0';
       modal.style.transform = 'translate(-50%, -50%) scale(0.94) translateY(10px)';
@@ -781,6 +834,7 @@ const structuredData = {
       sheet.style.setProperty('--brand-color', getInviteBrand(String(data.title ?? '')).color);
       detailS.innerHTML = renderDetail(data);
       bindCopyBtns(detailS);
+      bindShareBtn(detailS);
       sheetScroll.scrollTop = 0;
       sheet.style.display = 'flex';
       sheet.style.transform = 'translateY(100%)';
@@ -793,6 +847,7 @@ const structuredData = {
   }
 
   function closeOverlay() {
+    clearSharedService();
     backdrop.style.transition = 'background 0.25s ease-in, backdrop-filter 0.25s ease-in';
     backdrop.style.background = 'rgba(0,0,0,0)';
     backdrop.style.backdropFilter = 'blur(0px)';
@@ -823,6 +878,21 @@ const structuredData = {
       if (card?.dataset.invite) openOverlay(JSON.parse(card.dataset.invite));
     });
   });
+
+  function openSharedService() {
+    const title = document.querySelector<HTMLElement>('.invite-directory')?.dataset.sharedService || new URL(window.location.href).searchParams.get('service');
+    if (!title) return;
+    for (const card of document.querySelectorAll<HTMLElement>('.ic-card')) {
+      if (!card.dataset.invite) continue;
+      const data: InviteData = JSON.parse(card.dataset.invite);
+      if (String(data.title ?? '').trim() === title.trim()) {
+        openOverlay(data);
+        return;
+      }
+    }
+    clearSharedService();
+  }
+  openSharedService();
 
   backdrop.addEventListener('click', closeOverlay);
   document.getElementById('ic-close-modal')?.addEventListener('click', closeOverlay);

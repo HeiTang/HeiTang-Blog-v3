@@ -4,6 +4,7 @@ import { stripTypeScriptTypes } from 'node:module';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { getInviteBrand } from '../../data/invite-brands.ts';
+import { getInviteSlug } from '../../data/invite-share.ts';
 
 test('invite filters keep counts, category selection and empty feedback consistent', async () => {
   const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
@@ -254,8 +255,59 @@ test('closing keeps the animation on the open dialog after the viewport changes'
       modal, sheet, activeDialog: mobileDialog ? sheet : modal,
       isMobile: () => !mobileDialog,
       backdrop: { style: {} }, setTimeout() {},
+      clearSharedService() {},
     });
     assert.equal(mobileDialog ? sheet.style.transform : modal.style.opacity, mobileDialog ? 'translateY(100%)' : '0');
     assert.equal(mobileDialog ? modal.style.opacity : sheet.style.transform, undefined);
   }
+});
+
+test('service sharing encodes titles, uses native share and falls back to copying', async () => {
+  const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
+  const script = source.slice(source.indexOf('  function getShareUrl('), source.indexOf('  function bindShareBtn('));
+  const title = 'ChargeSPOT 共享 / A&B + 日本';
+  const copied: string[] = [];
+  const feedback = { hidden: true, textContent: '' };
+  const navigator: { share?: (data: { title: string; url: string }) => Promise<void>; clipboard: { writeText: (url: string) => Promise<void> } } = {
+    clipboard: { async writeText(url) { copied.push(url); } },
+  };
+  const context = { URL, Error, getInviteSlug, window: { location: { href: 'https://purr.tw/invite-codes/?old=1#section' } }, navigator, title, feedback };
+  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback)', context);
+  assert.equal(decodeURIComponent(new URL(copied[0]).pathname), `/invite-codes/${getInviteSlug(title)}/`);
+  assert.equal(new URL(copied[0]).searchParams.size, 0);
+  assert.equal(new URL(copied[0]).hash, '');
+  assert.equal(feedback.textContent, '分享連結已複製');
+  assert.equal(feedback.hidden, false);
+  let sharedTitle = '';
+  navigator.share = async data => { sharedTitle = data.title; };
+  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback)', context);
+  assert.equal(sharedTitle, `${title} 邀請碼與回饋`);
+  assert.equal(copied.length, 1);
+  navigator.share = async () => { throw Object.assign(new Error(), { name: 'AbortError' }); };
+  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback)', context);
+  assert.equal(copied.length, 1);
+  navigator.share = async () => { throw new Error('Unavailable'); };
+  navigator.clipboard.writeText = async () => { throw new Error('Denied'); };
+  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback)', context);
+  assert.match(feedback.textContent, /^請複製分享連結：https:/);
+});
+
+test('shared services open even when expired cards are hidden, and unknown titles are cleared', async () => {
+  const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
+  const script = source.slice(source.indexOf('  function openSharedService('), source.indexOf('  openSharedService();'));
+  const cards = [{ dataset: { invite: JSON.stringify({ title: '第一銀行 iLEO', status: 'expired' }) }, style: { display: 'none' } }];
+  let opened = '';
+  let cleared = false;
+  const context = {
+    URL, window: { location: { href: 'https://purr.tw/invite-codes/?service=' + encodeURIComponent('第一銀行 iLEO') } },
+    document: { querySelectorAll: () => cards, querySelector: () => null },
+    openOverlay(data: { title: string }) { opened = data.title; },
+    clearSharedService() { cleared = true; },
+  };
+  runInNewContext(stripTypeScriptTypes(script) + '\nopenSharedService()', context);
+  assert.equal(opened, '第一銀行 iLEO');
+  assert.equal(cleared, false);
+  context.window.location.href = 'https://purr.tw/invite-codes/?service=missing';
+  runInNewContext(stripTypeScriptTypes(script) + '\nopenSharedService()', context);
+  assert.equal(cleared, true);
 });

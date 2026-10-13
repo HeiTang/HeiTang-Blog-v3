@@ -11,7 +11,7 @@ export default defineConfig({
     sitemap({
       filter: (page) => {
         const pathname = new URL(page).pathname;
-        return !pathname.startsWith('/en') && pathname !== '/sm/';
+        return !pathname.startsWith('/en') && pathname !== '/sm/' && !(pathname.startsWith('/invite-codes/') && pathname !== '/invite-codes/');
       },
     }),
   ],

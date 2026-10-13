@@ -45,6 +45,7 @@ export const inviteBrands: Partial<Record<string, { icon: string; color: string 
   'ShopBack 導購': { icon: 'shopback', color: '242 83 96' },
   Dynadot: { icon: 'dynadot', color: '117 166 255' },
   HanaCell: { icon: 'hanacell', color: '240 149 70' },
+  'Muse.ai': { icon: 'muse', color: '255 151 190' },
 };
 
 const fallbackColors = ['255 156 112', '133 197 255', '122 214 173', '199 163 255', '255 151 190', '231 199 111'];
