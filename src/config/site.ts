@@ -3,7 +3,7 @@
  * Following SOLID principles: Single Responsibility
  */
 import type { ProjectMeta } from '../types/projects';
-import fxPulseFullUsd from '../assets/projects/fx-pulse/full-usd.png';
+import fxPulsePeriodComparison from '../assets/projects/fx-pulse/period-comparison.png';
 import fxPulseHome from '../assets/projects/fx-pulse/home.png';
 import fxPulseJpyChart from '../assets/projects/fx-pulse/jpy-chart.png';
 import cardFluxActivityOverview from '../assets/projects/cardflux/activity-overview.png';
@@ -55,34 +55,32 @@ export const siteConfig = {
     {
       name: 'FX-Pulse',
       title: 'FX-Pulse 信用卡匯率比較',
-      summary: '出國刷卡前，把三家信用卡匯率放一起看。',
+      summary: '出國刷卡前，試算三家換算金額，也看看一段時間差多少。',
       category: '網站服務',
       homepage: 'https://fx.purr.tw/',
       role: '個人作品',
       period: '2026',
       image: fxPulseHome,
-      customDescription: 'FX Pulse — 匯率脈動。每日自動抓取 VISA、Mastercard、JCB 三大信用卡組織官方匯率並排比較，同幣別最優匯率自動標綠、最差標紅，搭配 ECharts 互動式三線歷史走勢圖。前端 Astro 6 + Tailwind v4 部署於 GitHub Pages，爬蟲透過 GitHub Actions 排程，零伺服器成本。目前運行於 fx.purr.tw。',
+      customDescription: '出國刷卡，同一筆消費用哪家卡組織換算比較省？FX Pulse 把 VISA、Mastercard 與 JCB 的參考匯率放在一起，省去來回查詢。\n\n選好幣別、金額與日期，就能看到台幣換算額與差額。也可以從台幣預算反推外幣金額，或看看最近一段時間，三家通常差多少。\n\n資料每日更新，非即時報價。JCB 為交叉匯率估算；試算未計銀行手續費與回饋，實際金額仍以帳單為準。',
       techStack: [
-        'Python 3.12',
-        'Poetry',
+        'Python',
         'curl-cffi',
-        'Astro 6',
-        'Tailwind CSS v4',
+        'Astro',
+        'Tailwind CSS',
         'ECharts',
         'GitHub Actions',
       ],
       highlights: [
-        { title: '同幣別三家匯率並排比較', description: '最優自動標綠、最差標紅，省去逐站比價。' },
-        { title: 'JCB 無公開 API', description: '從 jcb.jp 抓取 USD 基準匯率，以 cross-rate 推算全 8 幣別。' },
-        { title: 'curl-cffi 模擬 Chrome TLS 指紋', description: '成功繞過 VISA Cloudflare 與 Mastercard Akamai 防護。' },
-        { title: '互動走勢圖（ECharts）', description: '三線對比、點擊幣別卡片切換、支援滑動縮放。' },
-        { title: '每日抓取後自動掃描近 7 天缺漏', description: 'JCB 週末自動跳過，確保歷史資料完整。' },
-        { title: '彈性 CLI', description: '支援指定來源 / 日期 / 區間 / 月份、dry-run、整月平行批量抓取。' },
+        { title: '一筆消費，三家一起比', description: '輸入金額就能看到換算結果、最低換算額與差額。支援日圓、美元等 8 種幣別。' },
+        { title: '有預算，也能反過來算', description: '切換換算方向，看看手上的台幣預算約能換得多少外幣。' },
+        { title: '不只看一天，也看一段時間', description: '切換 7 天、30 天或全部走勢，看看哪家較常最低，以及每天的金額差距。只比較三家都有資料的日期。' },
+        { title: '把試算分享出去', description: '幣別、金額、日期與換算方向都會保留在網址裡，複製連結就能分享給朋友。' },
+        { title: '也能下載，接進自己的工具', description: '下載專案後，可用 CLI 抓取指定日期的匯率、回補缺漏，或自行啟動 API，取得最新與歷史匯率。' },
       ],
       screenshots: [
-        { src: fxPulseHome, caption: '首頁即時匯率：同幣別三家並排，最優標綠、最差標紅' },
-        { src: fxPulseFullUsd, caption: 'USD 三線歷史走勢圖（ECharts），支援滑動縮放' },
-        { src: fxPulseJpyChart, caption: '點擊幣別卡片即切換走勢圖 — JPY 為例' },
+        { src: fxPulseHome, caption: '輸入日圓消費金額，一眼比較三家台幣換算額' },
+        { src: fxPulseJpyChart, caption: '近 30 天日圓匯率走勢，看看三家的變化' },
+        { src: fxPulsePeriodComparison, caption: '期間比較：哪家較常最低？每天大約差多少？' },
       ],
       tags: ['Python', 'Astro', 'Scraper', 'GitHub Actions', 'Serverless'],
     },

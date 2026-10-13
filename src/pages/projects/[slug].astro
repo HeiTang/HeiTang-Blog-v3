@@ -44,7 +44,7 @@ const structuredData = [
         <div>{isYannick ? <>
           <p>想買特定口味的生乳捲，卻得逐站確認 YTM 庫存。這個工具把查詢順序反過來：先選想買的商品，再看哪些站點還有現貨。</p>
           <p>從商品清單、站點庫存到 API，同一份資料既能讓人直接查，也能接進自己的工具。</p>
-        </> : <p>{project.customDescription}</p>}</div>
+        </> : project.customDescription?.split('\n\n').map(paragraph => <p>{paragraph}</p>)}</div>
       </section>
       {isYannick && <ol class="steps" aria-label="查詢流程">
         <li><span>01</span><h3>選想買的商品</h3><p>搜尋口味或商品名稱，找到想買的生乳捲。</p></li>
