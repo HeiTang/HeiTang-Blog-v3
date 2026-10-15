@@ -90,6 +90,47 @@ GA4 載入條件：
 - 正式建置，且瀏覽器 hostname 符合 `siteConfig.url`。
 - 頁面使用 `BaseLayout`；獨立的 `/sm/` 頁面不載入。
 
+### 推薦碼頁面事件
+
+列表、各服務分享頁、中英文頁共用追蹤邏輯；`page_view` 沿用 GA4 自動收集，不手動再送一次。
+
+| 事件 | 送出時機 |
+| --- | --- |
+| `invite_impression` | 列表卡片至少 50% 可見且連續滿 1 秒，每次頁面載入每個服務只計一次；不計首頁裝飾票卡 |
+| `invite_view` | 桌面詳情視窗／手機詳情面板開啟，包含直接進入服務分享頁 |
+| `invite_copy` | 推薦碼寫入剪貼簿成功 |
+| `invite_click` | 點擊「領取回饋」推薦連結 |
+| `invite_official_click` | 點擊「活動頁面」官方連結 |
+| `invite_share` | 原生分享 API 成功完成，或分享連結寫入剪貼簿成功；取消／失敗不計 |
+
+曝光在頁面進入背景或詳情遮罩開啟時中斷，恢復後重新計時；橫向捲動、篩選與收合由 IntersectionObserver 判定可見範圍。曝光只表示幾何可見，不代表訪客一定閱讀。
+
+### GA4 後台設定
+
+以具有「編輯者」以上權限的帳號，進入 **管理 → 資料顯示 → 自訂定義 → 建立自訂維度**。下表全部選擇範圍 **事件（Event）**，事件參數填英文欄位原名：
+
+| 維度名稱（可自訂） | 事件參數 | 值／用途 |
+| --- | --- | --- |
+| 推薦服務 ID | `service_id` | 沿用服務分享網址的 slug，供篩選／串接 |
+| 推薦服務名稱 | `service_name` | 例如 `遠東銀行 Bankee`，供服務排名 |
+| 推薦服務分類 | `category` | 例如 `銀行與信用卡`，與頁面大分類一致 |
+| 推薦互動入口 | `entry_point` | `directory`：列表卡片／列表詳情操作；`shared_page`：服務分享頁自動開啟及其後續操作；`shared_query`：舊式 `?service=` 自動開啟及其後續操作 |
+| 推薦分享方式 | `share_method` | 僅 `invite_share` 帶入：`native`（原生分享完成）、`copy_link`（分享連結複製成功） |
+
+頁面路徑、來源／媒介、裝置使用 GA4 內建維度。
+
+`service_id` 隨服務名稱產生；改名會改變 ID。自訂事件不傳推薦碼內容、推薦 URL 或剪貼簿文字；GA4 原有頁面瀏覽與增強型評估仍按其設定收集網址。
+
+1. 建議在部署前建立自訂維度，並確認既有 `PUBLIC_GA_MEASUREMENT_ID` 指向正確資源。自訂維度不回補建立前的歷史報表資料；一般報表可能需 24–48 小時。
+2. 不需要在後台逐一「建立事件」；網站會直接送出上述事件。可將 `invite_click`、`invite_copy` 標為「重要事件」，代表站內採取行動，不代表對方註冊／成交。
+3. 資料串流的「增強型評估 → 外連點擊」可保留，但其自動 `click` 與 `invite_click`／`invite_official_click` 是不同事件，不要加總當成獨立操作人次。
+4. 部署後以 Tag Assistant 開啟偵錯工作階段，在 GA4 DebugView 檢查事件及參數。測試查看、複製、兩種外連、分享完成／取消，以及卡片快速捲過不算曝光。一般訪客不用開啟 `debug_mode`。
+5. 探索報表以「推薦服務名稱」為列、「事件名稱」為欄，查看事件數與使用者人數；來源成效使用內建「工作階段來源／媒介」。曝光→詳情、詳情→複製／點擊的轉換率用同一服務的使用者漏斗，避免直接用重複事件數相除。
+
+原生分享成功只代表瀏覽器回報完成，不保證收件人收到／開啟；外站註冊、核卡、消費與回饋需服務商資料才能驗證。阻擋追蹤會漏計。
+
+官方文件：[自訂維度](https://support.google.com/analytics/answer/14239696?hl=zh-Hant)、[DebugView](https://support.google.com/analytics/answer/7201382?hl=zh-Hant)、[自訂事件](https://developers.google.com/analytics/devguides/collection/ga4/events)。
+
 ## GitHub API 與維護工具
 
 ### 網站作品集

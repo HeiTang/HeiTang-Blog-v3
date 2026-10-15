@@ -602,6 +602,7 @@ const structuredData = {
   import type { InviteCode } from '../../types/invite';
   import { initHeroWallet } from '../invite-codes/heroWallet';
   import { getInviteSlug } from '../../data/invite-share';
+  import { observeInviteImpressions, trackInviteEvent, type InviteEntryPoint } from '../invite-codes/analytics';
 
   const heroTickets = document.querySelectorAll<HTMLElement>('.pocket-ticket');
   if (heroTickets.length) {
@@ -740,7 +741,7 @@ const structuredData = {
     closeList();
     return html.replace(/<br>$/, '');
   }
-  function bindCopyBtns(root: HTMLElement) {
+  function bindCopyBtns(root: HTMLElement, data: InviteData, entryPoint: InviteEntryPoint) {
     root.querySelectorAll<HTMLButtonElement>('.ic-copy-btn').forEach(btn => {
       btn.addEventListener('click', async e => {
         e.stopPropagation();
@@ -750,6 +751,7 @@ const structuredData = {
           btn.textContent = '複製失敗，請手動複製';
           return;
         }
+        trackInviteEvent('invite_copy', analyticsService(data), entryPoint);
         btn.textContent = '✓ 已複製';
         btn.classList.add('copied');
         setTimeout(() => { btn.textContent = '複製'; btn.classList.remove('copied'); }, 1800);
@@ -762,12 +764,13 @@ const structuredData = {
     return new URL(`/invite-codes/${getInviteSlug(title)}/`, window.location.href).href;
   }
 
-  async function shareService(title: string, feedback: HTMLElement) {
+  async function shareService(title: string, feedback: HTMLElement, data: InviteData, entryPoint: InviteEntryPoint) {
     const url = getShareUrl(title);
     feedback.hidden = true;
     if (navigator.share) {
       try {
         await navigator.share({ title: `${title} 邀請碼與回饋`, url });
+        trackInviteEvent('invite_share', analyticsService(data), entryPoint, 'native');
         return;
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') return;
@@ -775,6 +778,7 @@ const structuredData = {
     }
     try {
       await navigator.clipboard.writeText(url);
+      trackInviteEvent('invite_share', analyticsService(data), entryPoint, 'copy_link');
       feedback.textContent = '分享連結已複製';
     } catch {
       feedback.textContent = `請複製分享連結：${url}`;
@@ -782,11 +786,11 @@ const structuredData = {
     feedback.hidden = false;
   }
 
-  function bindShareBtn(root: HTMLElement) {
+  function bindShareBtn(root: HTMLElement, data: InviteData, entryPoint: InviteEntryPoint) {
     const button = root.querySelector<HTMLButtonElement>('.ic-share-btn');
     const feedback = root.querySelector<HTMLElement>('.ic-share-feedback');
     button?.addEventListener('click', () => {
-      if (feedback) void shareService(button.dataset.share ?? '', feedback);
+      if (feedback) void shareService(button.dataset.share ?? '', feedback, data, entryPoint);
     });
   }
 
@@ -801,7 +805,22 @@ const structuredData = {
   let returnFocus: HTMLElement | null = null;
   let activeDialog: HTMLElement = modal;
 
-  function openOverlay(data: InviteData) {
+  function analyticsService(data: InviteData) {
+    return { title: String(data.title ?? ''), group: String(data.group ?? '') };
+  }
+
+  function bindDetailLinks(root: HTMLElement, data: InviteData, entryPoint: InviteEntryPoint) {
+    root.querySelector('.ic-link-btn')?.addEventListener('click', () => {
+      trackInviteEvent('invite_click', analyticsService(data), entryPoint);
+    });
+    root.querySelector('.ic-event-link')?.addEventListener('click', () => {
+      trackInviteEvent('invite_official_click', analyticsService(data), entryPoint);
+    });
+  }
+
+  observeInviteImpressions(document.querySelectorAll<HTMLElement>('.ic-card'), overlay);
+
+  function openOverlay(data: InviteData, entryPoint: InviteEntryPoint = 'directory') {
     returnFocus = document.activeElement as HTMLElement;
     activeDialog = isMobile() ? sheet : modal;
     overlay.classList.add('ic-open');
@@ -819,8 +838,9 @@ const structuredData = {
       modal.setAttribute('aria-label', `${String(data.title ?? '')} 邀請碼詳情`);
       detailM.innerHTML = renderDetail(data);
       detailM.scrollTop = 0;
-      bindCopyBtns(detailM);
-      bindShareBtn(detailM);
+      bindCopyBtns(detailM, data, entryPoint);
+      bindShareBtn(detailM, data, entryPoint);
+      bindDetailLinks(detailM, data, entryPoint);
       modal.style.display = 'block';
       modal.style.opacity = '0';
       modal.style.transform = 'translate(-50%, -50%) scale(0.94) translateY(10px)';
@@ -833,8 +853,9 @@ const structuredData = {
       sheet.setAttribute('aria-label', `${String(data.title ?? '')} 邀請碼詳情`);
       sheet.style.setProperty('--brand-color', getInviteBrand(String(data.title ?? '')).color);
       detailS.innerHTML = renderDetail(data);
-      bindCopyBtns(detailS);
-      bindShareBtn(detailS);
+      bindCopyBtns(detailS, data, entryPoint);
+      bindShareBtn(detailS, data, entryPoint);
+      bindDetailLinks(detailS, data, entryPoint);
       sheetScroll.scrollTop = 0;
       sheet.style.display = 'flex';
       sheet.style.transform = 'translateY(100%)';
@@ -844,6 +865,7 @@ const structuredData = {
       }));
     }
     activeDialog.focus();
+    trackInviteEvent('invite_view', analyticsService(data), entryPoint);
   }
 
   function closeOverlay() {
@@ -886,7 +908,8 @@ const structuredData = {
       if (!card.dataset.invite) continue;
       const data: InviteData = JSON.parse(card.dataset.invite);
       if (String(data.title ?? '').trim() === title.trim()) {
-        openOverlay(data);
+        const sharedPage = document.querySelector<HTMLElement>('.invite-directory')?.dataset.sharedService;
+        openOverlay(data, sharedPage ? 'shared_page' : 'shared_query');
         return;
       }
     }
