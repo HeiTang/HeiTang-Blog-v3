@@ -271,25 +271,29 @@ test('service sharing encodes titles, uses native share and falls back to copyin
   const navigator: { share?: (data: { title: string; url: string }) => Promise<void>; clipboard: { writeText: (url: string) => Promise<void> } } = {
     clipboard: { async writeText(url) { copied.push(url); } },
   };
-  const context = { URL, Error, getInviteSlug, window: { location: { href: 'https://purr.tw/invite-codes/?old=1#section' } }, navigator, title, feedback };
-  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback)', context);
+  const events: unknown[][] = [];
+  const context = { trackInviteEvent: (...args: unknown[]) => events.push(args), analyticsService: (data: unknown) => data, data: { title, group: '交通' }, URL, Error, getInviteSlug, window: { location: { href: 'https://purr.tw/invite-codes/?old=1#section' } }, navigator, title, feedback };
+  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback, data, \'directory\')', context);
   assert.equal(decodeURIComponent(new URL(copied[0]).pathname), `/invite-codes/${getInviteSlug(title)}/`);
   assert.equal(new URL(copied[0]).searchParams.size, 0);
   assert.equal(new URL(copied[0]).hash, '');
   assert.equal(feedback.textContent, '分享連結已複製');
   assert.equal(feedback.hidden, false);
+  assert.deepEqual(events.map(event => [event[0], event[2], event[3]]), [['invite_share', 'directory', 'copy_link']]);
   let sharedTitle = '';
   navigator.share = async data => { sharedTitle = data.title; };
-  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback)', context);
+  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback, data, \'directory\')', context);
   assert.equal(sharedTitle, `${title} 邀請碼與回饋`);
+  assert.equal(events[1][3], 'native');
   assert.equal(copied.length, 1);
   navigator.share = async () => { throw Object.assign(new Error(), { name: 'AbortError' }); };
-  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback)', context);
+  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback, data, \'directory\')', context);
   assert.equal(copied.length, 1);
   navigator.share = async () => { throw new Error('Unavailable'); };
   navigator.clipboard.writeText = async () => { throw new Error('Denied'); };
-  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback)', context);
+  await runInNewContext(stripTypeScriptTypes(script) + '\nshareService(title, feedback, data, \'directory\')', context);
   assert.match(feedback.textContent, /^請複製分享連結：https:/);
+  assert.equal(events.length, 2);
 });
 
 test('shared services open even when expired cards are hidden, and unknown titles are cleared', async () => {
@@ -310,4 +314,55 @@ test('shared services open even when expired cards are hidden, and unknown title
   context.window.location.href = 'https://purr.tw/invite-codes/?service=missing';
   runInNewContext(stripTypeScriptTypes(script) + '\nopenSharedService()', context);
   assert.equal(cleared, true);
+});
+
+test('copy events require clipboard success and detail links keep their service and entry point', async () => {
+  const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
+  const copyScript = source.slice(source.indexOf('  function bindCopyBtns('), source.indexOf('  // ── Open / Close'));
+  const linksScript = source.slice(source.indexOf('  function analyticsService('), source.indexOf('  observeInviteImpressions('));
+  const events: unknown[][] = [];
+  let copy = async (_event: unknown) => {};
+  let denied = false;
+  const btn = { dataset: { copy: 'PRIVATE-CODE' }, textContent: '', classList: { add() {}, remove() {} }, addEventListener(_name: string, listener: typeof copy) { copy = listener; } };
+  const links: Record<string, () => void> = {};
+  const context = {
+    trackInviteEvent: (...args: unknown[]) => events.push(args),
+    data: { title: 'Bankee', group: '銀行開戶' },
+    root: {
+      querySelectorAll: () => [btn],
+      querySelector: (selector: string) => ({ addEventListener(_name: string, listener: () => void) { links[selector] = listener; } }),
+    },
+    navigator: { clipboard: { async writeText() { if (denied) throw new Error('Denied'); } } },
+    setTimeout() {},
+  };
+  runInNewContext(stripTypeScriptTypes(linksScript + copyScript) + "\nbindCopyBtns(root, data, 'shared_page'); bindDetailLinks(root, data, 'shared_page');", context);
+  await copy({ stopPropagation() {} });
+  denied = true;
+  await copy({ stopPropagation() {} });
+  links['.ic-link-btn']();
+  links['.ic-event-link']();
+  assert.deepEqual(JSON.parse(JSON.stringify(events)), [
+    ['invite_copy', { title: 'Bankee', group: '銀行開戶' }, 'shared_page'],
+    ['invite_click', { title: 'Bankee', group: '銀行開戶' }, 'shared_page'],
+    ['invite_official_click', { title: 'Bankee', group: '銀行開戶' }, 'shared_page'],
+  ]);
+});
+
+test('desktop and mobile detail views emit one event with the opening entry point', async () => {
+  const source = await readFile(new URL('./InviteCodesContent.astro', import.meta.url), 'utf8');
+  const script = source.slice(source.indexOf('  function openOverlay('), source.indexOf('  function closeOverlay('));
+  for (const mobile of [false, true]) {
+    const events: unknown[][] = [];
+    const element = () => ({ style: { setProperty() {} }, setAttribute() {}, focus() {}, classList: { add() {} } });
+    const context = {
+      data: { title: 'Bankee', group: '銀行開戶' }, document: { activeElement: null, body: { style: {} } },
+      overlay: element(), modal: element(), sheet: element(), backdrop: element(),
+      detailM: {}, detailS: {}, sheetScroll: {}, isMobile: () => mobile,
+      requestAnimationFrame() {}, renderDetail: () => '', bindCopyBtns() {}, bindShareBtn() {}, bindDetailLinks() {},
+      getInviteBrand, analyticsService: (data: unknown) => data,
+      trackInviteEvent: (...args: unknown[]) => events.push(args),
+    };
+    runInNewContext(stripTypeScriptTypes(script) + "\nopenOverlay(data); openOverlay(data, 'shared_page');", context);
+    assert.deepEqual(events.map(event => [event[0], event[2]]), [['invite_view', 'directory'], ['invite_view', 'shared_page']]);
+  }
 });
