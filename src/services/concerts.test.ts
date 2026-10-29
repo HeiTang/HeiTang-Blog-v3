@@ -134,6 +134,74 @@ test('downloads the first Notion poster and creates fixed WebP variants', async 
   }
 });
 
+test('retries poster HTTP 503 with bounded backoff and still writes both variants', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'concert-posters-'));
+  const outputDir = pathToFileURL(`${directory}/`);
+  const source = await sharp({
+    create: { width: 30, height: 50, channels: 4, background: '#ff8c61' },
+  }).png().toBuffer();
+  const page = {
+    id: 'retry-page',
+    properties: {
+      海報: { type: 'files', files: [
+        { name: 'poster.png', type: 'external', external: { url: 'https://example.com/poster.png' } },
+      ] },
+    },
+  };
+  const delays: number[] = [];
+  const failures: Response[] = [];
+  let attempts = 0;
+  try {
+    assert.equal(await writeConcertPosters([page], {
+      outputDir,
+      sleepImpl: async delay => { delays.push(delay); },
+      fetchImpl: async input => {
+        assert.equal(input, 'https://example.com/poster.png');
+        attempts += 1;
+        if (attempts === 3) return new Response(source);
+        const response = new Response('unavailable', { status: 503 });
+        failures.push(response);
+        return response;
+      },
+    }), 1);
+    assert.equal(attempts, 3);
+    assert.deepEqual(delays, [1000, 2000]);
+    assert.ok(failures.every(response => response.bodyUsed));
+    for (const width of [480, 960]) {
+      const metadata = await sharp(await readFile(new URL(`concert-poster-retrypage-${width}.webp`, outputDir))).metadata();
+      assert.deepEqual([metadata.format, metadata.width, metadata.height], ['webp', width, width * 4 / 3]);
+    }
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+for (const status of [503, 400, 401, 403, 404, 429, 500, 502, 504]) {
+  test(`poster HTTP ${status} remains fatal with only 503 retried`, async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'concert-posters-'));
+    const delays: number[] = [];
+    let attempts = 0;
+    try {
+      await assert.rejects(writeConcertPosters([{
+        id: 'failed-page',
+        properties: {
+          海報: { type: 'files', files: [
+            { name: 'poster.png', type: 'external', external: { url: 'https://example.com/poster.png' } },
+          ] },
+        },
+      }], {
+        outputDir: pathToFileURL(`${directory}/`),
+        sleepImpl: async delay => { delays.push(delay); },
+        fetchImpl: async () => { attempts += 1; return new Response('failed', { status }); },
+      }), { message: `Concert poster download failed for failed-page: ${status}` });
+      assert.equal(attempts, status === 503 ? 3 : 1);
+      assert.deepEqual(delays, status === 503 ? [1000, 2000] : []);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+}
+
 test('uses an empty local state when Notion settings are missing', async () => {
   const originalToken = process.env.NOTION_TOKEN;
   const originalDatabaseId = process.env.NOTION_DATABASE_ID;

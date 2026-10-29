@@ -1,4 +1,5 @@
 import { mkdir, rm } from 'node:fs/promises';
+import { setTimeout } from 'node:timers/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import sharp from 'sharp';
@@ -20,11 +21,13 @@ const sizes = [
 interface SyncOptions {
   fetchImpl?: typeof fetch;
   outputDir?: URL;
+  sleepImpl?: (milliseconds: number) => Promise<void>;
 }
 
 export async function writeConcertPosters(pages: unknown[], options: SyncOptions = {}): Promise<number> {
   const fetchImpl = options.fetchImpl ?? fetch;
   const outputDir = options.outputDir ?? outputDirectory;
+  const sleep = options.sleepImpl ?? setTimeout;
 
   await rm(outputDir, { recursive: true, force: true });
   await mkdir(outputDir, { recursive: true });
@@ -38,7 +41,14 @@ export async function writeConcertPosters(pages: unknown[], options: SyncOptions
     const pageId = typeof page === 'object' && page !== null && 'id' in page ? page.id : undefined;
     if (typeof pageId !== 'string') throw new Error('Notion concert poster is missing its page ID');
 
-    const response = await fetchImpl(source.url);
+    let response = await fetchImpl(source.url);
+    // Retry only the observed temporary outage, with at most three attempts.
+    for (const delay of [1000, 2000]) {
+      if (response.status !== 503) break;
+      await response.body?.cancel();
+      await sleep(delay);
+      response = await fetchImpl(source.url);
+    }
     if (!response.ok) {
       throw new Error(`Concert poster download failed for ${pageId}: ${response.status}`);
     }
