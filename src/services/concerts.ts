@@ -9,6 +9,8 @@ const PUBLIC_PROPERTIES = [
   '網址',
   '購票階段',
   '海報',
+  '單位票價',
+  '幣別',
 ] as const;
 
 const REQUIRED_PROPERTIES = ['Name', '演出日期', '演出地點', '購票階段'] as const;
@@ -29,6 +31,7 @@ interface NotionProperty {
   url?: unknown;
   date?: unknown;
   files?: unknown;
+  number?: unknown;
 }
 
 interface NotionPage {
@@ -50,6 +53,28 @@ export interface Concert {
   url?: string;
   imageUrl?: string;
   imageSrcSet?: string;
+  cost?: number;
+  currency?: string;
+}
+
+export function getAnnualSpending(concerts: Concert[], year: string, rates: Record<string, Record<string, number>> = {}): {
+  total: number;
+  missingCount: number;
+  unconvertedCount: number;
+} {
+  let total = 0;
+  let missingCount = 0;
+  let unconvertedCount = 0;
+  for (const concert of concerts) {
+    if (concert.startDate.slice(0, 4) !== year) continue;
+    if (concert.cost === undefined) missingCount += 1;
+    else {
+      const rate = concert.currency === 'TWD' ? 1 : rates[concert.startDate.slice(0, 10)]?.[concert.currency ?? ''];
+      if (!Number.isFinite(rate) || rate <= 0) unconvertedCount += 1;
+      else total += concert.cost * rate;
+    }
+  }
+  return { total: Math.round(total), missingCount, unconvertedCount };
 }
 
 export interface ConcertPosterSource {
@@ -178,6 +203,13 @@ export function decodeConcertPage(page: unknown): Concert | null {
   const poster = getConcertPosterSource(page);
   const posterBase = poster ? `/images/concert-posters/${concertPosterBaseName(page.id)}` : undefined;
   const url = urlValue(properties['網址']);
+  const price = properties['單位票價'];
+  const cost = price?.type === 'number'
+    && typeof price.number === 'number'
+    && Number.isFinite(price.number)
+    && price.number >= 0 ? price.number : undefined;
+  const rawCurrency = textValue(properties['幣別']).toUpperCase();
+  const currency = rawCurrency === 'NTD' || rawCurrency === 'NT$' ? 'TWD' : rawCurrency;
 
   return {
     id: page.id,
@@ -185,6 +217,8 @@ export function decodeConcertPage(page: unknown): Concert | null {
     startDate: date.start,
     ...(date.end ? { endDate: date.end } : {}),
     venue,
+    ...(cost !== undefined ? { cost } : {}),
+    ...(currency ? { currency } : {}),
     ...(url ? { url } : {}),
     ...(posterBase
       ? {
@@ -215,12 +249,16 @@ async function fetchPublicPropertyIds(
   const ids: Partial<Record<PublicPropertyName, string>> = {};
   let stageType = '';
   let posterType = '';
+  let priceType = '';
+  let currencyType = '';
 
   for (const name of PUBLIC_PROPERTIES) {
     const property = body.properties[name] as NotionSchemaProperty | undefined;
     if (!isRecord(property) || typeof property.id !== 'string') continue;
     ids[name] = property.id;
     if (name === '購票階段' && typeof property.type === 'string') stageType = property.type;
+    if (name === '單位票價' && typeof property.type === 'string') priceType = property.type;
+    if (name === '幣別' && typeof property.type === 'string') currencyType = property.type;
     if (name === '海報' && typeof property.type === 'string') posterType = property.type;
   }
 
@@ -235,6 +273,13 @@ async function fetchPublicPropertyIds(
 
   if (ids['海報'] && posterType !== 'files') {
     throw new Error(`Notion 海報 must be files, got ${posterType || 'unknown'}`);
+  }
+
+  if (ids['單位票價'] && priceType !== 'number') {
+    throw new Error(`Notion 單位票價 must be number, got ${priceType || 'unknown'}`);
+  }
+  if (ids['幣別'] && !['select', 'rich_text'].includes(currencyType)) {
+    throw new Error(`Notion 幣別 must be select or rich_text, got ${currencyType || 'unknown'}`);
   }
 
   return { ids, stageType };

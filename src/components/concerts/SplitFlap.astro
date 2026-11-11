@@ -1,0 +1,159 @@
+---
+interface Props {
+  value: number;
+}
+const { value } = Astro.props;
+const formatted = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(value);
+---
+
+<concert-split-flap aria-hidden="true" data-pagefind-ignore style={`--flap-characters: ${formatted.length}`}>
+  {Array.from(formatted).map(character => /\d/.test(character) ? (
+    <span class="flap" data-digit={character}>
+      <span class="half top" data-top>{character}</span>
+      <span class="half bottom" data-bottom>{character}</span>
+      <span class="half top leaf" data-leaf-top>{character}</span>
+      <span class="half bottom leaf" data-leaf-bottom>{character}</span>
+    </span>
+  ) : <span class="separator">{character}</span>)}
+</concert-split-flap>
+
+<script>
+  import { splitFlapStops, splitFlapFrame, SPLIT_FLAP_DURATION } from './split-flap';
+
+  class ConcertSplitFlap extends HTMLElement {
+    private frame = 0;
+
+    connectedCallback() { this.play(); }
+    disconnectedCallback() { cancelAnimationFrame(this.frame); }
+
+    private play() {
+      cancelAnimationFrame(this.frame);
+      const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const digits = [...this.querySelectorAll<HTMLElement>('[data-digit]')];
+      const stops = splitFlapStops(digits.map(digit => digit.dataset.digit).join(''));
+      const parts = digits.map(digit => ({
+        top: digit.querySelector<HTMLElement>('[data-top]')!,
+        bottom: digit.querySelector<HTMLElement>('[data-bottom]')!,
+        leafTop: digit.querySelector<HTMLElement>('[data-leaf-top]')!,
+        leafBottom: digit.querySelector<HTMLElement>('[data-leaf-bottom]')!,
+      }));
+      const finish = () => {
+        parts.forEach((part, index) => {
+          delete digits[index].dataset.flipHalf;
+          Object.values(part).forEach(half => {
+            half.textContent = digits[index].dataset.digit!;
+            half.style.removeProperty('transform');
+          });
+        });
+      };
+      if (motion.matches) { finish(); return; }
+
+      const paint = (elapsed: number) => {
+        splitFlapFrame(stops, elapsed).forEach(({ value, next, phase }, index) => {
+          const part = parts[index];
+          digits[index].dataset.flipHalf = phase < 0.5 ? 'top' : 'bottom';
+          part.top.textContent = part.leafBottom.textContent = String(next);
+          part.bottom.textContent = part.leafTop.textContent = String(value);
+          part.leafTop.style.transform = `rotateX(${-Math.min(phase * 2, 1) * 90}deg)`;
+          part.leafBottom.style.transform = `rotateX(${Math.max(1 - phase * 2, 0) * 90}deg)`;
+        });
+      };
+      const started = performance.now();
+      const tick = (now: number) => {
+        const elapsed = now - started;
+        if (elapsed >= SPLIT_FLAP_DURATION || motion.matches) { finish(); return; }
+        paint(elapsed);
+        this.frame = requestAnimationFrame(tick);
+      };
+      paint(0);
+      this.frame = requestAnimationFrame(tick);
+    }
+  }
+
+  if (!customElements.get('concert-split-flap')) {
+    customElements.define('concert-split-flap', ConcertSplitFlap);
+  }
+</script>
+
+<style>
+  /* 磚面配色與 /japan/ 的 .japan-score-digit 一致 */
+  concert-split-flap {
+    --flap-h: 1.3em;
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 0.08em;
+    color: var(--split-flap-ink, rgb(var(--color-text-accent)));
+    font-family: 'JetBrains Mono', monospace;
+    font-size: min(var(--split-flap-size, 4rem), calc((100cqw - 3rem) / (var(--flap-characters) * 0.74)));
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .flap {
+    position: relative;
+    display: inline-block;
+    width: 0.68em;
+    height: var(--flap-h);
+    border-radius: 0.08em;
+    box-shadow:
+      0 0 0 1px rgb(var(--color-text-primary) / 0.1),
+      0 0.08em 0.2em rgba(0, 0, 0, 0.32);
+    perspective: 3em;
+  }
+
+  /* 鉸鏈線 */
+  .flap::after {
+    position: absolute;
+    z-index: 3;
+    top: calc(50% - 0.5px);
+    inset-inline: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 1px 0 rgb(var(--color-text-primary) / 0.05);
+    content: '';
+  }
+
+  .half {
+    position: absolute;
+    inset-inline: 0;
+    height: 50%;
+    overflow: hidden;
+    text-align: center;
+    backface-visibility: hidden;
+  }
+
+  .top {
+    top: 0;
+    border-radius: 0.08em 0.08em 0 0;
+    background: linear-gradient(rgb(var(--color-bg-light)), color-mix(in srgb, rgb(var(--color-bg-light)) 80%, rgb(var(--color-bg-medium))));
+    box-shadow: inset 0 1px 0 rgb(var(--color-text-primary) / 0.08);
+    line-height: var(--flap-h);
+    transform-origin: bottom;
+  }
+
+  .bottom {
+    bottom: 0;
+    border-radius: 0 0 0.08em 0.08em;
+    background: rgb(var(--color-bg-medium));
+    line-height: 0;
+    transform-origin: top;
+  }
+
+  .leaf { z-index: 2; visibility: hidden; }
+  .flap[data-flip-half='top'] [data-leaf-top],
+  .flap[data-flip-half='bottom'] [data-leaf-bottom] { visibility: visible; }
+  /* 往下翻的上葉片逐漸變暗，模擬離開光源 */
+  .flap[data-flip-half='top'] [data-leaf-top] { filter: brightness(0.8); }
+
+  .separator {
+    width: 0.3em;
+    color: rgb(var(--color-text-secondary) / 0.7);
+    text-align: center;
+    line-height: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .leaf { display: none; }
+  }
+</style>
