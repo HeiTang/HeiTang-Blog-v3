@@ -1,9 +1,11 @@
 ---
 import ConcertCard from '../../components/concerts/ConcertCard.astro';
+import SplitFlap from '../../components/concerts/SplitFlap.astro';
+import { fetchConcertExchangeRates } from '../../services/exchange-rates';
 import { siteConfig } from '../../config/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import socialImage from '../../assets/og/concerts.png';
-import { fetchConcerts, type Concert } from '../../services/concerts';
+import { fetchConcerts, getAnnualSpending, getSpendingInsights, getSpendingYear, type Concert } from '../../services/concerts';
 
 const pageUrl = `${siteConfig.url}/concerts/`;
 const title = '演唱會足跡：我的現場音樂紀錄';
@@ -14,7 +16,15 @@ const dateKey = (concert: Concert) => concert.startDate.slice(0, 10);
 const orderedConcerts = [...concerts].sort((a, b) => b.startDate.localeCompare(a.startDate));
 const posterIndexById = new Map(orderedConcerts.map((concert, index) => [concert.id, index]));
 const upcomingCount = concerts.filter(concert => dateKey(concert) >= today).length;
-const venueCount = new Set(concerts.map(concert => concert.venue)).size;
+const spendYear = getSpendingYear(concerts, today.slice(0, 4));
+const previousYear = String(Number(spendYear) - 1);
+const exchangeRates = await fetchConcertExchangeRates(
+  concerts.filter(concert => [spendYear, previousYear].includes(concert.startDate.slice(0, 4))), today,
+);
+const annualSpending = getAnnualSpending(concerts, spendYear, exchangeRates);
+const spendingInsights = getSpendingInsights(concerts, spendYear, exchangeRates);
+const { average, change } = spendingInsights;
+const changeLabel = change === undefined ? '' : `${change > 0 ? '+' : change < 0 ? '−' : '±'}${Math.abs(change)}`;
 const concertsByYear = orderedConcerts.reduce((groups, concert) => {
   const year = dateKey(concert).slice(0, 4);
   const group = groups.get(year) ?? [];
@@ -23,6 +33,7 @@ const concertsByYear = orderedConcerts.reduce((groups, concert) => {
   return groups;
 }, new Map<string, Concert[]>());
 const yearGroups = [...concertsByYear].map(([year, items]) => ({ year, items }));
+const spendYearCount = concertsByYear.get(spendYear)?.length ?? 0;
 
 function formatDate(value: string): string {
   const [year, month, day] = value.slice(0, 10).split('-');
@@ -81,19 +92,53 @@ const structuredData = [
       <p class="eyebrow">LIVE MUSIC ARCHIVE</p>
       <h1 class="page-title">演唱會<span>足跡</span></h1>
 
-      <dl class="archive-stats" aria-label="演唱會統計">
-        {[
-          { label: '演出場次', value: concerts.length },
-          { label: '收錄年份', value: yearGroups.length },
-          { label: '演出場地', value: venueCount },
-          { label: '即將演出', value: upcomingCount, accent: upcomingCount > 0 },
-        ].map(({ label, value, accent }) => (
-          <div class:list={[{ 'is-accent': accent }]}>
-            <dt>{label}</dt>
-            <dd>{value < 10 && <span class="stat-pad" aria-hidden="true">0</span>}{value}</dd>
+      <section class="spend" aria-labelledby="spend-heading">
+        <h2 id="spend-heading" class="spend-title">
+          {spendYear} 年，我在 <strong>{spendYearCount}</strong> 場演出花了
+        </h2>
+        <div class="spend-row">
+          <span class="spend-leader" aria-hidden="true"></span>
+          <p class="spend-value">
+            {annualSpending.unconvertedCount > 0 ? <span class="spend-pending">待換算</span> : (
+              <>
+                <span class="sr-only">約新台幣 {annualSpending.total.toLocaleString('en-US')} 元</span>
+                <span class="spend-currency" aria-hidden="true">NT$</span>
+                <SplitFlap value={annualSpending.total} />
+              </>
+            )}
+          </p>
+        </div>
+        {(annualSpending.unconvertedCount > 0 || annualSpending.missingCount > 0) && (
+          <p class="spend-note">{annualSpending.unconvertedCount > 0
+            ? `${annualSpending.unconvertedCount} 場幣別未填`
+            : `${annualSpending.missingCount} 場票價未填`}</p>
+        )}
+      </section>
+
+      <div class="stats-box">
+        <dl class="archive-stats" aria-label="演唱會統計">
+          <div class="archive-stat">
+            <dt>累計演出</dt>
+            <dd><strong>{String(concerts.length).padStart(2, '0')}</strong><span>場</span></dd>
           </div>
-        ))}
-      </dl>
+          <div class="archive-stat is-accent">
+            <dt>即將登場</dt>
+            <dd><strong>{String(upcomingCount).padStart(2, '0')}</strong><span>場</span></dd>
+          </div>
+          {average !== undefined && (
+            <div class="archive-stat">
+              <dt>{spendYear} 平均每場</dt>
+              <dd><strong>{average.toLocaleString('en-US')}</strong><span>元</span></dd>
+            </div>
+          )}
+          {change !== undefined && (
+            <div class="archive-stat">
+              <dt>比 {previousYear} 年</dt>
+              <dd><strong>{changeLabel}</strong><span>%</span></dd>
+            </div>
+          )}
+        </dl>
+      </div>
     </header>
 
     {concerts.length === 0 ? (
@@ -131,14 +176,14 @@ const structuredData = [
   .page-shell {
     width: min(1180px, calc(100% - 2rem));
     margin: 0 auto;
-    padding: 7rem 0 6rem;
+    padding: 6.25rem 0 6rem;
   }
 
   .breadcrumb {
     display: flex;
     gap: 0.55rem;
     align-items: center;
-    margin-bottom: clamp(3rem, 7vw, 6rem);
+    margin-bottom: clamp(1.5rem, 3vw, 2rem);
     color: rgb(var(--color-text-secondary));
     font-size: 0.875rem;
   }
@@ -166,78 +211,230 @@ const structuredData = [
   }
 
   .page-header {
-    padding-bottom: clamp(2.5rem, 5vw, 4.5rem);
+    margin-bottom: clamp(3.5rem, 7vw, 5rem);
+  }
+
+  /* 桌機：左欄由上而下堆疊，spend 跨四列放右欄並垂直置中；手機照 DOM 順序（spend 在 stats 前） */
+  @media (min-width: 1000px) {
+    .page-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, clamp(24rem, 36vw, 30rem));
+      column-gap: clamp(2rem, 6vw, 5rem);
+    }
+
+    .eyebrow { grid-area: 1 / 1; }
+    .page-title { grid-area: 2 / 1; }
+    .stats-box { grid-area: 3 / 1; }
+    .spend { grid-area: 1 / 2 / 4 / 3; }
   }
 
   .page-title {
-    display: block;
-    margin-bottom: clamp(2rem, 4vw, 3.5rem);
-    font-size: clamp(3.3rem, 9.5vw, 7.5rem);
+    margin-bottom: 0.8rem;
+    font-size: clamp(2.8rem, 6vw, 4.8rem);
     font-weight: 700;
-    letter-spacing: -0.055em;
-    line-height: 1;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
     white-space: nowrap;
   }
 
-  .page-title span {
-    color: rgb(var(--color-text-accent));
+  .page-title span { color: rgb(var(--color-text-accent)); }
+
+  /* 以統計列實際可用寬度決定排法，不看視窗寬度 */
+  .stats-box {
+    margin-top: 2rem;
+    container-type: inline-size;
   }
 
   .archive-stats {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    margin-bottom: 0;
-    border-block: 1px solid rgb(var(--color-text-primary) / 0.15);
-  }
-
-  .archive-stats div {
     display: flex;
-    flex-direction: column;
-    padding: 1.15rem 0 1.25rem;
+    gap: 1.5rem clamp(1.25rem, 3vw, 2.25rem);
+    align-items: flex-end;
+    margin: 0;
   }
 
-  .archive-stats div + div {
-    padding-left: clamp(1rem, 3vw, 2rem);
-    border-left: 1px solid rgb(var(--color-text-primary) / 0.1);
+  /* 單欄時 spend 換到上方，統計列撐滿全寬、各格等寬 */
+  @media (max-width: 999px) {
+    .archive-stats {
+      display: grid;
+      grid-auto-columns: minmax(0, 1fr);
+      grid-auto-flow: column;
+    }
   }
 
-  .archive-stats dd {
-    order: -1;
-    color: rgb(var(--color-text-primary));
-    font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(1.6rem, 3.2vw, 2.5rem);
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
+  /* 四格一列約需 31rem；放不下就排成 2×2，每列第一格不畫分隔線 */
+  @container (max-width: 32rem) {
+    .archive-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-flow: row;
+    }
+
+    .archive-stat + .archive-stat:nth-child(odd) { padding-left: 0; border-left: 0; }
   }
 
-  .archive-stats dt {
-    margin-top: 0.6rem;
+  .archive-stat {
+    display: grid;
+    row-gap: 0.45rem;
+  }
+
+  .archive-stat + .archive-stat {
+    padding-left: clamp(1.25rem, 3vw, 2.25rem);
+    border-left: 1px solid rgb(var(--color-text-primary) / 0.12);
+  }
+
+  .archive-stat dt {
     color: rgb(var(--color-text-secondary));
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     letter-spacing: 0.08em;
   }
 
-  .archive-stats dt::before {
-    margin-right: 0.45em;
-    color: rgb(var(--color-text-accent));
-    content: '/';
+  .archive-stat dd {
+    display: flex;
+    gap: 0.3rem;
+    align-items: baseline;
+    margin: 0;
+    color: rgb(var(--color-text-secondary));
+    font-size: 0.8rem;
+  }
+
+  .archive-stat strong {
+    color: rgb(var(--color-text-primary));
     font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
   }
 
-  .archive-stats .stat-pad {
-    color: rgb(var(--color-text-primary) / 0.25);
+  .archive-stat.is-accent strong { color: rgb(var(--color-text-accent)); }
+
+  /* 開獎：副標句尾由 ››› 跑馬燈帶到翻牌金額 */
+  .spend {
+    display: grid;
+    gap: 0.9rem;
+    align-self: center;
+    container-type: inline-size;
   }
 
-  .archive-stats .is-accent dd {
+  .spend-title {
+    margin: 0;
+    color: rgb(var(--color-text-secondary));
+    font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+  }
+
+  .spend-title strong {
     color: rgb(var(--color-text-accent));
-    text-shadow: 0 0 18px rgb(var(--color-text-accent) / 0.4);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+  }
+
+  .spend-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  /* 一排 › 用 mask 畫，亮點由左往右循環掃過 */
+  .spend-leader {
+    --chevron: 0.9rem;
+    flex: 1;
+    min-width: calc(var(--chevron) * 3);
+    height: var(--chevron);
+    background: linear-gradient(
+      90deg,
+      rgb(var(--color-text-accent) / 0.22) 0 35%,
+      rgb(var(--color-text-accent)) 50%,
+      rgb(var(--color-text-accent) / 0.22) 65% 100%
+    ) 0 0 / 300% 100%;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4 2.5 7.5 6 4 9.5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") left center / var(--chevron) var(--chevron) repeat-x;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4 2.5 7.5 6 4 9.5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") left center / var(--chevron) var(--chevron) repeat-x;
+    animation: spend-chase 1.4s linear infinite;
+  }
+
+  @keyframes spend-chase {
+    from { background-position: 100% 0; }
+    to { background-position: 0 0; }
+  }
+
+  /* 開獎結束（翻牌元件標上 data-done）後放慢成待機節奏 */
+  .spend:has(concert-split-flap[data-done]) .spend-leader {
+    animation-duration: 4s;
+  }
+
+  .spend-value {
+    --split-flap-size: clamp(2.4rem, 4.8vw, 4.25rem);
+    --split-flap-ink: rgb(var(--color-text-primary));
+    display: flex;
+    flex: none;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin: 0;
+  }
+
+  .spend-currency {
+    padding-top: 0.3rem;
+    color: rgb(var(--color-text-accent));
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .spend-pending {
+    color: rgb(var(--color-text-primary));
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .spend-note {
+    margin: 0;
+    color: rgb(var(--color-text-secondary) / 0.8);
+    font-size: 0.75rem;
+    text-align: right;
+  }
+
+  /* 單欄（平板／手機）：引導線固定三個 ›，空間讓給翻牌 */
+  @media (max-width: 999px) {
+    .spend { margin-top: 1.75rem; }
+    /* 上框線撐出統計列的全寬範圍，格子右側留白才有邊界 */
+    .stats-box {
+      margin-top: 2.25rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgb(var(--color-text-primary) / 0.12);
+    }
+    .archive-stat strong { font-size: clamp(1.75rem, 8.5vw, 2rem); }
+    .spend-row { gap: 0.5rem; }
+    .spend-leader { flex: 0 0 calc(var(--chevron) * 3); min-width: 0; }
+    .spend-value {
+      --split-flap-size: clamp(3.6rem, 6.8vw, 4.25rem);
+      --split-flap-reserve: 6rem;
+      gap: 0.35rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spend-leader { animation: none; background: rgb(var(--color-text-accent) / 0.5); }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .year-section {
     display: grid;
-    grid-template-columns: minmax(170px, 0.33fr) minmax(0, 1fr);
+    grid-template-columns: minmax(120px, 0.18fr) minmax(0, 1fr);
     gap: clamp(2rem, 5vw, 5rem);
-    padding-top: clamp(2.75rem, 5vw, 4.5rem);
+    padding-top: 1.25rem;
   }
 
   .year-marker {
@@ -250,11 +447,11 @@ const structuredData = [
     margin-bottom: 0.5rem;
     color: rgb(var(--color-text-primary));
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(3.6rem, 8vw, 7.5rem);
+    font-size: clamp(2rem, 3vw, 2.5rem);
     font-variant-numeric: tabular-nums;
     font-weight: 400;
-    letter-spacing: -0.08em;
-    line-height: 0.9;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
   }
 
   .year-marker p {
@@ -537,9 +734,10 @@ const structuredData = [
   }
 
   @media (max-width: 860px) {
+
     .year-section {
       grid-template-columns: 1fr;
-      gap: 2.5rem;
+      gap: 1.5rem;
     }
 
     .year-marker {
@@ -551,37 +749,18 @@ const structuredData = [
     }
 
     .year-marker h2 {
-      font-size: clamp(3.4rem, 16vw, 6rem);
+      font-size: 2rem;
     }
   }
+
 
   @media (max-width: 620px) {
     .page-shell {
       width: min(100% - 1.25rem, 1180px);
-      padding-top: 5.75rem;
+      padding-top: 5.25rem;
     }
 
-    .page-title {
-      font-size: clamp(3rem, 14.6vw, 4.8rem);
-    }
-
-    .archive-stats {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .archive-stats div + div {
-      padding-left: 0;
-      border-left: 0;
-    }
-
-    .archive-stats div:nth-child(even) {
-      padding-left: 1.25rem;
-      border-left: 1px solid rgb(var(--color-text-primary) / 0.1);
-    }
-
-    .archive-stats div:nth-child(n + 3) {
-      border-top: 1px solid rgb(var(--color-text-primary) / 0.1);
-    }
+    .page-title { font-size: clamp(2.5rem, 11vw, 3rem); }
 
     .timeline-list {
       grid-template-columns: repeat(2, minmax(0, 1fr));

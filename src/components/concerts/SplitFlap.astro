@@ -1,0 +1,245 @@
+---
+interface Props {
+  value: number;
+}
+const { value } = Astro.props;
+const formatted = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(value);
+---
+
+<concert-split-flap data-pagefind-ignore style={`--flap-characters: ${formatted.length}`}>
+  <button type="button" aria-label="重新開獎" title="重新開獎">
+    {Array.from(formatted).map(character => /\d/.test(character) ? (
+      <span class="flap" data-digit={character}>
+        <span class="half top" data-top>{character}</span>
+        <span class="half bottom" data-bottom>{character}</span>
+        <span class="half top leaf" data-leaf-top>{character}</span>
+        <span class="half bottom leaf" data-leaf-bottom>{character}</span>
+      </span>
+    ) : <span class="separator">{character}</span>)}
+  </button>
+</concert-split-flap>
+
+<script>
+  import { splitFlapPlan, splitFlapFrame, type SplitFlapPlan } from './split-flap';
+
+  const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  interface FlapParts {
+    digit: HTMLElement;
+    halves: HTMLElement[];
+    top: HTMLElement;
+    bottom: HTMLElement;
+    leafTop: HTMLElement;
+    leafBottom: HTMLElement;
+  }
+
+  class ConcertSplitFlap extends HTMLElement {
+    private frame = 0;
+    private running = false;
+    private observer?: IntersectionObserver;
+    private flaps: FlapParts[] = [];
+    private plan?: SplitFlapPlan;
+
+    private replay = () => {
+      if (this.running || reducedMotion()) return;
+      this.reset();
+      this.start();
+    };
+
+    connectedCallback() {
+      this.flaps = [...this.querySelectorAll<HTMLElement>('[data-digit]')].map(digit => {
+        const pick = (name: string) => digit.querySelector<HTMLElement>(`[data-${name}]`)!;
+        const parts = { top: pick('top'), bottom: pick('bottom'), leafTop: pick('leaf-top'), leafBottom: pick('leaf-bottom') };
+        return { digit, halves: Object.values(parts), ...parts };
+      });
+      this.plan = splitFlapPlan(this.flaps.map(({ digit }) => digit.dataset.digit).join(''));
+      this.querySelector('button')?.addEventListener('click', this.replay);
+      if (reducedMotion()) { this.finish(); return; }
+
+      // 先停在開獎前的第一格，等翻牌有一半進入畫面才開始
+      this.reset();
+      this.observer = new IntersectionObserver(entries => {
+        if (!entries.some(entry => entry.isIntersecting)) return;
+        this.observer?.disconnect();
+        this.start();
+      }, { threshold: 0.5 });
+      this.observer.observe(this);
+    }
+
+    disconnectedCallback() {
+      cancelAnimationFrame(this.frame);
+      this.observer?.disconnect();
+      this.querySelector('button')?.removeEventListener('click', this.replay);
+      this.running = false;
+    }
+
+    private reset() {
+      delete this.dataset.done;
+      this.flaps.forEach(({ digit }) => delete digit.dataset.settled);
+      this.paint(0);
+    }
+
+    private start() {
+      const plan = this.plan!;
+      const started = performance.now();
+      this.running = true;
+      const tick = (now: number) => {
+        const elapsed = now - started;
+        if (reducedMotion()) { this.finish(); return; }
+        this.paint(elapsed);
+        if (elapsed >= plan.duration) {
+          this.running = false;
+          this.dataset.done = '';
+          return;
+        }
+        this.frame = requestAnimationFrame(tick);
+      };
+      this.frame = requestAnimationFrame(tick);
+    }
+
+    private finish() {
+      cancelAnimationFrame(this.frame);
+      this.running = false;
+      this.dataset.done = '';
+      this.flaps.forEach(({ digit, halves }) => this.settle(digit, halves, digit.dataset.digit!));
+    }
+
+    private settle(digit: HTMLElement, halves: HTMLElement[], value: string) {
+      delete digit.dataset.flipHalf;
+      halves.forEach(half => {
+        half.textContent = value;
+        half.style.removeProperty('transform');
+      });
+    }
+
+    private paint(elapsed: number) {
+      splitFlapFrame(this.plan!, elapsed).forEach(({ value, next, phase, settled }, index) => {
+        const { digit, halves, top, bottom, leafTop, leafBottom } = this.flaps[index];
+        if (settled) {
+          if (digit.dataset.settled === undefined) {
+            digit.dataset.settled = '';
+            this.settle(digit, halves, String(value));
+          }
+          return;
+        }
+        digit.dataset.flipHalf = phase < 0.5 ? 'top' : 'bottom';
+        top.textContent = leafBottom.textContent = String(next);
+        bottom.textContent = leafTop.textContent = String(value);
+        leafTop.style.transform = `rotateX(${-Math.min(phase * 2, 1) * 90}deg)`;
+        leafBottom.style.transform = `rotateX(${Math.max(1 - phase * 2, 0) * 90}deg)`;
+      });
+    }
+  }
+
+  if (!customElements.get('concert-split-flap')) {
+    customElements.define('concert-split-flap', ConcertSplitFlap);
+  }
+</script>
+
+<style>
+  /* 磚面配色與 /japan/ 的 .japan-score-digit 一致 */
+  concert-split-flap {
+    --flap-h: 1.3em;
+    display: inline-flex;
+    color: var(--split-flap-ink, rgb(var(--color-text-accent)));
+    font-family: 'JetBrains Mono', monospace;
+    font-size: min(var(--split-flap-size, 4rem), calc((100cqw - var(--split-flap-reserve, 3rem)) / (var(--flap-characters) * 0.74)));
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  button {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 0.08em;
+    padding: 0;
+    border: 0;
+    border-radius: 0.1em;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  button:focus-visible {
+    outline: 2px solid rgb(var(--color-text-accent));
+    outline-offset: 0.12em;
+  }
+
+  .flap {
+    position: relative;
+    display: inline-block;
+    width: 0.68em;
+    height: var(--flap-h);
+    border-radius: 0.08em;
+    box-shadow:
+      0 0 0 1px rgb(var(--color-text-primary) / 0.1),
+      0 0.08em 0.2em rgba(0, 0, 0, 0.32);
+    perspective: 3em;
+  }
+
+  /* 鉸鏈線 */
+  .flap::after {
+    position: absolute;
+    z-index: 3;
+    top: calc(50% - 0.5px);
+    inset-inline: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 1px 0 rgb(var(--color-text-primary) / 0.05);
+    content: '';
+  }
+
+  .half {
+    position: absolute;
+    inset-inline: 0;
+    height: 50%;
+    overflow: hidden;
+    text-align: center;
+    backface-visibility: hidden;
+  }
+
+  .top {
+    top: 0;
+    border-radius: 0.08em 0.08em 0 0;
+    background: linear-gradient(rgb(var(--color-bg-light)), color-mix(in srgb, rgb(var(--color-bg-light)) 80%, rgb(var(--color-bg-medium))));
+    box-shadow: inset 0 1px 0 rgb(var(--color-text-primary) / 0.08);
+    line-height: var(--flap-h);
+    transform-origin: bottom;
+  }
+
+  .bottom {
+    bottom: 0;
+    border-radius: 0 0 0.08em 0.08em;
+    background: rgb(var(--color-bg-medium));
+    line-height: 0;
+    transform-origin: top;
+  }
+
+  .leaf { z-index: 2; visibility: hidden; }
+  .flap[data-flip-half='top'] [data-leaf-top],
+  .flap[data-flip-half='bottom'] [data-leaf-bottom] { visibility: visible; }
+  /* 往下翻的上葉片逐漸變暗，模擬離開光源 */
+  .flap[data-flip-half='top'] [data-leaf-top] { filter: brightness(0.8); }
+
+  /* 開出那一刻閃一下 accent，像開獎燈 */
+  .flap[data-settled] { animation: flap-reveal 700ms ease-out; }
+
+  @keyframes flap-reveal {
+    0% { color: rgb(var(--color-text-accent)); box-shadow: 0 0 0 1px rgb(var(--color-text-accent) / 0.8), 0 0 1.2em rgb(var(--color-text-accent) / 0.55); }
+    100% { color: inherit; }
+  }
+
+  .separator {
+    width: 0.3em;
+    color: rgb(var(--color-text-secondary) / 0.7);
+    text-align: center;
+    line-height: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .leaf { display: none; }
+    button { cursor: default; }
+  }
+</style>

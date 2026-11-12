@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 
 import { writeConcertPosters } from '../../scripts/sync-concert-posters.ts';
-import { concertPosterBaseName, decodeConcertPage, fetchConcerts } from './concerts.ts';
+import { concertPosterBaseName, decodeConcertPage, fetchConcerts, getAnnualSpending, getSpendingInsights, getSpendingYear } from './concerts.ts';
 
 const text = (type: 'title' | 'rich_text', value: string) => ({
   type,
@@ -273,6 +273,8 @@ test('Notion query requests only allowlisted property IDs', async () => {
           網址: { id: 'public-url', type: 'url' },
           購票階段: { id: 'public-stage', type: 'status' },
           海報: { id: 'public-poster', type: 'files' },
+          單位票價: { id: 'public-price', type: 'number' },
+          幣別: { id: 'public-currency', type: 'select' },
           付款者: { id: 'private-payer', type: 'people' },
           付款方式: { id: 'private-payment', type: 'select' },
           座位: { id: 'private-seat', type: 'rich_text' },
@@ -306,9 +308,11 @@ test('Notion query requests only allowlisted property IDs', async () => {
     const queryUrl = new URL(requests[2].url);
     const requestedIds = queryUrl.searchParams.getAll('filter_properties[]');
     assert.deepEqual(requestedIds.sort(), [
+      'public-currency',
       'public-date',
       'public-name',
       'public-poster',
+      'public-price',
       'public-stage',
       'public-url',
       'public-venue',
@@ -327,4 +331,97 @@ test('Notion query requests only allowlisted property IDs', async () => {
     if (originalDatabaseId === undefined) delete process.env.NOTION_DATABASE_ID;
     else process.env.NOTION_DATABASE_ID = originalDatabaseId;
   }
+});
+
+test('annual spending includes only that performance year and reports unfilled costs', () => {
+  const base = { id: 'row', name: 'Live', venue: 'Venue', currency: 'TWD' };
+  const concerts = [
+    { ...base, startDate: '2025-12-31', cost: 9999 },
+    { ...base, startDate: '2026-01-01', cost: 1200 },
+    { ...base, startDate: '2026-12-31', cost: 3400 },
+    { ...base, startDate: '2027-01-01', cost: 8888 },
+    { ...base, startDate: '2026-08-01', cost: 0 },
+    { ...base, startDate: '2026-08-02' },
+    { ...base, startDate: '2026-08-03', cost: 0.1 },
+    { ...base, startDate: '2026-08-04', cost: 0.2 },
+  ];
+  assert.deepEqual(getAnnualSpending(concerts, '2026'), { total: 4600, missingCount: 1, unconvertedCount: 0 });
+  assert.deepEqual(getAnnualSpending([
+    { ...base, startDate: '2026-01-01', cost: 1000, currency: 'JPY' },
+    { ...base, startDate: '2026-01-02', cost: 1000, currency: undefined },
+  ], '2026'), { total: 0, missingCount: 0, unconvertedCount: 2 });
+  assert.deepEqual(getAnnualSpending([], '2026'), { total: 0, missingCount: 0, unconvertedCount: 0 });
+});
+
+test('decodes unit ticket prices and currencies without multiplying ticket quantities', () => {
+  const properties = {
+    Name: text('title', 'Live'),
+    演出日期: { type: 'date', date: { start: '2026-09-01' } },
+    演出地點: text('rich_text', 'Venue'),
+    購票階段: { type: 'status', status: { name: '購票成功' } },
+    幣別: { type: 'select', select: { name: 'NTD' } },
+    張數: { type: 'number', number: 4 },
+  };
+  for (const price of [0, 3600, 1200.5]) {
+    const concert = decodeConcertPage({ id: 'row', properties: {
+      ...properties, 單位票價: { type: 'number', number: price },
+    } });
+    assert.equal(concert?.cost, price);
+    assert.equal(concert?.currency, 'TWD');
+  }
+  for (const price of [null, -1, Infinity, '3600']) {
+    assert.equal(decodeConcertPage({ id: 'row', properties: {
+      ...properties, 單位票價: { type: 'number', number: price },
+    } })?.cost, undefined);
+  }
+});
+
+
+test('converts foreign unit prices to TWD and rounds only the final total', () => {
+  const base = { id: 'row', name: 'Live', venue: 'Venue', startDate: '2026-09-01' };
+  assert.deepEqual(getAnnualSpending([
+    { ...base, cost: 3600, currency: 'TWD' },
+    { ...base, cost: 15000, currency: 'JPY' },
+    { ...base, cost: 100, currency: 'USD' },
+  ], '2026', { '2026-09-01': { JPY: 0.21, USD: 32.5 } }), { total: 10000, missingCount: 0, unconvertedCount: 0 });
+  assert.equal(getAnnualSpending([
+    { ...base, cost: 1, currency: 'USD' },
+    { ...base, cost: 1, currency: 'USD' },
+  ], '2026', { '2026-09-01': { USD: 0.4 } }).total, 1);
+  for (const rate of [0, -1, Infinity, NaN]) {
+    assert.equal(getAnnualSpending([{ ...base, cost: 1, currency: 'USD' }], '2026', { '2026-09-01': { USD: rate } }).unconvertedCount, 1);
+  }
+});
+
+test('uses different performance-day rates for the same currency', () => {
+  const base = { id: 'row', name: 'Live', venue: 'Venue', cost: 1000, currency: 'JPY' };
+  assert.equal(getAnnualSpending([
+    { ...base, startDate: '2026-06-01' },
+    { ...base, startDate: '2026-06-02' },
+  ], '2026', {
+    '2026-06-01': { JPY: 0.2 },
+    '2026-06-02': { JPY: 0.25 },
+  }).total, 450);
+});
+
+test('spending year falls back to last year until this year has a show', () => {
+  const show = (startDate: string) => ({ id: startDate, name: 'Show', startDate, venue: 'Hall' });
+  assert.equal(getSpendingYear([show('2026-12-26'), show('2027-03-01')], '2027'), '2027');
+  assert.equal(getSpendingYear([show('2026-12-26')], '2027'), '2026');
+  assert.equal(getSpendingYear([], '2027'), '2026');
+});
+
+test('spending insights give per-show average and year-over-year change only from complete data', () => {
+  const show = (startDate: string, cost?: number, currency = 'TWD') =>
+    ({ id: startDate, name: 'Show', startDate, venue: 'Hall', currency, ...(cost === undefined ? {} : { cost }) });
+  const concerts = [show('2025-05-01', 2000), show('2025-06-01', 2000), show('2026-01-01', 3000), show('2026-02-01', 3000)];
+  assert.deepEqual(getSpendingInsights(concerts, '2026'), { previousYear: '2025', average: 3000, change: 50 });
+  // 今年有一場沒填票價：平均只除以有票價的場次
+  assert.deepEqual(getSpendingInsights([...concerts, show('2026-03-01')], '2026').average, 3000);
+  // 去年有缺漏：不比較
+  assert.equal(getSpendingInsights([...concerts, show('2025-07-01')], '2026').change, undefined);
+  // 去年沒資料：不比較
+  assert.equal(getSpendingInsights(concerts.slice(2), '2026').change, undefined);
+  // 今年幣別沒填：兩個都不給
+  assert.deepEqual(getSpendingInsights([...concerts, show('2026-04-01', 10, '')], '2026'), { previousYear: '2025' });
 });
