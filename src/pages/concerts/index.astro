@@ -5,7 +5,7 @@ import { fetchConcertExchangeRates } from '../../services/exchange-rates';
 import { siteConfig } from '../../config/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import socialImage from '../../assets/og/concerts.png';
-import { fetchConcerts, getAnnualSpending, type Concert } from '../../services/concerts';
+import { fetchConcerts, getAnnualSpending, getSpendingInsights, getSpendingYear, type Concert } from '../../services/concerts';
 
 const pageUrl = `${siteConfig.url}/concerts/`;
 const title = '演唱會足跡：我的現場音樂紀錄';
@@ -16,11 +16,15 @@ const dateKey = (concert: Concert) => concert.startDate.slice(0, 10);
 const orderedConcerts = [...concerts].sort((a, b) => b.startDate.localeCompare(a.startDate));
 const posterIndexById = new Map(orderedConcerts.map((concert, index) => [concert.id, index]));
 const upcomingCount = concerts.filter(concert => dateKey(concert) >= today).length;
-const currentYear = today.slice(0, 4);
+const spendYear = getSpendingYear(concerts, today.slice(0, 4));
+const previousYear = String(Number(spendYear) - 1);
 const exchangeRates = await fetchConcertExchangeRates(
-  concerts.filter(concert => concert.startDate.slice(0, 4) === currentYear), today,
+  concerts.filter(concert => [spendYear, previousYear].includes(concert.startDate.slice(0, 4))), today,
 );
-const annualSpending = getAnnualSpending(concerts, currentYear, exchangeRates);
+const annualSpending = getAnnualSpending(concerts, spendYear, exchangeRates);
+const spendingInsights = getSpendingInsights(concerts, spendYear, exchangeRates);
+const { average, change } = spendingInsights;
+const changeLabel = change === undefined ? '' : `${change > 0 ? '+' : change < 0 ? '−' : '±'}${Math.abs(change)}`;
 const concertsByYear = orderedConcerts.reduce((groups, concert) => {
   const year = dateKey(concert).slice(0, 4);
   const group = groups.get(year) ?? [];
@@ -29,7 +33,7 @@ const concertsByYear = orderedConcerts.reduce((groups, concert) => {
   return groups;
 }, new Map<string, Concert[]>());
 const yearGroups = [...concertsByYear].map(([year, items]) => ({ year, items }));
-const currentYearCount = concertsByYear.get(currentYear)?.length ?? 0;
+const spendYearCount = concertsByYear.get(spendYear)?.length ?? 0;
 
 function formatDate(value: string): string {
   const [year, month, day] = value.slice(0, 10).split('-');
@@ -85,15 +89,34 @@ const structuredData = [
     </nav>
 
     <header class="page-header">
-      <div class="header-intro">
-        <p class="eyebrow">LIVE MUSIC ARCHIVE</p>
-        <h1 class="page-title">演唱會<span>足跡</span></h1>
-        <p class="page-lede">{description}</p>
+      <p class="eyebrow">LIVE MUSIC ARCHIVE</p>
+      <h1 class="page-title">演唱會<span>足跡</span></h1>
+
+      <section class="spend" aria-labelledby="spend-heading">
+        <h2 id="spend-heading" class="spend-title">
+          {spendYear} 年，我在 <strong>{spendYearCount}</strong> 場演出花了
+        </h2>
+        <div class="spend-row">
+          <span class="spend-leader" aria-hidden="true"></span>
+          <p class="spend-value">
+            {annualSpending.unconvertedCount > 0 ? <span class="spend-pending">待換算</span> : (
+              <>
+                <span class="sr-only">約新台幣 {annualSpending.total.toLocaleString('en-US')} 元</span>
+                <span class="spend-currency" aria-hidden="true">NT$</span>
+                <SplitFlap value={annualSpending.total} />
+              </>
+            )}
+          </p>
+        </div>
+        {(annualSpending.unconvertedCount > 0 || annualSpending.missingCount > 0) && (
+          <p class="spend-note">{annualSpending.unconvertedCount > 0
+            ? `${annualSpending.unconvertedCount} 場幣別未填`
+            : `${annualSpending.missingCount} 場票價未填`}</p>
+        )}
+      </section>
+
+      <div class="stats-box">
         <dl class="archive-stats" aria-label="演唱會統計">
-          <div class="archive-stat">
-            <dt>{currentYear} 場次</dt>
-            <dd><strong>{String(currentYearCount).padStart(2, '0')}</strong><span>場</span></dd>
-          </div>
           <div class="archive-stat">
             <dt>累計演出</dt>
             <dd><strong>{String(concerts.length).padStart(2, '0')}</strong><span>場</span></dd>
@@ -102,26 +125,20 @@ const structuredData = [
             <dt>即將登場</dt>
             <dd><strong>{String(upcomingCount).padStart(2, '0')}</strong><span>場</span></dd>
           </div>
+          {average !== undefined && (
+            <div class="archive-stat">
+              <dt>{spendYear} 平均每場</dt>
+              <dd><strong>{average.toLocaleString('en-US')}</strong><span>元</span></dd>
+            </div>
+          )}
+          {change !== undefined && (
+            <div class="archive-stat">
+              <dt>比 {previousYear} 年</dt>
+              <dd><strong>{changeLabel}</strong><span>%</span></dd>
+            </div>
+          )}
         </dl>
       </div>
-
-      <section class="spend" aria-labelledby="spend-heading">
-        <h2 id="spend-heading" class="spend-label"><span>{currentYear}</span> 演唱會總花費</h2>
-        <p class="spend-value">
-          {annualSpending.unconvertedCount > 0 ? <span class="spend-pending">待換算</span> : (
-            <>
-              <span class="sr-only">約新台幣 {annualSpending.total.toLocaleString('en-US')} 元</span>
-              <span class="spend-currency" aria-hidden="true">NT$</span>
-              <SplitFlap value={annualSpending.total} />
-            </>
-          )}
-        </p>
-        {(annualSpending.unconvertedCount > 0 || annualSpending.missingCount > 0) && (
-          <p class="spend-note">{annualSpending.unconvertedCount > 0
-            ? `${annualSpending.unconvertedCount} 場幣別未填`
-            : `${annualSpending.missingCount} 場票價未填`}</p>
-        )}
-      </section>
     </header>
 
     {concerts.length === 0 ? (
@@ -194,11 +211,21 @@ const structuredData = [
   }
 
   .page-header {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
-    gap: 0.8rem clamp(2rem, 6vw, 5rem);
-    align-items: start;
-    margin-bottom: clamp(3rem, 7vw, 5rem);
+    margin-bottom: clamp(3.5rem, 7vw, 5rem);
+  }
+
+  /* 桌機：左欄由上而下堆疊，spend 跨四列放右欄並垂直置中；手機照 DOM 順序（spend 在 stats 前） */
+  @media (min-width: 1000px) {
+    .page-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, clamp(24rem, 36vw, 30rem));
+      column-gap: clamp(2rem, 6vw, 5rem);
+    }
+
+    .eyebrow { grid-area: 1 / 1; }
+    .page-title { grid-area: 2 / 1; }
+    .stats-box { grid-area: 3 / 1; }
+    .spend { grid-area: 1 / 2 / 4 / 3; }
   }
 
   .page-title {
@@ -212,18 +239,37 @@ const structuredData = [
 
   .page-title span { color: rgb(var(--color-text-accent)); }
 
-  .page-lede {
-    color: rgb(var(--color-text-secondary));
-    font-size: clamp(1rem, 2.2vw, 1.15rem);
-    line-height: 1.75;
+  /* 以統計列實際可用寬度決定排法，不看視窗寬度 */
+  .stats-box {
+    margin-top: 2rem;
+    container-type: inline-size;
   }
 
   .archive-stats {
     display: flex;
-    flex-wrap: wrap;
     gap: 1.5rem clamp(1.25rem, 3vw, 2.25rem);
     align-items: flex-end;
-    margin: 2rem 0 0;
+    margin: 0;
+  }
+
+  /* 單欄時 spend 換到上方，統計列撐滿全寬、各格等寬 */
+  @media (max-width: 999px) {
+    .archive-stats {
+      display: grid;
+      grid-auto-columns: minmax(0, 1fr);
+      grid-auto-flow: column;
+    }
+  }
+
+  /* 四格一列約需 31rem；放不下就排成 2×2，每列第一格不畫分隔線 */
+  @container (max-width: 32rem) {
+    .archive-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-flow: row;
+    }
+
+    .archive-stat + .archive-stat:nth-child(odd) { padding-left: 0; border-left: 0; }
   }
 
   .archive-stat {
@@ -263,41 +309,78 @@ const structuredData = [
 
   .archive-stat.is-accent strong { color: rgb(var(--color-text-accent)); }
 
-  /* 總花費：與左欄共用列（eyebrow / h1 / lede），磚高對齊 h1 */
+  /* 開獎：副標句尾由 ››› 跑馬燈帶到翻牌金額 */
   .spend {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.9rem;
+    align-self: center;
+    container-type: inline-size;
   }
 
-  .spend-label {
+  .spend-title {
     margin: 0;
     color: rgb(var(--color-text-secondary));
-    font-size: 0.75rem;
+    font-size: clamp(1.15rem, 2.2vw, 1.45rem);
     font-weight: 500;
-    letter-spacing: 0.14em;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
   }
 
-  .spend-label span {
+  .spend-title strong {
     color: rgb(var(--color-text-accent));
     font-family: 'JetBrains Mono', monospace;
     font-weight: 600;
   }
 
+  .spend-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  /* 一排 › 用 mask 畫，亮點由左往右循環掃過 */
+  .spend-leader {
+    --chevron: 0.9rem;
+    flex: 1;
+    min-width: calc(var(--chevron) * 3);
+    height: var(--chevron);
+    background: linear-gradient(
+      90deg,
+      rgb(var(--color-text-accent) / 0.22) 0 35%,
+      rgb(var(--color-text-accent)) 50%,
+      rgb(var(--color-text-accent) / 0.22) 65% 100%
+    ) 0 0 / 300% 100%;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4 2.5 7.5 6 4 9.5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") left center / var(--chevron) var(--chevron) repeat-x;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4 2.5 7.5 6 4 9.5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") left center / var(--chevron) var(--chevron) repeat-x;
+    animation: spend-chase 1.4s linear infinite;
+  }
+
+  @keyframes spend-chase {
+    from { background-position: 100% 0; }
+    to { background-position: 0 0; }
+  }
+
+  /* 開獎結束（翻牌元件標上 data-done）後放慢成待機節奏 */
+  .spend:has(concert-split-flap[data-done]) .spend-leader {
+    animation-duration: 4s;
+  }
+
   .spend-value {
-    --split-flap-size: clamp(2.2rem, 4.6vw, 3.7rem);
+    --split-flap-size: clamp(2.4rem, 4.8vw, 4.25rem);
     --split-flap-ink: rgb(var(--color-text-primary));
     display: flex;
+    flex: none;
     gap: 0.5rem;
     align-items: flex-start;
     margin: 0;
-    container-type: inline-size;
   }
 
   .spend-currency {
     padding-top: 0.3rem;
-    color: rgb(var(--color-text-secondary));
+    color: rgb(var(--color-text-accent));
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.75rem;
+    font-weight: 600;
     letter-spacing: 0.06em;
   }
 
@@ -311,27 +394,30 @@ const structuredData = [
     margin: 0;
     color: rgb(var(--color-text-secondary) / 0.8);
     font-size: 0.75rem;
+    text-align: right;
   }
 
-  @media (min-width: 861px) {
-    .header-intro,
-    .spend { display: contents; }
+  /* 單欄（平板／手機）：引導線固定三個 ›，空間讓給翻牌 */
+  @media (max-width: 999px) {
+    .spend { margin-top: 1.75rem; }
+    /* 上框線撐出統計列的全寬範圍，格子右側留白才有邊界 */
+    .stats-box {
+      margin-top: 2.25rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgb(var(--color-text-primary) / 0.12);
+    }
+    .archive-stat strong { font-size: clamp(1.75rem, 8.5vw, 2rem); }
+    .spend-row { gap: 0.5rem; }
+    .spend-leader { flex: 0 0 calc(var(--chevron) * 3); min-width: 0; }
+    .spend-value {
+      --split-flap-size: clamp(3.6rem, 6.8vw, 4.25rem);
+      --split-flap-reserve: 6rem;
+      gap: 0.35rem;
+    }
+  }
 
-    .eyebrow,
-    .spend-label { grid-row: 1; margin: 0; }
-    .page-title,
-    .spend-value { grid-row: 2; }
-    .page-lede,
-    .spend-note { grid-row: 3; }
-    .archive-stats { grid-row: 4; }
-
-    .spend-label,
-    .spend-value,
-    .spend-note { grid-column: 2; justify-self: end; }
-    .spend-value { align-self: center; width: 100%; justify-content: flex-end; }
-    .page-title { margin: 0; }
-    .page-lede { margin: 0; }
-    .spend-note { align-self: start; }
+  @media (prefers-reduced-motion: reduce) {
+    .spend-leader { animation: none; background: rgb(var(--color-text-accent) / 0.5); }
   }
 
   .sr-only {
@@ -648,9 +734,6 @@ const structuredData = [
   }
 
   @media (max-width: 860px) {
-    .page-header { display: block; }
-    .spend { margin-top: 2rem; }
-    .spend-value { --split-flap-size: 3.25rem; }
 
     .year-section {
       grid-template-columns: 1fr;
@@ -678,7 +761,6 @@ const structuredData = [
     }
 
     .page-title { font-size: clamp(2.5rem, 11vw, 3rem); }
-    .spend-value { gap: 0.4rem; }
 
     .timeline-list {
       grid-template-columns: repeat(2, minmax(0, 1fr));

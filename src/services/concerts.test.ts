@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 
 import { writeConcertPosters } from '../../scripts/sync-concert-posters.ts';
-import { concertPosterBaseName, decodeConcertPage, fetchConcerts, getAnnualSpending } from './concerts.ts';
+import { concertPosterBaseName, decodeConcertPage, fetchConcerts, getAnnualSpending, getSpendingInsights, getSpendingYear } from './concerts.ts';
 
 const text = (type: 'title' | 'rich_text', value: string) => ({
   type,
@@ -334,4 +334,26 @@ test('uses different performance-day rates for the same currency', () => {
     '2026-06-01': { JPY: 0.2 },
     '2026-06-02': { JPY: 0.25 },
   }).total, 450);
+});
+
+test('spending year falls back to last year until this year has a show', () => {
+  const show = (startDate: string) => ({ id: startDate, name: 'Show', startDate, venue: 'Hall' });
+  assert.equal(getSpendingYear([show('2026-12-26'), show('2027-03-01')], '2027'), '2027');
+  assert.equal(getSpendingYear([show('2026-12-26')], '2027'), '2026');
+  assert.equal(getSpendingYear([], '2027'), '2026');
+});
+
+test('spending insights give per-show average and year-over-year change only from complete data', () => {
+  const show = (startDate: string, cost?: number, currency = 'TWD') =>
+    ({ id: startDate, name: 'Show', startDate, venue: 'Hall', currency, ...(cost === undefined ? {} : { cost }) });
+  const concerts = [show('2025-05-01', 2000), show('2025-06-01', 2000), show('2026-01-01', 3000), show('2026-02-01', 3000)];
+  assert.deepEqual(getSpendingInsights(concerts, '2026'), { previousYear: '2025', average: 3000, change: 50 });
+  // 今年有一場沒填票價：平均只除以有票價的場次
+  assert.deepEqual(getSpendingInsights([...concerts, show('2026-03-01')], '2026').average, 3000);
+  // 去年有缺漏：不比較
+  assert.equal(getSpendingInsights([...concerts, show('2025-07-01')], '2026').change, undefined);
+  // 去年沒資料：不比較
+  assert.equal(getSpendingInsights(concerts.slice(2), '2026').change, undefined);
+  // 今年幣別沒填：兩個都不給
+  assert.deepEqual(getSpendingInsights([...concerts, show('2026-04-01', 10, '')], '2026'), { previousYear: '2025' });
 });

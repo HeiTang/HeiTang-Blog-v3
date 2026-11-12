@@ -1,29 +1,40 @@
-/** Places settle left to right; each lower place keeps cycling until the place to its left has settled. */
-export function splitFlapStops(value: string): number[] {
-  if (!/^\d+$/.test(value)) throw new Error('Split-flap value must contain only digits');
-  const stops = Array<number>(value.length);
-  let minimum = 10;
-  for (let index = 0; index < value.length; index += 1) {
-    stops[index] = minimum + ((Number(value[index]) - minimum % 10 + 10) % 10);
-    minimum = stops[index] + 3;
-  }
-  return stops;
+/** 開獎節奏：每一步翻一張，個位先開，往左每隔 GAP 步再開一位。 */
+export const SPLIT_FLAP_STEP_MS = 110;
+const FIRST_REVEAL = 12;
+const REVEAL_GAP = 6;
+
+export interface SplitFlapPlan {
+  targets: number[];
+  stops: number[];
+  duration: number;
 }
 
-export const SPLIT_FLAP_DURATION = 1800;
+export function splitFlapPlan(value: string): SplitFlapPlan {
+  if (!/^\d+$/.test(value)) throw new Error('Split-flap value must contain only digits');
+  const targets = [...value].map(Number);
+  const stops = targets.map((_, index) => FIRST_REVEAL + REVEAL_GAP * (targets.length - 1 - index));
+  return { targets, stops, duration: stops[0] * SPLIT_FLAP_STEP_MS };
+}
 
-export function splitFlapFrame(stops: number[], elapsed: number): Array<{
+const mod10 = (value: number) => ((value % 10) + 10) % 10;
+
+/** 每一位倒數到自己的目標值，所以滾動時各位顯示不同數字，且剛好在 stop 那一步落定。 */
+export function splitFlapFrame({ targets, stops }: SplitFlapPlan, elapsed: number): Array<{
   value: number;
   next: number;
   phase: number;
+  settled: boolean;
 }> {
-  const position = Math.min(Math.max(elapsed / SPLIT_FLAP_DURATION, 0), 1) * stops.at(-1)!;
-  return stops.map(stop => {
+  const position = Math.max(elapsed, 0) / SPLIT_FLAP_STEP_MS;
+  return stops.map((stop, index) => {
     const step = Math.min(Math.floor(position), stop);
+    const value = mod10(targets[index] - (stop - step));
+    const settled = position >= stop;
     return {
-      value: step % 10,
-      next: Math.min(step + 1, stop) % 10,
-      phase: position >= stop ? 1 : position - step,
+      value,
+      next: settled ? value : mod10(value + 1),
+      phase: settled ? 1 : position - step,
+      settled,
     };
   });
 }

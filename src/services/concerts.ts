@@ -77,6 +77,33 @@ export function getAnnualSpending(concerts: Concert[], year: string, rates: Reco
   return { total: Math.round(total), missingCount, unconvertedCount };
 }
 
+/** 平均每場與年增率；資料不完整（幣別未填、去年票價缺漏）時不給，避免印出錯的數字。 */
+export function getSpendingInsights(
+  concerts: Concert[],
+  year: string,
+  rates: Record<string, Record<string, number>> = {},
+): { average?: number; change?: number; previousYear: string } {
+  const previousYear = String(Number(year) - 1);
+  const current = getAnnualSpending(concerts, year, rates);
+  const previous = getAnnualSpending(concerts, previousYear, rates);
+  const priced = concerts.filter(concert => concert.startDate.startsWith(year) && concert.cost !== undefined).length;
+  if (current.unconvertedCount > 0) return { previousYear };
+  return {
+    previousYear,
+    ...(priced > 0 ? { average: Math.round(current.total / priced) } : {}),
+    ...(previous.total > 0 && previous.missingCount === 0 && previous.unconvertedCount === 0
+      ? { change: Math.round((current.total / previous.total - 1) * 100) }
+      : {}),
+  };
+}
+
+/** 今年還沒有任何場次（例如剛跨年）時，改顯示去年，避免出現「0 場花了 NT$0」。 */
+export function getSpendingYear(concerts: Concert[], currentYear: string): string {
+  return concerts.some(concert => concert.startDate.startsWith(currentYear))
+    ? currentYear
+    : String(Number(currentYear) - 1);
+}
+
 export interface ConcertPosterSource {
   name: string;
   url: string;
