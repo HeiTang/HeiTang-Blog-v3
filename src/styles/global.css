@@ -1,6 +1,6 @@
 /**
  * Global Styles and CSS Variables
- * Theme system using CSS custom properties
+ * Design tokens as CSS custom properties
  */
 
 /* 字型同源託管，避免 CSS → 第三方 stylesheet → font 的串行發現。 */
@@ -70,7 +70,7 @@
 
 @layer base {
   :root {
-    /* Default theme: Elegant Cyber */
+    /* Elegant Cyber */
     --color-primary: 255 140 97; /* #FF8C61 */
     --color-secondary: 255 180 162; /* #FFB4A2 */
     --color-accent: 157 127 232; /* #9D7FE8 */
@@ -98,80 +98,6 @@
     --bento-card-border: rgba(255, 255, 255, 0.08);
     --bento-card-hover-bg: rgba(255, 255, 255, 0.09);
     --bento-card-hover-border: rgba(255, 140, 97, 0.25);
-  }
-  
-  /* Theme: Pure Glass */
-  [data-theme="pure-glass"] {
-    --color-primary: 255 180 162;
-    --color-secondary: 255 201 189;
-    --color-accent: 196 181 253;
-    
-    --color-bg-dark: 26 31 46;
-    --color-bg-medium: 37 43 59;
-    --color-bg-light: 47 53 72;
-
-    --color-text-primary: 255 255 255;
-    --color-text-secondary: 229 231 235;
-    --color-text-accent: 255 180 162;
-    
-    --glass-bg: rgba(255, 255, 255, 0.06);
-    --glass-border: rgba(255, 180, 162, 0.12);
-    --glass-blur: 32px;
-    
-    --glow-intensity: 0.2;
-
-    --bento-card-hover-border: rgba(255, 180, 162, 0.25);
-  }
-  
-  /* Theme: Neon Cyber */
-  [data-theme="neon-cyber"] {
-    --color-primary: 255 107 53;
-    --color-secondary: 255 143 107;
-    --color-accent: 0 245 255;
-    
-    --color-bg-dark: 10 14 39;
-    --color-bg-medium: 20 24 41;
-    --color-bg-light: 30 36 51;
-
-    --color-text-primary: 255 255 255;
-    --color-text-secondary: 203 213 225;
-    --color-text-accent: 0 245 255;
-    
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 107, 53, 0.3);
-    --glass-blur: 20px;
-    
-    --glow-intensity: 0.6;
-
-    --bento-card-hover-border: rgba(255, 107, 53, 0.4);
-  }
-  
-  /* Theme: Minimalist */
-  [data-theme="minimalist"] {
-    --color-primary: 255 155 106;
-    --color-secondary: 255 184 146;
-    --color-accent: 167 139 250;
-    
-    --color-bg-dark: 255 255 255;
-    --color-bg-medium: 249 250 251;
-    --color-bg-light: 243 244 246;
-    
-    --color-text-primary: 17 24 39;
-    --color-text-secondary: 107 114 128;
-    --color-text-accent: 255 155 106;
-    
-    --glass-bg: rgba(0, 0, 0, 0.02);
-    --glass-border: rgba(0, 0, 0, 0.08);
-    --glass-blur: 0px;
-    
-    --glow-intensity: 0;
-    --border-radius: 0.75rem;
-
-    --bento-card-bg: rgba(0, 0, 0, 0.03);
-    --bento-card-border: rgba(0, 0, 0, 0.08);
-    --bento-card-hover-bg: rgba(0, 0, 0, 0.05);
-    --bento-card-hover-border: rgba(255, 155, 106, 0.3);
-    --bento-radius: 0.75rem;
   }
   
   html {
