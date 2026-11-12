@@ -25,13 +25,16 @@
 2. 將演唱會 Database 分享給 integration；Database ID 是網址中 `?v=` 前的 ID，不用另外設定 Data Source ID。
 3. 本機在 `.env` 設 `NOTION_TOKEN`、`NOTION_DATABASE_ID`；GitHub Actions 將 token 設為 Secret、Database ID 設為 Variable。
 4. 確認 Database 有必要欄位 `Name`、`演出日期`、`演出地點`、`購票階段`；`購票階段` 類型必須是 Status 或 Select。
-5. 執行 `npm run dev` 確認本機資料；海報欄位 `海報` 可選，類型需為 Files & media。
+5. 年度花費使用 `單位票價`（Number）與 `幣別`（Select 或 Text）；每筆只計一張，不乘購票張數。
+6. 執行 `npm run dev` 確認本機資料；海報欄位 `海報` 可選，類型需為 Files & media。
 
 ### 建置行為
 
 `src/services/concerts.ts` 以 Bearer token 呼叫 Notion API，讀取第一個 Data Source，再依 `購票階段 = 購票成功` 分頁查詢。
 
-- 只輸出核准欄位：`Name`、`演出日期`、`演出地點`、`網址`、`購票階段`、`海報`。
+- 只輸出核准欄位：`Name`、`演出日期`、`演出地點`、`網址`、`購票階段`、`海報`、`單位票價`、`幣別`。
+- 年度花費以台灣時間的當年演出日期歸屬，計入所有購票成功紀錄，包含尚未演出的場次；單筆票價不輸出到 HTML 或結構化資料。缺漏票價會顯示未填場次，零元票仍算已填。`NTD`、`NT$` 正規化為 `TWD`；已演出的外幣票價依各場演出首日的歷史匯率換算；當日及未來場次先用最新匯率估算，加總後四捨五入至新台幣整數元。未填幣別時顯示「待換算」。
+- 匯率使用 [Currency API](https://github.com/fawazahmed0/exchange-api)，只在今年有外幣票價時呼叫，同日共用一次查詢；主端點為 jsDelivr，備援為 Cloudflare Pages，不需 API key。兩者失敗、匯率無效或最新匯率資料超過七天或歷史日期不符時，建置失敗，避免發布錯誤金額。
 - `npm run dev` 和 `npm run build` 會先同步海報，轉成 480×640、960×1280 WebP。
 - 圖片放在 `public/images/concert-posters/`，用同網域網址呈現；Notion 臨時下載網址不會寫入頁面。
 - 生成的海報目錄已加入 `.gitignore`。
