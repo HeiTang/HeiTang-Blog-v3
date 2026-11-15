@@ -1,105 +1,204 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { copy } from '../../config/copy';
+import { siteConfig } from '../../config/site';
 import { Picture } from 'astro:assets';
 import profileImage from '../../assets/profile.jpeg';
 
-const skillColors = ['primary', 'accent', 'secondary'];
+const description = '關於黑糖的開發領域、技術實作，以及旅行、演唱會和這個網站。';
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: copy.about.heading,
+  description,
+  url: new URL('/about/', siteConfig.url).href,
+  mainEntity: {
+    '@type': 'Person',
+    name: copy.about.name,
+    alternateName: siteConfig.author,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    sameAs: [siteConfig.social.github, siteConfig.social.telegram, siteConfig.social.discord],
+  },
+};
 ---
 
-<BaseLayout title={copy.about.title} description={copy.about.description} currentPath="/about">
-  <div class="container mx-auto px-6 py-24">
-    <div class="max-w-2xl mx-auto space-y-8">
+<BaseLayout title={copy.about.title} description={description} currentPath="/about" hasPointerGlow={false} structuredData={structuredData}>
+  <article class="about-page" data-pagefind-body>
+    <header class="page-heading">
+      <p class="page-label">黑糖ㄉ貓窩 / 關於我</p>
+      <h1>{copy.about.heading}</h1>
+    </header>
 
-      <h1 class="font-display text-4xl font-bold text-[rgb(var(--color-text-primary))]">
-        {copy.about.heading}
-      </h1>
-
-      <!-- Profile Card -->
-      <div class="glass p-8 rounded-2xl">
-        <div class="flex items-center gap-6 mb-6">
-          <div class="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border-2 border-[rgb(var(--color-primary))]">
-            <Picture
-              src={profileImage}
-              alt={copy.about.name}
-              class="w-full h-full object-cover"
-              width={96}
-              height={96}
-              widths={[96, 192]}
-              sizes="96px"
-              formats={['avif', 'webp']}
-              fallbackFormat="jpeg"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
+    <div class="reading-layout">
+      <aside class="profile" aria-label="個人資料與頁面導覽">
+        <div class="identity">
+          <Picture
+            src={profileImage}
+            alt="黑糖的個人照片"
+            width={112}
+            height={112}
+            widths={[112, 224]}
+            sizes="112px"
+            formats={['avif', 'webp']}
+            fallbackFormat="jpeg"
+            loading="eager"
+            decoding="async"
+          />
           <div>
-            <h2 class="text-2xl font-bold text-[rgb(var(--color-text-primary))] mb-1">{copy.about.name}</h2>
-            <p class="text-[rgb(var(--color-text-secondary))]">{copy.about.tagline}</p>
+            <p class="profile-name">{copy.about.name}</p>
+            <p class="profile-handle">HeiTang</p>
+            <p class="profile-role">軟體工程師</p>
           </div>
         </div>
-        <div class="space-y-3 text-[rgb(var(--color-text-secondary))] leading-relaxed">
-          <p>{copy.about.bio1}</p>
-          <p>{copy.about.bio2}</p>
-          <p class="text-[rgb(var(--color-primary))] font-semibold">{copy.about.bio3}</p>
+        <nav class="page-nav" aria-label="本頁內容">
+          <a href="#intro">關於我</a>
+          <a href="#practice">技術與實作</a>
+          <a href="#interests">其他興趣</a>
+          <a href="#website">關於本站</a>
+        </nav>
+        <div class="contact-links">
+          <a href={`mailto:${siteConfig.social.email}`}>{siteConfig.social.email}</a>
+          <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer">GitHub<span class="sr-only">（開新分頁）</span></a>
         </div>
-      </div>
+      </aside>
 
-      <!-- Skills Tag Cloud -->
-      <div class="glass p-8 rounded-2xl">
-        <h3 class="font-display text-xl font-bold text-[rgb(var(--color-text-primary))] mb-6 flex items-center gap-2">
-          <svg
-            class="w-4 h-4 text-[rgb(var(--color-primary))]"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
-          </svg>
-          {copy.about.skillsTitle}
-        </h3>
-        <div class="space-y-6">
-          {copy.about.skillGroups.map((group, i) => (
+      <div class="reading-content">
+        <section id="intro" class="introduction" aria-labelledby="intro-title">
+          <h2 id="intro-title">關於我</h2>
+          <p class="lead">我是黑糖，主要做後端、資料處理與自動化，也會為自己的工具製作網頁介面。</p>
+          <p>寫過的工具從資料查詢、提醒通知，到信件整理與檔案匯出都有。這個網站用來整理作品，也記錄開發過程中遇到的問題與解法。</p>
+          <p class="personal-note">{copy.about.bio1}</p>
+        </section>
+
+        <section id="practice" aria-labelledby="practice-title">
+          <div class="section-heading"><span aria-hidden="true">01</span><h2 id="practice-title">技術與實作</h2></div>
+          <p>以下是我在個人專案中用過的技術，以及它們實際負責的事情。</p>
+          <dl class="practice-list">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-widest text-[rgb(var(--color-text-secondary))] mb-3">
-                {group.label}
-              </p>
-              <div class="flex flex-wrap gap-2">
-                {group.skills.map(skill => (
-                  <span class={`skill-tag skill-tag--${skillColors[i % skillColors.length]}`}>{skill}</span>
-                ))}
-              </div>
+              <dt>後端與 API</dt>
+              <dd>
+                <p>用 Python 開發查詢服務與通知工具，處理 API、資料儲存與排程。例如 <a href="/projects/remindly/">Remindly</a> 把提醒存進 SQLite，再由排程送出 Telegram 通知。</p>
+                <p class="technologies">Python / FastAPI / SQLite / PostgreSQL</p>
+              </dd>
             </div>
-          ))}
-        </div>
-      </div>
+            <div>
+              <dt>資料整理</dt>
+              <dd>
+                <p>擷取來源資料，整理成方便查詢或再次使用的格式。<a href="/projects/fcu-coursedata/">逢甲大學課程資料集</a> 就是把歷年課程資訊整理成 CSV、JSON，並提供更新工具。</p>
+                <p class="technologies">Python / Requests / CSV / JSON</p>
+              </dd>
+            </div>
+            <div>
+              <dt>Google 服務自動化</dt>
+              <dd>
+                <p>用 Google Apps Script 串接 Gmail 與 Google Drive，處理信件分類、附件備份和郵件匯出。<a href="/projects/gmail-archiver/">Gmail 郵件匯出與備份</a> 可以將信件轉成 PDF 或 EML，連同附件整理保存。</p>
+                <p class="technologies">Google Apps Script / TypeScript / Gmail API</p>
+              </dd>
+            </div>
+            <div>
+              <dt>網頁與部署</dt>
+              <dd>
+                <p>用 Astro、TypeScript 和 Tailwind CSS 製作網頁介面。這個網站透過 GitHub Actions 建置並部署到 GitHub Pages；其他服務也有使用 Docker 與 Google Cloud Run。</p>
+                <p class="technologies">Astro / Tailwind CSS / GitHub Actions / Docker</p>
+              </dd>
+            </div>
+          </dl>
+          <details class="skill-details">
+            <summary>完整技術清單</summary>
+            <dl class="skill-list">
+              {copy.about.skillGroups.map(group => (
+                <div><dt>{group.label}</dt><dd>{group.skills.join('、')}</dd></div>
+              ))}
+            </dl>
+          </details>
+        </section>
 
+        <section id="interests" aria-labelledby="interests-title">
+          <div class="section-heading"><span aria-hidden="true">02</span><h2 id="interests-title">其他興趣</h2></div>
+          <div class="interest">
+            <h3>日本旅行</h3>
+            <p>用<a href="/japan/">日本制縣圖</a>記錄去過的都道府縣，依照路過、造訪、住宿或居住等不同程度標記。</p>
+          </div>
+          <div class="interest">
+            <h3>演唱會</h3>
+            <p>把已購票的場次整理在<a href="/concerts/">演唱會足跡</a>，保留日期、場地與海報，也能回頭查看過去的紀錄。</p>
+          </div>
+        </section>
+
+        <section id="website" aria-labelledby="website-title">
+          <div class="section-heading"><span aria-hidden="true">03</span><h2 id="website-title">關於本站</h2></div>
+          <p>黑糖ㄉ貓窩是我的個人網站，放技術筆記、開發作品與生活紀錄，也整理一些實用資源。</p>
+          <p>網站以 Astro 製作，文章用 Markdown 撰寫，搜尋使用 Pagefind。想追蹤新文章，可以訂閱 <a href="/rss.xml">RSS</a>。</p>
+          <div class="site-colophon"><span>Astro</span><span>Markdown</span><span>Pagefind</span><span>GitHub Pages</span></div>
+        </section>
+      </div>
     </div>
-  </div>
+  </article>
 </BaseLayout>
 
 <style>
-.skill-tag {
-  @apply px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 cursor-default;
-  @apply border backdrop-blur-sm;
-  @apply hover:scale-105 hover:-translate-y-0.5;
-}
-.skill-tag--primary {
-  @apply bg-[rgb(var(--color-primary)/0.12)] border-[rgb(var(--color-primary)/0.35)] text-[rgb(var(--color-primary))];
-  @apply hover:bg-[rgb(var(--color-primary)/0.22)];
-}
-.skill-tag--accent {
-  @apply bg-[rgb(var(--color-accent)/0.12)] border-[rgb(var(--color-accent)/0.35)] text-[rgb(var(--color-accent))];
-  @apply hover:bg-[rgb(var(--color-accent)/0.22)];
-}
-.skill-tag--secondary {
-  color: rgb(var(--color-text-secondary));
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(255,255,255,0.15);
-}
-.skill-tag--secondary:hover {
-  background: rgba(255,255,255,0.10);
-}
+  .about-page {
+    --about-accent: rgb(var(--color-primary));
+    --about-text: rgb(var(--color-text-primary));
+    --about-muted: rgb(var(--color-text-secondary));
+    --about-line: rgb(var(--color-text-primary) / 0.12);
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 120px 32px 80px;
+    color: var(--about-text);
+  }
+  .page-heading { border-bottom: 1px solid var(--about-line); padding-bottom: 32px; }
+  .page-label { color: var(--about-muted); font-size: 12px; letter-spacing: 0.06em; }
+  h1 { font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 700; letter-spacing: -0.04em; line-height: 1.35; margin-top: 12px; }
+  .reading-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 72px; padding-top: 40px; }
+  .profile :global(img) { width: 112px; height: 112px; object-fit: cover; border-radius: 12px; border: 1px solid var(--about-line); }
+  .profile-name { margin-top: 20px; font-size: 18px; font-weight: 600; }
+  .profile-handle { margin-top: 4px; font: 12px 'JetBrains Mono', monospace; color: var(--about-accent); }
+  .profile-role { font-size: 13px; color: var(--about-muted); margin-top: 12px; }
+  .page-nav { border-left: 1px solid var(--about-line); display: grid; gap: 0; margin-top: 36px; }
+  .page-nav a { min-height: 44px; display: flex; align-items: center; padding-left: 16px; font-size: 13px; color: var(--about-muted); transition: color 180ms; }
+  .page-nav a:hover, .page-nav a:focus-visible { color: var(--about-accent); }
+  .contact-links { display: flex; flex-direction: column; align-items: start; margin-top: 28px; font-size: 12px; color: var(--about-muted); }
+  .contact-links a { min-height: 44px; display: inline-flex; align-items: center; }
+  .reading-content { min-width: 0; }
+  .reading-content section { scroll-margin-top: 96px; }
+  .reading-content > section + section { border-top: 1px solid var(--about-line); margin-top: 40px; padding-top: 32px; }
+  h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.5; }
+  .reading-content p { color: var(--about-muted); font-size: 15px; line-height: 1.95; margin-top: 16px; }
+  .reading-content .lead { color: var(--about-text); font-size: 19px; line-height: 1.9; margin-top: 20px; }
+  .reading-content .personal-note { font-size: 13px; margin-top: 24px; padding-left: 16px; border-left: 2px solid var(--about-accent); }
+  .section-heading { display: flex; align-items: center; gap: 14px; }
+  .section-heading > span { font: 11px 'JetBrains Mono', monospace; color: var(--about-accent); }
+  .practice-list { margin-top: 28px; }
+  .practice-list > div + div { margin-top: 28px; }
+  .practice-list dt, h3 { font-size: 16px; font-weight: 600; }
+  .practice-list dd p { margin-top: 8px; }
+  .reading-content .technologies { font: 11px/1.9 'JetBrains Mono', monospace; color: var(--about-accent); margin-top: 10px; overflow-wrap: anywhere; }
+  .reading-content a { color: var(--about-text); text-decoration: underline; text-decoration-color: rgb(var(--color-primary) / 0.6); text-underline-offset: 4px; text-decoration-thickness: 1px; transition: color 180ms; }
+  .reading-content a:hover { color: var(--about-accent); }
+  .skill-details { margin-top: 28px; border: 1px solid var(--about-line); border-radius: 8px; background: rgb(var(--color-bg-dark) / 0.45); }
+  .skill-details summary { cursor: pointer; padding: 14px 18px; font-size: 13px; min-height: 48px; color: var(--about-muted); }
+  .skill-details[open] summary { border-bottom: 1px solid var(--about-line); }
+  .skill-list { padding: 18px; }
+  .skill-list > div + div { margin-top: 16px; }
+  .skill-list dt { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .skill-list dd { font-size: 13px; line-height: 1.9; color: var(--about-muted); overflow-wrap: anywhere; }
+  .interest { margin-top: 24px; }
+  .interest p { margin-top: 8px; }
+  .site-colophon { display: flex; flex-wrap: wrap; gap: 8px 20px; border-top: 1px dashed var(--about-line); margin-top: 24px; padding-top: 18px; font: 11px/1.8 'JetBrains Mono', monospace; color: var(--about-muted); }
+  @media (max-width: 959px) { .reading-layout { gap: 40px; grid-template-columns: 168px minmax(0, 1fr); } }
+  @media (max-width: 639px) {
+    .about-page { padding: 100px 24px 48px; }
+    .page-heading { padding-bottom: 24px; }
+    .reading-layout { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-top: 28px; }
+    .identity { display: flex; gap: 20px; align-items: center; }
+    .profile-name { margin-top: 0; }
+    .profile-role { margin-top: 8px; }
+    .page-nav { display: flex; flex-wrap: wrap; border: 0; border-bottom: 1px solid var(--about-line); padding-bottom: 12px; margin-top: 20px; gap: 0 20px; }
+    .page-nav a { padding-left: 0; }
+    .contact-links { flex-direction: row; flex-wrap: wrap; gap: 0 20px; margin-top: 8px; }
+    .reading-content .lead { font-size: 18px; }
+    .reading-content > section + section { margin-top: 32px; padding-top: 28px; }
+  }
 </style>
