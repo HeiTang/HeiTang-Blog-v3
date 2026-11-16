@@ -1,0 +1,41 @@
+---
+/** Emits one <symbol> per icon the page uses; TechChip references them by id. */
+import { techIconId } from './tech-icon-id';
+import { techIcons, type TechName } from '../../data/tech-icons';
+
+export interface Props {
+  names: Iterable<TechName>;
+}
+
+const names = [...new Set(Astro.props.names)];
+---
+
+<svg class="tech-icon-sprite" aria-hidden="true" focusable="false">
+  {names.map(name => {
+    const icon = techIcons[name];
+    const viewBox = ('viewBox' in icon && icon.viewBox) || '0 0 24 24';
+    return 'stroke' in icon ? (
+      <symbol id={techIconId(name)} viewBox={viewBox} fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d={icon.path} />
+      </symbol>
+    ) : (
+      <symbol
+        id={techIconId(name)}
+        viewBox={viewBox}
+        fill="currentColor"
+        {...('outline' in icon ? { stroke: 'currentColor', 'stroke-width': icon.outline, 'stroke-linejoin': 'round' } : {})}
+      >
+        <path d={icon.path} />
+      </symbol>
+    );
+  })}
+</svg>
+
+<style>
+  .tech-icon-sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+</style>
