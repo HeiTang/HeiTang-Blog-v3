@@ -1,0 +1,62 @@
+---
+/**
+ * Tech label with its icon. The icon is a <use> reference into the sprite
+ * rendered once by TechIconSprite, so repeated chips don't repeat paths.
+ */
+import { techIconId } from './tech-icon-id';
+import type { TechName } from '../../data/tech-icons';
+
+export interface Props {
+  name: TechName;
+  /** `inline` drops the pill so a short list wraps like text. */
+  variant?: 'pill' | 'inline';
+}
+
+const { name, variant = 'pill' } = Astro.props;
+---
+
+<span class:list={['tech-chip', variant === 'inline' && 'tech-chip--inline']} title={name}>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><use href={`#${techIconId(name)}`} /></svg>
+  <span class="tech-chip-label">{name}</span>
+</span>
+
+<style>
+  .tech-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 1.875rem;
+    padding: 0 0.7rem 0 0.55rem;
+    border: 1px solid rgb(var(--color-text-primary) / 0.1);
+    border-radius: 999px;
+    background: rgb(var(--color-text-primary) / 0.03);
+    color: rgb(var(--color-text-secondary));
+    font: 500 0.75rem/1 'JetBrains Mono', monospace;
+    white-space: nowrap;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Safety net: a name longer than its grid cell truncates instead of spilling past the border. */
+  .tech-chip-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tech-chip svg {
+    flex: none;
+    width: 0.95rem;
+    height: 0.95rem;
+    /* Opacity on the element, not the colour, so fill + stroke overlaps don't double up. */
+    color: rgb(var(--color-text-primary));
+    opacity: 0.72;
+  }
+
+  .tech-chip--inline {
+    min-height: 1.5rem;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+</style>

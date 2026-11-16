@@ -1,105 +1,447 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { copy } from '../../config/copy';
+import { siteConfig } from '../../config/site';
 import { Picture } from 'astro:assets';
 import profileImage from '../../assets/profile.jpeg';
+import TechChip from '../about/TechChip.astro';
+import TechIconSprite from '../about/TechIconSprite.astro';
+import { japanPrefectures, japanStats } from '../../data/japan';
+import type { TechName } from '../../data/tech-icons';
 
-const skillColors = ['primary', 'accent', 'secondary'];
+// Kept deliberately vague: kinds of work only. No employer, team role, metrics or internal tooling.
+const experience: { title: string; body: string; tech: TechName[] }[] = [
+  {
+    title: '資料管線與監控',
+    body: '把分散在不同來源的資料自動擷取、整理，排程更新到儀表板；也建過服務監控與告警，出問題時能先知道。',
+    tech: ['Python', 'Apache Airflow', 'Grafana', 'Prometheus'],
+  },
+  {
+    title: '工具 API 化',
+    body: '把原本只能在單機手動操作的資料處理工具，封裝成 API Server，其他系統直接呼叫就能取得結果，不用再有人守在電腦前。',
+    tech: ['Python', 'Pandas', 'REST API'],
+  },
+  {
+    title: '外部 API 整合',
+    body: '設計同步與非同步串接，將重試抽成共用元件，以指數退避處理暫時性錯誤；以 OpenAPI 規格先行，對齊前後端格式。',
+    tech: ['PHP', 'Laravel', 'REST API', 'OpenAPI'],
+  },
+  {
+    title: '獨立開發與開源',
+    body: '現在以獨立產品與開源協作為主，從 API、資料串接到部署自己負責，也透過 PR 參與其他團隊的開源專案。',
+    tech: ['FastAPI', 'Docker', 'GitHub Actions', 'Astro'],
+  },
+];
+
+type ProofKind = 'live' | 'oss' | 'stars' | 'npm';
+// 24×24 line icons (Lucide-style); GitHub is the brand mark, filled.
+const icons = {
+  oss: 'M15 18a3 3 0 1 0 6 0a3 3 0 1 0-6 0M3 6a3 3 0 1 0 6 0a3 3 0 1 0-6 0M6 21V9a9 9 0 0 0 9 9',
+  stars: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z',
+  npm: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.27 6.96 12 12.01l8.73-5.05M12 22.08V12',
+  external: 'M7 17 17 7M7 7h10v10',
+  mail: 'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7',
+  github: 'M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z',
+};
+// The external-link arrow is glued to the title's last word so it never wraps onto a line by itself.
+const titleHead = (name: string): string => name.slice(0, name.lastIndexOf(' ') + 1);
+const titleTail = (name: string): string => name.slice(name.lastIndexOf(' ') + 1);
+// Stars are a snapshot (GitHub API at build time would make CI depend on the network); refresh occasionally.
+const works: { name: string; summary: string; proof: { kind: ProofKind; label: string }; href: string; tech: TechName[] }[] = [
+  {
+    name: 'FX Pulse',
+    summary: '比較 Visa、Mastercard 與 JCB 的信用卡匯率。每日擷取與近 7 天缺漏回補分開排程，只補缺少的日期與幣別。',
+    proof: { kind: 'live', label: '線上服務' },
+    href: 'https://fx.purr.tw',
+    tech: ['Python', 'FastAPI', 'GitHub Actions'],
+  },
+  {
+    name: 'HITCON 2026 NFC App',
+    summary: '為官方 NFC 遊戲 App 實作 iOS 原生 NFC 讀寫，集中管理 session ownership，修正多個流程互相中止 session 的實機問題。',
+    proof: { kind: 'oss', label: '開源貢獻' },
+    href: 'https://github.com/justinlin099/HITCON-NFC-Battle/pulls?q=is%3Apr+author%3AHeiTang+is%3Amerged',
+    tech: ['Flutter', 'Swift'],
+  },
+  {
+    name: '亞尼克庫存查詢',
+    summary: '聚合販賣機的商品與站點庫存，提供反向查詢與 JSON API，實作快取、併發控制、限流與重試。',
+    proof: { kind: 'live', label: '線上服務' },
+    href: 'https://yannick.purr.tw',
+    tech: ['FastAPI', 'SQLite', 'Astro', 'Docker'],
+  },
+  {
+    name: 'MailCat',
+    summary: '自動辨識 20 多家銀行與支付業者的通知信，分登入、交易、帳單三類；舊信定時清除，帳單附件備份到 Google Drive。',
+    proof: { kind: 'stars', label: '27' },
+    href: 'https://github.com/HeiTang/MailCat',
+    tech: ['Apps Script'],
+  },
+  {
+    name: 'AniCat',
+    summary: 'Anime1 命令列下載器：關鍵字搜尋後一行指令抓整季，支援併發、斷點續傳與串流中斷自動重試。從 2020 年維護至今。',
+    proof: { kind: 'stars', label: '21' },
+    href: 'https://github.com/HeiTang/AniCat-v2',
+    tech: ['Python'],
+  },
+  {
+    name: 'Japan Prefecture Map',
+    summary: '可嵌入的 Web Component，視覺化日本 47 都道府縣的旅遊足跡；本站的制縣圖就是用它做的。',
+    proof: { kind: 'npm', label: 'npm' },
+    href: 'https://www.npmjs.com/package/japan-prefecture-map',
+    tech: ['TypeScript'],
+  },
+];
+// Floor, shown as "N+": sum of stars on HeiTang's own public repos was 99 in 2026-11.
+const githubStars = 99;
+const liveServices = ['https://fx.purr.tw', 'https://yannick.purr.tw', 'https://japanmap.purr.tw', 'https://s.purr.tw'];
+
+const colophonTech: TechName[] = ['Astro', 'Markdown', 'Pagefind', 'GitHub Pages'];
+const usedTech: TechName[] = [
+  ...experience.flatMap(item => item.tech),
+  ...works.flatMap(item => item.tech),
+  ...copy.about.skillGroups.flatMap(group => group.skills),
+  ...colophonTech,
+];
+const glance = [
+  { value: liveServices.length, unit: '個上線服務', href: '#works' },
+  { value: `${githubStars}+`, unit: 'GitHub Stars', href: siteConfig.social.github },
+];
+
+const description = '黑糖是後端與資料工程師，平常做資料處理、自動化與 API，也獨立開發線上服務與參與開源。';
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: copy.about.heading,
+  description,
+  url: new URL('/about/', siteConfig.url).href,
+  mainEntity: {
+    '@type': 'Person',
+    name: copy.about.name,
+    alternateName: ['黑糖', siteConfig.author],
+    jobTitle: '後端／資料工程師',
+    description,
+    image: new URL(profileImage.src, siteConfig.url).href,
+    knowsAbout: copy.about.skillGroups.flatMap(group => group.skills),
+    url: siteConfig.url,
+    sameAs: [siteConfig.social.github, siteConfig.social.telegram, siteConfig.social.discord],
+  },
+};
 ---
 
-<BaseLayout title={copy.about.title} description={copy.about.description} currentPath="/about">
-  <div class="container mx-auto px-6 py-24">
-    <div class="max-w-2xl mx-auto space-y-8">
+<BaseLayout title={copy.about.title} description={description} currentPath="/about" hasPointerGlow={false} structuredData={structuredData}>
+  <article class="about-page" data-pagefind-body>
+    <header class="page-heading">
+      <p class="page-label">黑糖ㄉ貓窩 / 關於我</p>
+      <h1>{copy.about.heading}</h1>
+    </header>
 
-      <h1 class="font-display text-4xl font-bold text-[rgb(var(--color-text-primary))]">
-        {copy.about.heading}
-      </h1>
-
-      <!-- Profile Card -->
-      <div class="glass p-8 rounded-2xl">
-        <div class="flex items-center gap-6 mb-6">
-          <div class="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border-2 border-[rgb(var(--color-primary))]">
-            <Picture
-              src={profileImage}
-              alt={copy.about.name}
-              class="w-full h-full object-cover"
-              width={96}
-              height={96}
-              widths={[96, 192]}
-              sizes="96px"
-              formats={['avif', 'webp']}
-              fallbackFormat="jpeg"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
+    <div class="reading-layout">
+      <aside class="profile" aria-label="個人資料與頁面導覽">
+        <div class="identity">
+          <Picture
+            src={profileImage}
+            alt="黑糖的個人照片"
+            width={112}
+            height={112}
+            widths={[112, 224]}
+            sizes="112px"
+            formats={['avif', 'webp']}
+            fallbackFormat="jpeg"
+            loading="eager"
+            decoding="async"
+          />
           <div>
-            <h2 class="text-2xl font-bold text-[rgb(var(--color-text-primary))] mb-1">{copy.about.name}</h2>
-            <p class="text-[rgb(var(--color-text-secondary))]">{copy.about.tagline}</p>
+            <p class="profile-name">{copy.about.name}</p>
+            <p class="profile-handle">HeiTang</p>
+            <p class="profile-role">後端／資料工程師</p>
           </div>
         </div>
-        <div class="space-y-3 text-[rgb(var(--color-text-secondary))] leading-relaxed">
-          <p>{copy.about.bio1}</p>
-          <p>{copy.about.bio2}</p>
-          <p class="text-[rgb(var(--color-primary))] font-semibold">{copy.about.bio3}</p>
+        <nav class="page-nav" aria-label="本頁內容">
+          <a href="#intro">關於我</a>
+          <a href="#experience">做過的事</a>
+          <a href="#works">代表作品</a>
+          <a href="#interests">其他興趣</a>
+          <a href="#website">關於本站</a>
+        </nav>
+        <div class="contact-links">
+          <a href={`mailto:${siteConfig.social.email}`}><svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path d={icons.mail} /></svg>{siteConfig.social.email}</a>
+          <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer"><svg class="contact-icon contact-icon--brand" viewBox="0 0 24 24" aria-hidden="true"><path d={icons.github} /></svg>GitHub<span class="sr-only">（開新分頁）</span></a>
         </div>
-      </div>
+      </aside>
 
-      <!-- Skills Tag Cloud -->
-      <div class="glass p-8 rounded-2xl">
-        <h3 class="font-display text-xl font-bold text-[rgb(var(--color-text-primary))] mb-6 flex items-center gap-2">
-          <svg
-            class="w-4 h-4 text-[rgb(var(--color-primary))]"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
-          </svg>
-          {copy.about.skillsTitle}
-        </h3>
-        <div class="space-y-6">
-          {copy.about.skillGroups.map((group, i) => (
-            <div>
-              <p class="text-xs font-semibold uppercase tracking-widest text-[rgb(var(--color-text-secondary))] mb-3">
-                {group.label}
-              </p>
-              <div class="flex flex-wrap gap-2">
-                {group.skills.map(skill => (
-                  <span class={`skill-tag skill-tag--${skillColors[i % skillColors.length]}`}>{skill}</span>
-                ))}
+      <div class="reading-content">
+        <section id="intro" class="introduction" aria-labelledby="intro-title">
+          <h2 id="intro-title">關於我</h2>
+          <p class="lead">我是黑糖，後端與資料工程師，平常做資料處理、自動化與 API，現在以獨立開發和開源協作為主。</p>
+          <p>喜歡把重複的事情交給程式：從資料擷取、排程到部署，自己做的工具大多會一路做到能上線、能長期維護。這個網站用來整理作品，也記錄開發過程中遇到的問題與解法。</p>
+          <p class="personal-note">{copy.about.bio1}</p>
+          <ul class="glance" aria-label="經歷概況">
+            {glance.map(item => (
+              <li>
+                <a href={item.href}>
+                  <strong>{item.value}</strong>
+                  <span>{item.unit}<span class="glance-arrow" aria-hidden="true">→</span></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section id="experience" aria-labelledby="experience-title">
+          <div class="section-heading"><span aria-hidden="true">01</span><h2 id="experience-title">做過的事</h2></div>
+          <p>平常實際動手做的工作。</p>
+          <div class="practice-grid">
+            {experience.map(item => (
+              <article class="practice-card">
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+                <div class="card-tech">{item.tech.map(name => <TechChip name={name} variant="inline" />)}</div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="works" aria-labelledby="works-title">
+          <div class="section-heading"><span aria-hidden="true">02</span><h2 id="works-title">代表作品</h2></div>
+          <p>自己開發的服務、工具，以及參與的開源專案。</p>
+          <div class="work-grid">
+            {works.map(work => (
+              <a class="interest-card work-card" href={work.href} target="_blank" rel="noopener noreferrer">
+                <div class="work-head">
+                  <h3>{titleHead(work.name)}<span class="work-title-tail">{titleTail(work.name)}<svg class="work-external" viewBox="0 0 24 24" aria-hidden="true"><path d={icons.external} /></svg></span><span class="sr-only" data-pagefind-ignore>（開新分頁）</span></h3>
+                  <span class:list={['work-proof', `work-proof--${work.proof.kind}`]}>
+                    {work.proof.kind !== 'live' && <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icons[work.proof.kind]} /></svg>}
+                    {work.proof.label}{work.proof.kind === 'stars' && <span class="sr-only"> GitHub stars</span>}
+                  </span>
+                </div>
+                <p>{work.summary}</p>
+                <div class="card-tech">{work.tech.map(name => <TechChip name={name} variant="inline" />)}</div>
+              </a>
+            ))}
+          </div>
+          <p class="works-more">更多作品整理在 <a href="/projects/">作品集</a>。</p>
+
+          <h3 class="stack-title">技術清單</h3>
+          <dl class="stack-list">
+            {copy.about.skillGroups.map(group => (
+              <div>
+                <dt>{group.label}</dt>
+                <dd class="chip-grid">{group.skills.map(name => <TechChip name={name} />)}</dd>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+          </dl>
+        </section>
 
+        <section id="interests" aria-labelledby="interests-title">
+          <div class="section-heading"><span aria-hidden="true">03</span><h2 id="interests-title">其他興趣</h2></div>
+          <div class="interest-grid">
+            <a class="interest-card" href="/japan/">
+              <svg class="interest-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+              <h3>日本旅行</h3>
+              <p class="interest-meta">已踏足 <strong>{japanStats.visited}</strong> / {japanPrefectures.length} 都道府縣</p>
+              <p>用日本制縣圖記錄去過的都道府縣，依照路過、造訪、住宿或居住等不同程度標記。</p>
+              <span class="interest-link">日本制縣圖<span aria-hidden="true">→</span></span>
+            </a>
+            <a class="interest-card" href="/concerts/">
+              <svg class="interest-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l11-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm11-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+              <h3>演唱會</h3>
+              <p class="interest-meta">日期、場地、海報</p>
+              <p>把已購票的場次整理在演唱會足跡，保留日期、場地與海報，也能回頭查看過去的紀錄。</p>
+              <span class="interest-link">演唱會足跡<span aria-hidden="true">→</span></span>
+            </a>
+          </div>
+        </section>
+
+        <section id="website" aria-labelledby="website-title">
+          <div class="section-heading"><span aria-hidden="true">04</span><h2 id="website-title">關於本站</h2></div>
+          <p>黑糖ㄉ貓窩是我的個人網站，放技術筆記、開發作品與生活紀錄，也整理一些實用資源。</p>
+          <div class="site-colophon chip-row">{colophonTech.map(name => <TechChip name={name} />)}</div>
+          <p>想追蹤新文章，可以訂閱 <a href="/rss.xml">RSS</a>。</p>
+        </section>
+      </div>
     </div>
-  </div>
+    <TechIconSprite names={usedTech} />
+  </article>
 </BaseLayout>
 
 <style>
-.skill-tag {
-  @apply px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 cursor-default;
-  @apply border backdrop-blur-sm;
-  @apply hover:scale-105 hover:-translate-y-0.5;
-}
-.skill-tag--primary {
-  @apply bg-[rgb(var(--color-primary)/0.12)] border-[rgb(var(--color-primary)/0.35)] text-[rgb(var(--color-primary))];
-  @apply hover:bg-[rgb(var(--color-primary)/0.22)];
-}
-.skill-tag--accent {
-  @apply bg-[rgb(var(--color-accent)/0.12)] border-[rgb(var(--color-accent)/0.35)] text-[rgb(var(--color-accent))];
-  @apply hover:bg-[rgb(var(--color-accent)/0.22)];
-}
-.skill-tag--secondary {
-  color: rgb(var(--color-text-secondary));
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(255,255,255,0.15);
-}
-.skill-tag--secondary:hover {
-  background: rgba(255,255,255,0.10);
-}
+  .about-page {
+    --about-accent: rgb(var(--color-primary));
+    --about-text: rgb(var(--color-text-primary));
+    --about-muted: rgb(var(--color-text-secondary));
+    --about-line: rgb(var(--color-text-primary) / 0.12);
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 120px 32px 80px;
+    color: var(--about-text);
+  }
+  .page-heading { border-bottom: 1px solid var(--about-line); padding-bottom: 32px; }
+  .page-label { color: var(--about-muted); font-size: 12px; letter-spacing: 0.06em; }
+  h1 { font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 700; letter-spacing: -0.04em; line-height: 1.35; margin-top: 12px; }
+  .reading-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 72px; padding-top: 40px; }
+  .profile :global(img) { width: 112px; height: 112px; object-fit: cover; border-radius: 12px; border: 1px solid var(--about-line); }
+  .profile-name { margin-top: 20px; font-size: 18px; font-weight: 600; }
+  .profile-handle { margin-top: 4px; font: 12px 'JetBrains Mono', monospace; color: var(--about-accent); }
+  .profile-role { font-size: 13px; color: var(--about-muted); margin-top: 12px; }
+  .page-nav { border-left: 1px solid var(--about-line); display: grid; gap: 0; margin-top: 36px; }
+  .page-nav a { min-height: 44px; display: flex; align-items: center; margin-left: -1px; padding-left: 16px; border-left: 1px solid transparent; font-size: 13px; color: var(--about-muted); transition: color 180ms, border-color 180ms; }
+  .page-nav a:hover, .page-nav a:focus-visible { color: var(--about-accent); }
+  .page-nav a[aria-current='true'] { color: var(--about-text); border-left-color: var(--about-accent); text-shadow: 0 0 10px rgb(var(--color-primary) / 0.45); }
+  @media (min-width: 640px) and (min-height: 700px) {
+    /* overflow-x: hidden on body creates a scroll container that prevents the profile from sticking. */
+    :global(body:has(.about-page)) { overflow-x: clip; }
+    .profile { position: sticky; top: 96px; align-self: start; }
+  }
+  .contact-links { display: flex; flex-direction: column; align-items: start; margin-top: 28px; font-size: 12px; color: var(--about-muted); }
+  .contact-links a { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; }
+  .contact-icon { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .contact-icon--brand { fill: currentColor; stroke: none; }
+  .reading-content { min-width: 0; }
+  .reading-content section { scroll-margin-top: 96px; }
+  .reading-content > section + section { border-top: 1px solid var(--about-line); margin-top: 40px; padding-top: 32px; }
+  h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.5; }
+  .reading-content p { color: var(--about-muted); font-size: 15px; line-height: 1.95; margin-top: 16px; }
+  .reading-content .lead { color: var(--about-text); font-size: 19px; line-height: 1.9; margin-top: 20px; }
+  .reading-content .personal-note { font-size: 13px; margin-top: 24px; padding-left: 16px; border-left: 2px solid var(--about-accent); }
+  .section-heading { display: flex; align-items: center; gap: 14px; }
+  .section-heading > span { font: 11px 'JetBrains Mono', monospace; color: var(--about-accent); }
+  h3 { font-size: 16px; font-weight: 600; }
+  .reading-content a { color: var(--about-text); text-decoration: underline; text-decoration-color: rgb(var(--color-primary) / 0.6); text-underline-offset: 4px; text-decoration-thickness: 1px; transition: color 180ms; }
+  .reading-content a:hover { color: var(--about-accent); }
+
+  .glance { display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; gap: 12px; margin-top: 28px; }
+  .reading-content .glance a {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px 20px;
+    border: 1px solid var(--bento-card-border);
+    border-radius: 16px;
+    background: var(--bento-card-bg);
+    color: var(--about-muted);
+    font-size: 13px;
+    text-decoration: none;
+    transition: border-color 200ms ease, background 200ms ease, color 200ms ease;
+  }
+  .glance strong { color: var(--about-accent); font: 600 32px/1 'JetBrains Mono', monospace; text-shadow: 0 0 18px rgb(var(--color-primary) / 0.45); }
+  .glance-arrow { display: inline-block; margin-left: 6px; opacity: 0; transform: translateX(-4px); transition: opacity 200ms ease, transform 200ms ease; }
+  .reading-content .glance a:hover { border-color: var(--bento-card-hover-border); background: var(--bento-card-hover-bg); color: var(--about-text); }
+  .glance a:hover .glance-arrow, .glance a:focus-visible .glance-arrow { opacity: 1; transform: none; }
+  .glance a:focus-visible { outline: 2px solid var(--about-accent); outline-offset: 3px; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); gap: 8px; }
+  .chip-grid :global(.tech-chip) { width: 100%; }
+
+  .practice-grid,
+  .work-grid,
+  .interest-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+  .practice-card,
+  .interest-card {
+    display: flex;
+    flex-direction: column;
+    padding: 22px 22px 20px;
+    border: 1px solid var(--bento-card-border);
+    border-radius: 18px;
+    background: var(--bento-card-bg);
+    transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
+  }
+  .interest-card:hover {
+    border-color: var(--bento-card-hover-border);
+    background: var(--bento-card-hover-bg);
+    box-shadow: 0 0 28px rgb(var(--color-primary) / 0.08);
+  }
+  .reading-content .practice-card p { font-size: 14px; line-height: 1.9; margin-top: 10px; }
+  .card-tech { display: flex; flex-wrap: wrap; align-content: start; gap: 4px 16px; margin-top: auto; padding-top: 16px; border-top: 1px dashed var(--about-line); }
+  .practice-card > p { margin-bottom: 16px; }
+  /* Share title / body / tech rows across cards in the same grid row so the dividers line up. */
+  @supports (grid-template-rows: subgrid) {
+    .practice-card { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; }
+    .work-card { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; }
+    .work-grid .work-card .card-tech { margin-top: 0; }
+    .card-tech { margin-top: 0; }
+  }
+
+  .stack-title { margin-top: 40px; }
+  .stack-list { margin-top: 16px; border-top: 1px solid var(--about-line); }
+  .stack-list > div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--about-line); }
+  .stack-list dt { padding-top: 6px; font-size: 13px; font-weight: 600; color: var(--about-muted); }
+
+  .reading-content a.interest-card { color: inherit; text-decoration: none; }
+  .interest-card:focus-visible { outline: 2px solid var(--about-accent); outline-offset: 3px; }
+  .interest-icon { width: 28px; height: 28px; margin-bottom: 14px; fill: none; stroke: var(--about-accent); stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 8px rgb(var(--color-primary) / 0.45)); }
+  .reading-content .interest-card p { font-size: 14px; line-height: 1.9; margin-top: 10px; }
+  .reading-content .interest-card .interest-meta { margin-top: 4px; font: 12px/1.8 'JetBrains Mono', 'Noto Sans TC', monospace; color: var(--about-muted); }
+  .interest-meta strong { color: var(--about-accent); font-weight: 600; }
+  .work-card .card-tech { margin-top: auto; }
+  .work-card p { margin-bottom: 16px; }
+  .work-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .work-head h3 { min-width: 0; margin: 0; }
+  .work-title-tail { white-space: nowrap; }
+  .work-head .work-proof { flex: none; margin-top: 2px; }
+  .work-proof { display: inline-flex; align-items: center; gap: 6px; min-width: 0; padding: 3px 9px 3px 8px; border: 1px solid rgb(var(--color-text-primary) / 0.1); border-radius: 999px; background: rgb(var(--color-text-primary) / 0.04); color: rgb(var(--color-text-secondary)); font: 600 11px/1.4 'JetBrains Mono', 'Noto Sans TC', monospace; white-space: nowrap; }
+  .work-proof svg { flex: none; width: 12px; height: 12px; fill: none; stroke: var(--about-accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .work-proof--stars svg { fill: var(--about-accent); }
+  .work-proof--live::before { flex: none; width: 6px; height: 6px; margin: 0 2px; border-radius: 50%; background: #4ade80; content: ''; animation: live-pulse 2.4s ease-out infinite; }
+  @keyframes live-pulse { 0% { box-shadow: 0 0 0 0 rgb(74 222 128 / 0.6); } 70%, 100% { box-shadow: 0 0 0 6px rgb(74 222 128 / 0); } }
+  .work-external { display: inline-block; width: 14px; height: 14px; margin-left: 4px; vertical-align: -1px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--about-muted); opacity: 0.5; transition: color 200ms ease, opacity 200ms ease, transform 200ms ease; }
+  .work-card:hover .work-external, .work-card:focus-visible .work-external { color: var(--about-accent); opacity: 1; transform: translate(2px, -2px); }
+  .reading-content .works-more { font-size: 13px; }
+  .interest-link { margin-top: auto; padding-top: 16px; color: var(--about-accent); font-size: 13px; font-weight: 600; }
+  .interest-link span { display: inline-block; margin-left: 6px; transition: transform 200ms ease; }
+  .interest-card:hover .interest-link span { transform: translateX(4px); }
+
+  .site-colophon { margin-top: 20px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .practice-card, .interest-card, .interest-link span, .glance a, .glance-arrow, .work-external { transition: none; }
+    .work-proof--live::before { animation: none; box-shadow: 0 0 8px #4ade80; }
+  }
+  @media (max-width: 959px) { .reading-layout { gap: 40px; grid-template-columns: 168px minmax(0, 1fr); } }
+  /* Below ~900px the sidebar leaves cards too narrow for a title and proof badge on one line. */
+  @media (max-width: 899px) {
+    .practice-grid, .work-grid, .interest-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 639px) {
+    .about-page { padding: 100px 24px 48px; }
+    .page-heading { padding-bottom: 24px; }
+    .reading-layout { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-top: 28px; }
+    .identity { display: flex; gap: 20px; align-items: center; }
+    .profile-name { margin-top: 0; }
+    .profile-role { margin-top: 8px; }
+    .page-nav { display: flex; flex-wrap: wrap; border: 0; border-bottom: 1px solid var(--about-line); padding-bottom: 12px; margin-top: 20px; gap: 0 20px; }
+    .page-nav a { margin-left: 0; padding-left: 0; border-left: 0; }
+    .contact-links { flex-direction: row; flex-wrap: wrap; gap: 0 20px; margin-top: 8px; }
+    .reading-content .lead { font-size: 18px; }
+    .reading-content > section + section { margin-top: 32px; padding-top: 28px; }
+    .stack-list > div { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .stack-list dt { padding-top: 0; }
+    .glance { gap: 8px; }
+    .reading-content .glance a { padding: 14px 12px; }
+    .glance strong { font-size: 24px; }
+  }
 </style>
+
+<script>
+  // Mark the section currently being read in the sticky page nav: the last section whose top
+  // has passed 40% of the viewport, or the final section once the page can't scroll further.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.page-nav a')];
+  const sections = links.map(link => document.getElementById(link.hash.slice(1)));
+  let frame = 0;
+  const update = () => {
+    frame = 0;
+    const line = innerHeight * 0.4;
+    const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+    let current = 0;
+    sections.forEach((section, index) => {
+      if (section && section.getBoundingClientRect().top <= line) current = index;
+    });
+    if (atBottom) current = sections.length - 1;
+    links.forEach((link, index) => {
+      if (index === current) link.setAttribute('aria-current', 'true');
+      else link.removeAttribute('aria-current');
+    });
+  };
+  addEventListener('scroll', () => { frame ||= requestAnimationFrame(update); }, { passive: true });
+  update();
+</script>
