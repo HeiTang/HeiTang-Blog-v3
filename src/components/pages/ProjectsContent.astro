@@ -10,6 +10,8 @@ const featuredNames = ['FX-Pulse', 'yannick-stock-checker', 'ShortYou'];
 const featured = featuredNames.map(name => projects.find(project => project.name === name)!);
 const remaining = projects.filter(project => !featuredNames.includes(project.name));
 const categories = ['全部', ...new Set(remaining.map(project => project.category))];
+const cardImageSizes = '(max-width: 700px) calc(100vw - 40px), (max-width: 1120px) calc((100vw - 72px) / 3), 350px';
+const listImageSizes = '(max-width: 700px) 92px, 112px';
 const description = '把生活裡反覆遇到的麻煩，做成好用的工具。探索黑糖的網站服務、自動化工具與資料專案。';
 const structuredData = {
   '@context': 'https://schema.org', '@type': 'CollectionPage', name: '作品',
@@ -42,15 +44,15 @@ const structuredData = {
         ))}
       </div>
     </section>
-    <section id="project-directory" aria-labelledby="directory-title" class="directory">
+    <section id="project-directory" aria-labelledby="directory-title" class="directory" data-view="cards" data-card-sizes={cardImageSizes} data-list-sizes={listImageSizes}>
       <div class="section-heading"><h2 id="directory-title">還有這些小工具</h2><span>讓日常少一點重複</span></div>
       <div class="directory-controls">
         <div class="filters" role="group" aria-label="篩選其他作品" hidden>
           {categories.map((category, index) => <button type="button" data-category={category} aria-pressed={index === 0}>{category}</button>)}
         </div>
         <div class="view-switch" role="group" aria-label="作品檢視方式" hidden>
-          <button type="button" data-view="list" aria-pressed="true">列表</button>
-          <button type="button" data-view="cards" aria-pressed="false">卡片</button>
+          <button type="button" data-view="cards" aria-pressed="true" aria-label="卡片" title="卡片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg></button>
+          <button type="button" data-view="list" aria-pressed="false" aria-label="列表" title="列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12" /><path d="M4 6h.01M4 12h.01M4 18h.01" stroke-width="2.6" /></svg></button>
         </div>
       </div>
       <ul class="project-list">
@@ -63,7 +65,7 @@ const structuredData = {
               </span>
               <span class="row-media">
                 {typeof project.image === 'string' ? <img src={project.image} data-fallback={defaultProjectImage.src} alt={`${project.title ?? project.name} 的專案畫面`} loading="lazy" decoding="async" onerror="this.onerror=null; this.src=this.dataset.fallback" /> :
-                  <Picture src={project.image ?? defaultProjectImage} alt={`${project.title ?? project.name} 的專案畫面`} widths={[160, 240, 320, 480, 800, 1280]} sizes="(max-width: 700px) 92px, 112px" formats={['avif', 'webp']} loading="lazy" />}
+                  <Picture src={project.image ?? defaultProjectImage} alt={`${project.title ?? project.name} 的專案畫面`} widths={[160, 240, 320, 480, 800, 1280]} sizes={cardImageSizes} formats={['avif', 'webp']} loading="lazy" />}
               </span>
               <span class="row-copy">
                 <h3>{project.title ?? project.name}</h3>
@@ -112,8 +114,9 @@ const structuredData = {
   .filters button { min-height: 44px; padding: .5rem 1rem; border: 1px solid rgba(255,255,255,.14); border-radius: 6px; color: rgb(var(--color-text-secondary)); font-size: .85rem; cursor: pointer; }
   .filters button[aria-pressed="true"] { color: rgb(var(--color-primary)); background: rgb(var(--color-primary) / .1); border-color: rgb(var(--color-primary) / .45); }
   .view-switch { padding: .2rem; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; }
-  .view-switch button { min-height: 44px; padding: .35rem .7rem; border: 0; border-radius: 5px; color: rgb(var(--color-text-secondary)); background: transparent; font-size: .8rem; cursor: pointer; }
+  .view-switch button { display: grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 5px; color: rgb(var(--color-text-secondary)); background: transparent; font-size: .8rem; cursor: pointer; }
   .view-switch button[aria-pressed="true"] { color: rgb(var(--color-text)); background: rgb(var(--color-primary) / .14); }
+  .view-switch svg { width: 1.15rem; height: 1.15rem; }
   .project-list { padding: 0; list-style: none; }
   .project-list li { border-top: 1px solid rgba(255,255,255,.12); }
   .project-list li:last-child { border-bottom: 1px solid rgba(255,255,255,.12); }
@@ -176,15 +179,13 @@ const structuredData = {
   const setView = (view: 'list' | 'cards') => {
     if (!directory) return;
     directory.dataset.view = view;
-    const imageSizes = view === 'cards'
-      ? '(max-width: 700px) calc(100vw - 40px), (max-width: 1120px) calc((100vw - 72px) / 3), 350px'
-      : '(max-width: 700px) 92px, 112px';
+    const imageSizes = (view === 'cards' ? directory.dataset.cardSizes : directory.dataset.listSizes) ?? '';
     directory.querySelectorAll('.row-media picture source, .row-media picture img').forEach(image => image.setAttribute('sizes', imageSizes));
     viewButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === view)));
   };
 
-  setView(mobileViewport.matches ? 'cards' : 'list');
-  mobileViewport.addEventListener('change', event => setView(event.matches ? 'cards' : 'list'));
+  // ≤480px hides the switch, so force cards there.
+  mobileViewport.addEventListener('change', event => { if (event.matches) setView('cards'); });
   if (filters) filters.hidden = false;
   if (viewSwitch) viewSwitch.hidden = false;
   viewButtons.forEach(button => button.addEventListener('click', () => {
