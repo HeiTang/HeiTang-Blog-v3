@@ -22,6 +22,7 @@ import yannickHomeHero from '../assets/projects/yannick/home-hero.png';
 import yannickHomeProductQuery from '../assets/projects/yannick/home-product-query.png';
 import yannickHomeApiOverview from '../assets/projects/yannick/home-api-overview.png';
 import yannickQuickQueryProductView from '../assets/projects/yannick/quick-query-product-view.png';
+import japanMapPreview from '../assets/projects/japan-prefecture-map/preview.png';
 import tokiPoster from '../assets/projects/toki/poster.jpg';
 import tokiRenamePreview from '../assets/projects/toki/rename-preview.png';
 import tokiDateSource from '../assets/projects/toki/date-source.png';
@@ -169,7 +170,7 @@ export const siteConfig = {
       homepage: 'https://japanmap.purr.tw/',
       role: '個人作品',
       period: '2026',
-      image: 'https://raw.githubusercontent.com/HeiTang/Japan-Prefecture-Map/main/assets/japan-prefecture-map-preview.png',
+      image: japanMapPreview,
       customDescription: '可嵌入網站的日本 47 都道府縣地圖，以 0–5 級記錄通過、到訪、住宿與居住經驗，地圖幾何與等級概念來自 JapanEx。\n\n提供兩種用法：瀏覽器端的 <japan-prefecture-map> Web Component，以及在建置時輸出 HTML 的 static renderer。後者不載入任何 JavaScript，縣名與等級都留在 HTML 裡，搜尋引擎與 Pagefind 都讀得到。本站的日本制縣圖頁面就是用它做的。',
       techStack: ['TypeScript', 'Web Components', 'SVG', 'npm'],
       highlights: [
