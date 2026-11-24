@@ -1,20 +1,22 @@
 ---
 import { getImage } from 'astro:assets';
 import type { ProjectScreenshot } from '../../types/projects';
-interface Props { screenshots: ProjectScreenshot[]; title: string; }
-const { screenshots, title } = Astro.props;
+interface Props { screenshots: ProjectScreenshot[]; title: string; sizes?: string; }
+const { screenshots, title, sizes } = Astro.props;
 const images = await Promise.all(screenshots.map(async (shot) => {
   const asset = typeof shot === 'string' ? shot : shot.src;
   const caption = typeof shot === 'string' ? title : (shot.caption ?? title);
-  if (typeof asset === 'string') return { src: asset, caption, width: undefined, height: undefined };
-  const image = await getImage({ src: asset, width: Math.min(1600, asset.width), format: 'webp', quality: 85 });
-  return { src: image.src, caption, width: image.attributes.width, height: image.attributes.height };
+  if (typeof asset === 'string') return { src: asset, caption };
+  const width = Math.min(1600, asset.width);
+  const widths = sizes ? [...[480, 850].filter(candidate => candidate < width), width] : undefined;
+  const image = await getImage({ src: asset, width, widths, format: 'webp', quality: 85 });
+  return { src: image.src, srcset: sizes && image.srcSet.attribute, caption, width: image.attributes.width, height: image.attributes.height };
 }));
 ---
 <div class="gallery">
   {images.map((image, index) => <figure>
     <button class="gallery-open" type="button" aria-label={`放大：${image.caption}`} aria-haspopup="dialog" data-image={image.src} data-caption={image.caption}>
-      <img src={image.src} width={image.width} height={image.height} alt={image.caption} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
+      <img src={image.src} srcset={image.srcset} sizes={image.srcset ? sizes : undefined} width={image.width} height={image.height} alt={image.caption} loading={index === 0 && !sizes ? 'eager' : 'lazy'} decoding="async" />
       <span class="zoom-label" aria-hidden="true">放大 <svg class="zoom-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H3v6" /><path d="M15 3h6v6" /><path d="M21 15v6h-6" /><path d="M3 15v6h6" /></svg></span>
     </button>
     <figcaption><span aria-hidden="true">{String(index + 1).padStart(2, '0')} / </span>{image.caption}</figcaption>

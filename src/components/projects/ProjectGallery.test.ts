@@ -9,6 +9,7 @@ test('gallery keeps captions and URL assets, caps local images without upscaling
   const calls: { width: number; format: string }[] = [];
   const images = await runInNewContext(`(async () => { ${expression}; return images; })()`, {
     title: '作品',
+    sizes: undefined,
     screenshots: ['https://example.com/image.png', { src: { width: 2784 }, caption: '首頁' }, { src: { width: 800 } }],
     getImage: async (options: { width: number; format: string }) => {
       calls.push(options);
@@ -21,4 +22,26 @@ test('gallery keeps captions and URL assets, caps local images without upscaling
   assert.equal(images[2].caption, '作品');
   assert.deepEqual(calls.map(call => call.width), [1600, 800]);
   assert.ok(calls.every(call => call.format === 'webp'));
+});
+
+test('responsive gallery uses smaller widths while keeping the largest image for the dialog', async () => {
+  const source = await readFile(new URL('./ProjectGallery.astro', import.meta.url), 'utf8');
+  const expression = source.slice(source.indexOf('const images ='), source.indexOf('\n---', 4));
+  const widths: number[][] = [];
+  const images = await runInNewContext(`(async () => { ${expression}; return images; })()`, {
+    title: '作品',
+    sizes: '850px',
+    screenshots: [{ src: { width: 1700 } }, { src: { width: 800 } }],
+    getImage: async (options: { width: number; widths: number[] }) => {
+      widths.push(Array.from(options.widths));
+      return {
+        src: `/image-${options.width}.webp`,
+        srcSet: { attribute: options.widths.map(width => `/image-${width}.webp ${width}w`).join(', ') },
+        attributes: { width: options.width, height: 500 },
+      };
+    },
+  });
+  assert.deepEqual(widths, [[480, 850, 1600], [480, 800]]);
+  assert.match(images[0].srcset, /480w, .*850w, .*1600w/);
+  assert.equal(images[0].src, '/image-1600.webp');
 });
