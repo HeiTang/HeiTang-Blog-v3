@@ -4,6 +4,7 @@
  */
 import type { ProjectMeta } from '../types/projects';
 import remindlyAdminReports from '../assets/projects/remindly/admin-reports.webp';
+import remindlyCover from '../assets/projects/remindly/cover.webp';
 import remindlyGroupDelivery from '../assets/projects/remindly/group-delivery.webp';
 import remindlyReportConfirmation from '../assets/projects/remindly/report-confirmation.webp';
 import fxPulsePeriodComparison from '../assets/projects/fx-pulse/period-comparison.png';
@@ -285,7 +286,7 @@ export const siteConfig = {
       category: '自動化工具',
       role: '個人作品',
       period: '2026',
-      image: 'https://opengraph.githubassets.com/1/HeiTang/Remindly',
+      image: remindlyCover,
       customDescription: 'Telegram 自然語言提醒機器人。支援私聊與群組建立提醒、資訊不足時互動追問、確認後寫入 SQLite、到期主動通知與一鍵延後提醒；採 long polling + Docker Compose 部署，不需要公開 webhook URL。',
       techStack: [
         'Python 3.12',
