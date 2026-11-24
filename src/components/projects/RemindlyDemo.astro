@@ -1,0 +1,274 @@
+---
+interface Scene {
+  title: string;
+  chat?: string;
+  user?: string;
+  reply: string[];
+  parser?: string;
+  keyboard?: string[][];
+  action?: string;
+  advance?: 'link' | 'time';
+  scheduledTime?: string;
+}
+
+const privateRequest = '提醒我明天倒垃圾';
+const groupRequest = '@ReminderBot 每週五 17:30 提醒 @alice 和 @benny 更新專案進度';
+const groupDeliveryTime = '週五 17:30';
+const confirmButtons = [['確認', '取消']];
+const scenarios: { label: string; scenes: Scene[] }[] = [
+  {
+    label: '私聊追問',
+    scenes: [
+      { title: '選擇快捷時間', user: privateRequest, reply: ['那天幾點？'], keyboard: [['09:00', '12:00'], ['15:00', '18:00']], action: '15:00' },
+      { title: '核對提醒內容', user: privateRequest, reply: ['確認建立提醒？', '時間：2026-11-26 15:00', '對象：@orange', '事項：倒垃圾'], parser: '使用 內建規則 解析', keyboard: confirmButtons, action: '確認' },
+      { title: '提醒已建立', user: privateRequest, reply: ['已建立提醒 R-B964', '時間：2026-11-26 15:00', '事項：倒垃圾', '取消：/cancel R-B964'] },
+    ],
+  },
+  {
+    label: '群組週期提醒',
+    scenes: [
+      { title: '核對週期與提醒對象', chat: '產品小組', user: groupRequest, reply: ['確認建立提醒？', '重複：每週五 17:30', '下次：2026-11-27 17:30', '對象：@alice @benny', '事項：更新專案進度'], parser: '使用 內建規則 解析', keyboard: confirmButtons, action: '確認' },
+      { title: '週期提醒已建立', chat: '產品小組', user: groupRequest, reply: ['已建立提醒 R-1636', '重複：每週五 17:30', '下次：2026-11-27 17:30', '事項：更新專案進度', '取消：/cancel R-1636'], advance: 'time', scheduledTime: groupDeliveryTime },
+      { title: '到期通知兩位成員', chat: '產品小組', reply: ['提醒：更新專案進度', 'ID：R-1636', '重複：每週五 17:30', '對象：@alice @benny'], keyboard: [['跳過下次', '取消整個系列']], scheduledTime: groupDeliveryTime },
+    ],
+  },
+  {
+    label: '回報解析問題',
+    scenes: [
+      { title: '從確認卡回報', chat: '生活群組', user: '明天傍晚六點提醒我拿包裹', reply: ['確認建立提醒？', '時區：Asia/Taipei', '時間：2026-11-26 18:00', '對象：@orange', '事項：拿包裹'], parser: '使用 AI 解析', keyboard: confirmButtons, action: '回報問題', advance: 'link' },
+      { title: '在 Bot 私聊選擇原因', reply: ['回報解析問題', '哪裡解析錯了？'], keyboard: [['時間錯了', '事項錯了'], ['對象錯了', '重複設定錯了'], ['其他']], action: '其他' },
+      { title: '預覽回報內容', reply: ['送出回報前確認', '原因：其他', '解析來源：AI', 'Bot 版本：0.5.0', '供應商／模型：gemini／gemini-3.5-flash-lite', '目前未附原句和解析結果。', '', '送出時會記錄下列身分資訊，維護者可在回報詳情查看。', 'Telegram user ID：7', 'Telegram @username：@orange'], keyboard: [['附上原句與結果'], ['返回', '送出回報']], action: '送出回報' },
+      { title: '回報已送出', reply: ['已收到回報。', '你可以回原本的聊天確認或取消提醒。'] },
+    ],
+  },
+];
+---
+<section id="remindly-demo" class="remindly-demo" aria-labelledby="remindly-demo-title">
+  <h2 id="remindly-demo-title">試玩 Remindly</h2>
+  <div class="demo-interactions" hidden>
+    <p class="demo-intro">點亮起的按鈕走完流程。示範使用範例資料，訊息只在這個頁面顯示。</p>
+    <div class="scenario-buttons" role="group" aria-label="選擇流程">
+      {scenarios.map(({ label }, index) => <button type="button" data-scenario={index} aria-pressed={index === 0}>{label}</button>)}
+    </div>
+    {scenarios.map(({ scenes }, scenarioIndex) => <div data-flow={scenarioIndex} hidden={scenarioIndex !== 0}>
+      {scenes.map((scene, sceneIndex) => <div data-scene={sceneIndex} hidden={sceneIndex !== 0}>
+        <div class="demo-toolbar">
+          <h3 tabindex="-1"><span>{sceneIndex + 1} / {scenes.length}</span> {scene.title}</h3>
+          <button type="button" class="demo-reset" data-reset aria-label="重來" title="重來">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 1 2.6 6.4M3 5v7h7" />
+            </svg>
+          </button>
+        </div>
+        <div class="chat">
+          <div class="chat-header">
+            <div class="chat-avatar" aria-hidden="true">{scene.chat?.[0] ?? 'R'}</div>
+            <div><b>{scene.chat ?? 'Remindly'}</b><small>Telegram {scene.chat ? '群組' : '私聊'}</small></div>
+          </div>
+          <div class="chat-body">
+            {scene.user && <div class="chat-outgoing">
+              <p class="chat-user">{scene.user}</p>
+              <p class="chat-user chat-draft" aria-hidden="true"></p>
+            </div>}
+            {scene.scheduledTime && scene.advance !== 'time' && <div class="chat-timeline">
+              <span class="chat-timestamp">{scene.scheduledTime}</span>
+            </div>}
+            <div class="chat-answer">
+              <div class="chat-typing" aria-hidden="true"><i></i><i></i><i></i></div>
+              <div class="chat-incoming">
+                <div class="chat-bubble">
+                  <span class="chat-sender">Remindly</span>
+                  <strong>{scene.reply[0]}</strong>
+                  {scene.reply.slice(1).map(line => line ? <p>{line}</p> : <br />)}
+                  {scene.parser && <div class="chat-meta">
+                    <small>{scene.parser}</small>
+                    {scene.advance === 'link' && <button type="button" class="report-button" data-next>{scene.action}</button>}
+                  </div>}
+                </div>
+                {scene.keyboard?.map(row => <div class="chat-buttons">
+                  {row.map(label => <button type="button" disabled={label !== scene.action} data-next={label === scene.action ? '' : undefined}>{label}</button>)}
+                </div>)}
+              </div>
+            </div>
+            {scene.advance === 'time' && <div class="chat-timeline">
+              <button type="button" class="demo-time" data-next>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+                </svg>
+                快轉到 {scene.scheduledTime}
+              </button>
+            </div>}
+          </div>
+        </div>
+      </div>)}
+    </div>)}
+  </div>
+</section>
+
+<script>
+  const demo = document.querySelector<HTMLElement>('.demo-interactions');
+  if (demo) {
+    let current = 0;
+    const flows = [...demo.querySelectorAll<HTMLElement>('[data-flow]')];
+    const controls = [...demo.querySelectorAll<HTMLButtonElement>('[data-scenario]')];
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let step = 0;
+    let stopPlayback = () => {};
+
+    function play(scene: HTMLElement, typeMessage: boolean, whenVisible = false) {
+      if (reducedMotion.matches) return;
+
+      const message = scene.querySelector('.chat-outgoing .chat-user');
+      const draft = scene.querySelector('.chat-draft');
+      const letters = Array.from(typeMessage ? message?.textContent ?? '' : '');
+      let observer: IntersectionObserver | undefined;
+      let frame = 0;
+      let timer = 0;
+      scene.dataset.chatPhase = letters.length ? 'user' : 'bot';
+
+      stopPlayback = () => {
+        observer?.disconnect();
+        cancelAnimationFrame(frame);
+        window.clearTimeout(timer);
+        delete scene.dataset.chatPhase;
+        if (draft) draft.textContent = '';
+      };
+
+      function waitForBot() {
+        scene.dataset.chatPhase = 'bot';
+        timer = window.setTimeout(() => {
+          stopPlayback();
+          scene.querySelector('.chat-bubble')?.animate(
+            [{ transform: 'translate(-3px, 4px)' }, { transform: 'none' }],
+            { duration: 150, easing: 'ease-out' },
+          );
+        }, 950);
+      }
+
+      function start() {
+        if (!letters.length || !draft) {
+          waitForBot();
+          return;
+        }
+        const duration = Math.min(2400, Math.max(700, letters.length * 78));
+        const started = performance.now();
+        let displayed = 0;
+        const type = (now: number) => {
+          const progress = Math.min(1, (now - started) / duration);
+          const count = Math.ceil(letters.length * progress);
+          if (count !== displayed) {
+            draft.textContent = letters.slice(0, count).join('');
+            displayed = count;
+          }
+          if (progress < 1) frame = requestAnimationFrame(type);
+          else timer = window.setTimeout(waitForBot, 140);
+        };
+        frame = requestAnimationFrame(type);
+      }
+
+      if (whenVisible) {
+        observer = new IntersectionObserver(([entry]) => {
+          if (!entry.isIntersecting) return;
+          observer?.disconnect();
+          start();
+        }, { threshold: 0.25 });
+        observer.observe(scene.querySelector('.chat') ?? scene);
+      } else {
+        start();
+      }
+    }
+
+    function showStep(next: number, focus: boolean) {
+      stopPlayback();
+      const scenes = [...flows[current].querySelectorAll<HTMLElement>('[data-scene]')];
+      step = Math.min(next, scenes.length - 1);
+      scenes.forEach((scene, index) => { scene.hidden = index !== step; });
+      play(scenes[step], step === 0);
+      if (focus) {
+        const heading = scenes[step].querySelector('h3')!;
+        heading.focus({ preventScroll: true });
+        const { top, bottom } = heading.getBoundingClientRect();
+        const topInset = Number.parseFloat(getComputedStyle(heading).scrollMarginTop);
+        if (top < topInset || bottom > innerHeight) heading.scrollIntoView({ block: 'start', behavior: 'instant' });
+      }
+    }
+
+    demo.addEventListener('click', event => {
+      const button = (event.target as HTMLElement).closest('button');
+      if (!button) return;
+      if (button.dataset.scenario !== undefined) {
+        const selected = Number(button.dataset.scenario);
+        if (selected === current) return;
+        current = selected;
+        controls.forEach((control, index) => control.setAttribute('aria-pressed', String(index === current)));
+        flows.forEach((flow, index) => { flow.hidden = index !== current; });
+        showStep(0, false);
+      } else if (button.hasAttribute('data-reset')) {
+        showStep(0, true);
+      } else if (button.hasAttribute('data-next')) {
+        showStep(step + 1, true);
+      }
+    });
+    reducedMotion.addEventListener('change', () => { if (reducedMotion.matches) stopPlayback(); });
+    play(flows[0].querySelector<HTMLElement>('[data-scene]')!, true, true);
+    demo.hidden = false;
+  }
+</script>
+
+<style>
+  .remindly-demo { max-width: 850px; margin: 3.5rem auto 4rem; scroll-margin-top: 6rem; }
+  h2 { font-size: 1.1rem; font-weight: 600; line-height: 1.6; }
+  .demo-intro { margin: .5rem 0 1.15rem; color: rgb(var(--color-text-secondary)); line-height: 1.7; }
+  .scenario-buttons { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+  .scenario-buttons button { min-height: 44px; padding: .55rem .8rem; border: 1px solid rgb(var(--color-text-secondary) / .4); border-radius: 7px; }
+  .scenario-buttons button[aria-pressed='true'] { background: rgb(var(--color-primary) / .12); border-color: rgb(var(--color-primary)); color: rgb(var(--color-primary)); }
+  @media (max-width: 480px) {
+    .scenario-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .375rem; }
+    .scenario-buttons button { padding-inline: .25rem; font-size: clamp(.75rem, 3.8vw, .9375rem); white-space: nowrap; }
+  }
+  .demo-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .8rem; }
+  .demo-toolbar h3 { margin: 0; font-size: .95rem; font-weight: 600; scroll-margin-top: 6rem; }
+  .demo-toolbar h3 span { margin-right: .3rem; color: rgb(var(--color-primary)); font-variant-numeric: tabular-nums; }
+  .demo-reset { display: grid; flex: none; place-items: center; width: 44px; height: 44px; color: rgb(var(--color-primary)); cursor: pointer; }
+  .demo-reset:hover { color: rgb(var(--color-text-primary)); }
+  .demo-reset svg { width: 18px; height: 18px; }
+  .chat { border: 1px solid #416078; border-radius: 18px; overflow: hidden; background: #121d28; color: #eef5fc; }
+  .chat-header { display: flex; gap: .7rem; align-items: center; padding: .75rem 1rem; background: #202e3b; border-bottom: 1px solid #416078; }
+  .chat-header small { display: block; color: #b2c5d7; }
+  .chat-avatar { display: grid; flex: none; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #246f97; font-weight: 700; }
+  .chat-body { display: grid; align-content: start; gap: .75rem; padding: clamp(.75rem, 3vw, 1.25rem); background: radial-gradient(#263c4d 1px, transparent 1px) 0 0 / 16px 16px; }
+  .chat-user, .chat-bubble { padding: .65rem .8rem; overflow-wrap: anywhere; line-height: 1.5; }
+  .chat-outgoing { position: relative; justify-self: end; max-width: 88%; }
+  .chat-user { margin: 0; border-radius: 14px 14px 4px 14px; background: #27475f; }
+  .chat-draft { display: none; position: absolute; top: 0; right: 0; max-width: 100%; }
+  [data-chat-phase='user'] .chat-outgoing > .chat-user:first-child { opacity: 0; }
+  [data-chat-phase='user'] .chat-draft { display: block; }
+  .chat-draft::after { content: ''; position: absolute; display: inline-block; width: 1px; height: 1em; margin-inline-start: 2px; transform: translateY(.2em); background: #c5e8ff; }
+  .chat-answer { position: relative; }
+  [data-chat-phase] .chat-incoming, [data-chat-phase] .chat-body > .chat-answer + .chat-timeline { visibility: hidden; }
+  .chat-typing { display: none; position: absolute; inset: 0 auto auto 0; gap: .3rem; align-items: center; padding: .8rem 1rem; border-radius: 14px 14px 14px 4px; background: #213346; }
+  [data-chat-phase='bot'] .chat-typing { display: flex; }
+  .chat-typing i { width: 6px; height: 6px; border-radius: 50%; background: #96d8fd; animation: typing-dot 600ms ease-in-out infinite alternate; }
+  .chat-typing i:nth-child(2) { animation-delay: 90ms; }
+  .chat-typing i:nth-child(3) { animation-delay: 180ms; }
+  @keyframes typing-dot { from { opacity: .4; } to { transform: translateY(-2px); } }
+  .chat-incoming { width: min(100%, 34rem); }
+  .chat-bubble { border-radius: 14px 14px 14px 4px; background: #213346; }
+  .chat-sender { display: block; margin-bottom: .25rem; color: #96d8fd; font-size: .84rem; font-weight: 700; }
+  .chat-bubble p { margin: 0; }
+  .chat-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: .4rem; }
+  .chat-meta small { padding: .15rem .4rem; border-radius: 5px; background: #33485d; color: #deebf5; }
+  .report-button { min-height: 44px; color: #96d8fd; text-decoration: underline; text-underline-offset: .2em; }
+  .chat-buttons { display: flex; gap: .35rem; margin-top: .35rem; }
+  .chat-buttons button { flex: 1; min-height: 44px; padding: .3rem; border: 1px solid #79b4d7; border-radius: 7px; background: #275d7a; color: #effaff; font-size: .92rem; }
+  .chat-buttons button:disabled { border-color: #3b5469; background: #203447; color: #adbfce; cursor: default; }
+  .chat-timeline { display: flex; align-items: center; gap: .75rem; }
+  .chat-timeline::before, .chat-timeline::after { content: ''; flex: 1; height: 1px; background: #3b5469; }
+  .demo-time, .chat-timestamp { display: inline-flex; align-items: center; gap: .4rem; padding: .25rem .8rem; border-radius: 999px; font-size: .88rem; }
+  .demo-time { min-height: 44px; border: 1px solid #79b4d7; background: #275d7a; color: #effaff; cursor: pointer; }
+  .demo-time:hover { background: #326c8a; }
+  .demo-time svg { width: 1.1rem; height: 1.1rem; flex: none; }
+  .chat-timestamp { background: #213346; color: #d4e5f3; }
+  button:focus-visible, h3:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+</style>
