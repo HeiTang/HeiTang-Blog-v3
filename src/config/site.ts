@@ -3,6 +3,9 @@
  * Following SOLID principles: Single Responsibility
  */
 import type { ProjectMeta } from '../types/projects';
+import remindlyAdminReports from '../assets/projects/remindly/admin-reports.webp';
+import remindlyGroupDelivery from '../assets/projects/remindly/group-delivery.webp';
+import remindlyReportConfirmation from '../assets/projects/remindly/report-confirmation.webp';
 import fxPulsePeriodComparison from '../assets/projects/fx-pulse/period-comparison.png';
 import fxPulseHome from '../assets/projects/fx-pulse/home.png';
 import fxPulseJpyChart from '../assets/projects/fx-pulse/jpy-chart.png';
@@ -292,15 +295,17 @@ export const siteConfig = {
         'Docker Compose',
       ],
       highlights: [
-        { title: '中文自然語言輸入', description: '例如「明天下午三點提醒我倒垃圾」。' },
-        { title: '時間或事項不足時主動追問', description: '並提供常用時間快捷按鈕。' },
-        { title: '群組文字模式', description: '可用指令、@bot 或管理員開啟的一般文字模式觸發。' },
-        { title: 'DB-driven scheduler', description: '固定掃描並 claim 到期提醒，重啟後不會遺失排程。' },
-        { title: '提醒送出後可一鍵延後', description: '10 分鐘、1 小時或明天同時間。' },
-        { title: '週期性提醒', description: '可跳過下一次，或直接取消整個系列。' },
-        { title: '維護後台', description: 'Telegram 登入，可篩選、複製與匯出回報，並管理人員權限。' },
+        { title: '一句話建立提醒', description: '用中文說出時間和事項。資訊不足時，Bot 會追問或提供快捷時間，核對後才建立。' },
+        { title: '在群組提醒指定成員', description: '用指令或 @Bot 建立提醒，到期時標註指定成員。群組管理員也可開啟一般文字觸發。' },
+        { title: '一次性提醒可延後，週期提醒可跳過', description: '一次性提醒可延後 10 分鐘、1 小時或到明天同一時間。週期提醒可跳過下次或取消整個系列。' },
+        { title: '排程寫入 SQLite，重啟後仍保留', description: '背景排程器定期掃描並認領到期提醒，Bot 重啟後可繼續處理已儲存的排程。' },
+        { title: '從確認卡回報解析問題', description: '在確認卡點「回報問題」，進入 Bot 私聊選原因。維護者可在後台篩選、查閱與匯出 Markdown。' },
       ],
-      screenshots: [],
+      screenshots: [
+        { src: remindlyGroupDelivery, caption: '群組週期提醒到期通知' },
+        { src: remindlyReportConfirmation, caption: '確認卡的解析回報入口' },
+        { src: remindlyAdminReports, caption: '維護後台的解析回報列表（範例資料）' },
+      ],
       tags: ['Python', 'Telegram', 'Bot', 'SQLite', 'Docker'],
     },
     {

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectGallery from '../../components/projects/ProjectGallery.astro';
+import RemindlyDemo from '../../components/projects/RemindlyDemo.astro';
 import { siteConfig } from '../../config/site';
 import socialImage from '../../assets/og/projects.jpg';
 
@@ -14,6 +15,7 @@ const { project, next } = Astro.props;
 const title = project.title ?? project.name;
 const description = project.summary ?? project.customDescription ?? title;
 const isYannick = project.name === 'yannick-stock-checker';
+const isRemindly = project.name === 'Remindly';
 const screenshots = project.screenshots ?? [];
 const path = `/projects/${project.name.toLowerCase()}/`;
 const structuredData = [
@@ -51,9 +53,10 @@ const structuredData = [
         <li><span>02</span><h3>看有貨的站點</h3><p>從商品反查庫存，依捷運或門市篩選。</p></li>
         <li><span>03</span><h3>挑方便的地點</h3><p>開啟定位，依距離尋找附近的取貨站點。</p></li>
       </ol>}
-      {screenshots.length > 0 && <section class="screenshots" aria-labelledby="screenshots-title">
-        <div class="section-label"><h2 id="screenshots-title">實際畫面</h2><span>點圖片看細節</span></div>
-        <ProjectGallery screenshots={screenshots} title={title} />
+      {isRemindly && <RemindlyDemo />}
+      {screenshots.length > 0 && <section class:list={['screenshots', { 'screenshots-remindly': isRemindly }]} aria-labelledby="screenshots-title">
+        <div class="section-label"><h2 id="screenshots-title">{isRemindly ? '模擬畫面' : '實際畫面'}</h2><span>點圖片看細節</span></div>
+        <ProjectGallery screenshots={screenshots} title={title} sizes={isRemindly ? '(max-width: 890px) calc(100vw - 40px), 850px' : undefined} />
       </section>}
       {project.highlights && project.highlights.length > 0 && <section class="highlights" aria-labelledby="highlights-title">
         <div class="section-label"><h2 id="highlights-title">專案看點</h2></div>
@@ -92,6 +95,7 @@ const structuredData = [
   .steps h3 { font-size: 1rem; font-weight: 600; margin: .75rem 0 .5rem; }
   .steps p { font-size: .9rem; line-height: 1.8; color: rgb(var(--color-text-secondary)); }
   .screenshots { margin: 4rem 0; }
+  .screenshots-remindly { max-width: 850px; margin-inline: auto; }
   .section-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; }
   .section-label span { color: rgb(var(--color-text-secondary)); font-size: .8rem; }
   .highlights { max-width: 850px; margin: 0 auto; }
