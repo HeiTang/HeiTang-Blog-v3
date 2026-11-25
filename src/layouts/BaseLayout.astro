@@ -133,9 +133,10 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
     <script is:inline>
       (function () {
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduceMotion) return;
+
         const touchProjects = document.body.hasAttribute('data-project-page') &&
           window.matchMedia('(hover: none), (pointer: coarse)').matches;
-        if (reduceMotion || touchProjects) return;
 
         const canvas = document.querySelector('.cosmic-canvas');
         const shockwaveLayer = document.querySelector('.shockwave-layer');
@@ -279,7 +280,7 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
           follow();
         }
 
-        if (shockwaveLayer) {
+        if (shockwaveLayer && !touchProjects) {
           window.addEventListener('pointerdown', (event) => {
             const wave = document.createElement('span');
             wave.className = 'shockwave';

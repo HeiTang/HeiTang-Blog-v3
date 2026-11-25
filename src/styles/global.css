@@ -280,16 +280,6 @@
     [data-project-page] :is(a, button, summary) {
       touch-action: manipulation;
     }
-
-    [data-project-page] .aurora-bg {
-      background:
-        radial-gradient(ellipse at 5% 0%, rgb(var(--color-primary) / .10), transparent 55%),
-        radial-gradient(ellipse at 95% 90%, rgb(var(--color-accent) / .10), transparent 55%);
-    }
-
-    [data-project-page] :is(.aurora-orb, .cosmic-canvas, .shockwave-layer, .comet-cursor) {
-      display: none;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
