@@ -144,11 +144,7 @@ const structuredData = {
   a:focus-visible, button:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 5px; }
   .directory[data-view="cards"] .project-list a:focus-visible { outline-offset: -3px; }
   @media (prefers-reduced-motion: no-preference) {
-    .project-enter { animation: project-enter .32s ease-out; }
-    @keyframes project-enter {
-      from { opacity: .3; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .project-awaiting:not(:focus-within) { opacity: 0; }
   }
   @media (hover: hover) and (pointer: fine) {
     .project-list a:hover h3, .feature:hover h3 { color: rgb(var(--color-primary)); }
@@ -182,19 +178,27 @@ const structuredData = {
   }
 </style>
 <script>
-  if ('IntersectionObserver' in window) {
-    const offscreen = new WeakSet<Element>();
+  const projectMotion = window.matchMedia('(prefers-reduced-motion: no-preference)');
+  if ('IntersectionObserver' in window && 'animate' in Element.prototype && projectMotion.matches) {
+    const offscreen = Array.from(document.querySelectorAll('.feature, .project-list > li'))
+      .filter(card => card.getBoundingClientRect().top >= window.innerHeight);
     const reveal = new IntersectionObserver(entries => {
       for (const { target, isIntersecting } of entries) {
-        if (!isIntersecting) {
-          offscreen.add(target);
-          continue;
-        }
-        if (offscreen.has(target)) target.classList.add('project-enter');
+        if (!isIntersecting) continue;
         reveal.unobserve(target);
+        target.classList.remove('project-awaiting');
+        if (projectMotion.matches && !target.matches(':focus-within')) {
+          target.animate([
+            { opacity: 0, transform: 'translateY(10px)', filter: 'blur(3px)' },
+            { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
+          ], { duration: 440, delay: 180, easing: 'ease-out', fill: 'backwards' });
+        }
       }
+    }, { rootMargin: '0px 0px -36px' });
+    offscreen.forEach(card => {
+      card.classList.add('project-awaiting');
+      reveal.observe(card);
     });
-    document.querySelectorAll('.feature, .project-list > li').forEach(card => reveal.observe(card));
   }
 
   const directory = document.querySelector<HTMLElement>('.directory');
