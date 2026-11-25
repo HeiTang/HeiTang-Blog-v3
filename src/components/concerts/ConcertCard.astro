@@ -55,6 +55,7 @@ const posterYear = concert.startDate.slice(0, 4);
   <figure
     class:list={['concert-visual', { 'concert-visual-fallback': !concert.imageUrl }]}
     data-poster={index % 6}
+    data-scroll-reveal
   >
     {concert.imageUrl ? (
       <img

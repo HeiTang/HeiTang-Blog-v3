@@ -713,26 +713,6 @@ const structuredData = [
     color: rgb(var(--color-text-secondary));
   }
 
-  @supports (animation-timeline: view()) {
-    :global(.concert-card) {
-      animation: poster-wall-entry cubic-bezier(0.22, 1, 0.36, 1) both;
-      animation-duration: auto;
-      animation-range: entry 0% entry 42%;
-      animation-timeline: view();
-    }
-  }
-
-  @keyframes poster-wall-entry {
-    from {
-      opacity: 0.28;
-      transform: perspective(900px) rotateY(-10deg) translateY(2rem);
-    }
-    to {
-      opacity: 1;
-      transform: perspective(900px) rotateY(0) translateY(0);
-    }
-  }
-
   @media (max-width: 860px) {
 
     .year-section {

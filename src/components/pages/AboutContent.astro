@@ -206,7 +206,7 @@ const structuredData = {
           <p>自己開發的服務、工具，以及參與的開源專案。</p>
           <div class="work-grid">
             {works.map(work => (
-              <a class="interest-card work-card" href={work.href} target="_blank" rel="noopener noreferrer">
+              <a class="interest-card work-card" href={work.href} target="_blank" rel="noopener noreferrer" data-scroll-reveal>
                 <div class="work-head">
                   <h3>{titleHead(work.name)}<span class="work-title-tail">{titleTail(work.name)}<svg class="work-external" viewBox="0 0 24 24" aria-hidden="true"><path d={icons.external} /></svg></span><span class="sr-only" data-pagefind-ignore>（開新分頁）</span></h3>
                   <span class:list={['work-proof', `work-proof--${work.proof.kind}`]}>
@@ -235,14 +235,14 @@ const structuredData = {
         <section id="interests" aria-labelledby="interests-title">
           <div class="section-heading"><span aria-hidden="true">03</span><h2 id="interests-title">其他興趣</h2></div>
           <div class="interest-grid">
-            <a class="interest-card" href="/japan/">
+            <a class="interest-card" href="/japan/" data-scroll-reveal>
               <svg class="interest-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
               <h3>日本旅行</h3>
               <p class="interest-meta">已踏足 <strong>{japanStats.visited}</strong> / {japanPrefectures.length} 都道府縣</p>
               <p>用日本制縣圖記錄去過的都道府縣，依照路過、造訪、住宿或居住等不同程度標記。</p>
               <span class="interest-link">日本制縣圖<span aria-hidden="true">→</span></span>
             </a>
-            <a class="interest-card" href="/concerts/">
+            <a class="interest-card" href="/concerts/" data-scroll-reveal>
               <svg class="interest-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l11-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm11-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
               <h3>演唱會</h3>
               <p class="interest-meta">日期、場地、海報</p>

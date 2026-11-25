@@ -60,7 +60,7 @@ const structuredData = [
       </section>}
       {project.highlights && project.highlights.length > 0 && <section class="highlights" aria-labelledby="highlights-title">
         <div class="section-label"><h2 id="highlights-title">專案看點</h2></div>
-        <ol>{project.highlights.map((highlight, index) => <li>
+        <ol>{project.highlights.map((highlight, index) => <li data-scroll-reveal>
           <span class="highlight-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
           <div class="highlight-copy"><h3>{highlight.title}</h3><p>{highlight.description}</p></div>
         </li>)}</ol>
