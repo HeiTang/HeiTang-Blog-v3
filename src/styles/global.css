@@ -282,6 +282,10 @@
     }
   }
 
+  [data-project-page][data-project-touch-focus] :is(a, button, summary, [tabindex]):focus-visible {
+    outline: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .cosmic-canvas,
     .shockwave-layer,

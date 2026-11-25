@@ -132,11 +132,22 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
     <!-- Immersive cosmic background runtime (starfield, shockwave, optional pointer glow) -->
     <script is:inline>
       (function () {
+        const projectPage = document.body.hasAttribute('data-project-page');
+        if (projectPage) {
+          document.addEventListener('pointerdown', (event) => {
+            document.body.toggleAttribute('data-project-touch-focus', event.pointerType === 'touch');
+          }, { capture: true, passive: true });
+          document.addEventListener('keydown', () => {
+            document.body.removeAttribute('data-project-touch-focus');
+          }, { capture: true });
+        }
+
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (reduceMotion) return;
 
-        const touchProjects = document.body.hasAttribute('data-project-page') &&
+        const touchProjects = projectPage &&
           window.matchMedia('(hover: none), (pointer: coarse)').matches;
+        const galleryDialog = touchProjects ? document.querySelector('.image-dialog') : null;
 
         const canvas = document.querySelector('.cosmic-canvas');
         const shockwaveLayer = document.querySelector('.shockwave-layer');
@@ -218,6 +229,9 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
             };
 
             const tick = () => {
+              frameId = requestAnimationFrame(tick);
+              if (galleryDialog?.open) return;
+
               ctx.clearRect(0, 0, width, height);
               drawNebula();
 
@@ -238,8 +252,6 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
                 ctx.arc(star.x, star.y, star.size * (0.45 + star.z), 0, Math.PI * 2);
                 ctx.fill();
               });
-
-              frameId = requestAnimationFrame(tick);
             };
 
             resetCanvas();
