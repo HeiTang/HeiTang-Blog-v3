@@ -129,6 +129,26 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
 
     <Footer />
 
+    <script>
+      const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
+      const targets = document.querySelectorAll('[data-scroll-reveal]');
+      if (targets.length && motion.matches && 'IntersectionObserver' in window && 'animate' in Element.prototype) {
+        const reveal = new IntersectionObserver(entries => {
+          for (const { target, isIntersecting } of entries) {
+            if (!isIntersecting) continue;
+            reveal.unobserve(target);
+            if (motion.matches && !target.matches(':focus-within')) {
+              target.animate([{ opacity: 0.85 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' });
+            }
+          }
+        });
+        targets.forEach(target => {
+          const { top, width, height } = target.getBoundingClientRect();
+          if (top >= window.innerHeight || (!width && !height)) reveal.observe(target);
+        });
+      }
+    </script>
+
     <!-- Immersive cosmic background runtime (starfield, shockwave, optional pointer glow) -->
     <script is:inline>
       (function () {
@@ -145,11 +165,12 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (reduceMotion) return;
 
-        const touchProjects = projectPage &&
-          window.matchMedia('(hover: none), (pointer: coarse)').matches;
+        const touchLayout = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+        const touchProjects = projectPage && touchLayout;
         const galleryDialog = touchProjects ? document.querySelector('.image-dialog') : null;
 
-        const canvas = document.querySelector('.cosmic-canvas');
+        const mobileSnowEnabled = false;
+        const canvas = (!touchLayout || mobileSnowEnabled) ? document.querySelector('.cosmic-canvas') : null;
         const shockwaveLayer = document.querySelector('.shockwave-layer');
         const cometCursor = document.querySelector('.comet-cursor');
         const pointerGlowEnabled = document.body.dataset.pointerGlow !== 'off';

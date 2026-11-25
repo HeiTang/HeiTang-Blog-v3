@@ -13,7 +13,7 @@ const description = code.description.split(/\r?\n/).map(line => line.trim().repl
 ---
 
 <article style={`--brand-color: ${brand.color}`} class="ic-card" data-status={code.status} data-subcategory={code.group} data-invite={JSON.stringify(code)}>
-  <div class="card-visual" aria-hidden="true">
+  <div class="card-visual" aria-hidden="true" data-scroll-reveal>
     <div class="brand-mark">
       {brand.icon ? <img src={`/images/invite-brands/${brand.icon}.png`} alt="" width="64" height="64" loading="lazy" /> : <span>{code.title.slice(0, 2)}</span>}
     </div>

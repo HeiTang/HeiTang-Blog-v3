@@ -33,7 +33,7 @@ const structuredData = {
       <div class="section-heading"><h2 id="featured-title">精選作品</h2><span>先從這三個開始</span></div>
       <div class="featured-grid">
         {featured.map((project, index) => (
-          <a class:list={['feature', { 'feature-lead': index === 0 }]} href={`/projects/${project.name.toLowerCase()}/`}>
+          <a class:list={['feature', { 'feature-lead': index === 0 }]} href={`/projects/${project.name.toLowerCase()}/`} data-scroll-reveal>
             <div class="feature-image">
               {project.image && (typeof project.image === 'string' ? <img src={project.image} alt={`${project.title} 的介面截圖`} loading="lazy" /> :
                 <Picture src={project.image} alt={`${project.title} 的介面截圖`} widths={[480, 800, 1280, 1600]} sizes={index === 0 ? '(max-width: 700px) calc(100vw - 40px), 1080px' : '(max-width: 700px) calc(100vw - 40px), 530px'} formats={['avif', 'webp']} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />)}
@@ -57,7 +57,7 @@ const structuredData = {
       </div>
       <ul class="project-list">
         {remaining.map(project => (
-          <li data-project-category={project.category}>
+          <li data-project-category={project.category} data-scroll-reveal>
             <a href={`/projects/${project.name.toLowerCase()}/`}>
               <span class="row-meta">
                 <span class="row-category">{project.category}</span>
@@ -143,9 +143,6 @@ const structuredData = {
   .directory[data-view="cards"] .row-copy p { margin-bottom: 0; }
   a:focus-visible, button:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 5px; }
   .directory[data-view="cards"] .project-list a:focus-visible { outline-offset: -3px; }
-  @media (prefers-reduced-motion: no-preference) {
-    .project-awaiting:not(:focus-within) { opacity: 0; }
-  }
   @media (hover: hover) and (pointer: fine) {
     .project-list a:hover h3, .feature:hover h3 { color: rgb(var(--color-primary)); }
   }
@@ -178,29 +175,6 @@ const structuredData = {
   }
 </style>
 <script>
-  const projectMotion = window.matchMedia('(prefers-reduced-motion: no-preference)');
-  if ('IntersectionObserver' in window && 'animate' in Element.prototype && projectMotion.matches) {
-    const offscreen = Array.from(document.querySelectorAll('.feature, .project-list > li'))
-      .filter(card => card.getBoundingClientRect().top >= window.innerHeight);
-    const reveal = new IntersectionObserver(entries => {
-      for (const { target, isIntersecting } of entries) {
-        if (!isIntersecting) continue;
-        reveal.unobserve(target);
-        target.classList.remove('project-awaiting');
-        if (projectMotion.matches && !target.matches(':focus-within')) {
-          target.animate([
-            { opacity: 0, transform: 'translateY(10px)', filter: 'blur(3px)' },
-            { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
-          ], { duration: 440, delay: 180, easing: 'ease-out', fill: 'backwards' });
-        }
-      }
-    }, { rootMargin: '0px 0px -36px' });
-    offscreen.forEach(card => {
-      card.classList.add('project-awaiting');
-      reveal.observe(card);
-    });
-  }
-
   const directory = document.querySelector<HTMLElement>('.directory');
   const filters = document.querySelector<HTMLElement>('.filters');
   const viewSwitch = document.querySelector<HTMLElement>('.view-switch');

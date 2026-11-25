@@ -138,7 +138,7 @@ const structuredData = {
           <h2 id="related-posts-heading">延伸閱讀</h2>
           <ul>
             {relatedPosts.map(related => (
-              <li><a href={`/blog/${related.id}/`}>{related.data.title}</a></li>
+              <li data-scroll-reveal><a href={`/blog/${related.id}/`}>{related.data.title}</a></li>
             ))}
           </ul>
         </nav>

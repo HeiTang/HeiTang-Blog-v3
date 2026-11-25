@@ -238,11 +238,8 @@ test('concert entries always render a poster and the page title stays on one lin
   assert.match(pageSource, /white-space:\s*nowrap/);
   assert.doesNotMatch(pageSource, /timeline-motion|IntersectionObserver/);
 
-  const posterAnimation = pageSource.slice(
-    pageSource.indexOf('@keyframes poster-wall-entry'),
-    pageSource.indexOf('@media (max-width', pageSource.indexOf('@keyframes poster-wall-entry')),
-  );
-  assert.doesNotMatch(posterAnimation, /clip-path/);
+  assert.match(cardSource, /<figure\s+[^>]*data-scroll-reveal/);
+  assert.doesNotMatch(pageSource, /poster-wall-entry|animation-timeline/);
 });
 
 test('Notion query requests only allowlisted property IDs', async () => {

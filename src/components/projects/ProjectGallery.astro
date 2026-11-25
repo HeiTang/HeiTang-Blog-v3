@@ -16,7 +16,7 @@ const images = await Promise.all(screenshots.map(async (shot) => {
 <div class="gallery">
   {images.map((image, index) => <figure>
     <button class="gallery-open" type="button" aria-label={`放大：${image.caption}`} aria-haspopup="dialog">
-      <img src={image.src} srcset={image.srcset} sizes={image.srcset ? sizes : undefined} width={image.width} height={image.height} alt={image.caption} loading="lazy" decoding="async" />
+      <img src={image.src} srcset={image.srcset} sizes={image.srcset ? sizes : undefined} width={image.width} height={image.height} alt={image.caption} loading="lazy" decoding="async" data-scroll-reveal />
       <span class="zoom-label" aria-hidden="true">放大 <svg class="zoom-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H3v6" /><path d="M15 3h6v6" /><path d="M21 15v6h-6" /><path d="M3 15v6h6" /></svg></span>
     </button>
     <figcaption><span aria-hidden="true">{String(index + 1).padStart(2, '0')} / </span>{image.caption}</figcaption>
