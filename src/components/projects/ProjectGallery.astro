@@ -38,6 +38,7 @@ const images = await Promise.all(screenshots.map(async (shot) => {
   :global(html:has(.image-dialog[open])) { overflow: hidden; }
   .image-dialog { margin: auto; padding: 3.5rem 1rem 1rem; width: min(96vw, 1640px); max-height: 95dvh; overscroll-behavior: contain; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; background: rgb(var(--color-bg-dark)); color: rgb(var(--color-text-primary)); }
   .image-dialog::backdrop { background: rgba(0,0,0,.85); }
+  .image-dialog[data-dismissing], .image-dialog[data-dismissing]::backdrop { opacity: 0; }
   .image-dialog img { display: block; max-width: 100%; max-height: 76dvh; height: auto; margin: auto; object-fit: contain; }
   .gallery-close { position: absolute; right: 1rem; top: .4rem; min-height: 44px; padding: .5rem; cursor: pointer; }
   button:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 4px; }
@@ -47,6 +48,7 @@ const images = await Promise.all(screenshots.map(async (shot) => {
   const image = dialog?.querySelector('img');
   const caption = dialog?.querySelector('figcaption');
   const touchLayout = window.matchMedia('(hover: none), (pointer: coarse)');
+  let dismissFrame = 0;
   document.querySelectorAll<HTMLButtonElement>('.gallery-open').forEach(button => button.addEventListener('click', () => {
     const thumbnail = button.querySelector('img');
     if (!dialog || dialog.open || !image || !caption || !thumbnail) return;
@@ -58,12 +60,29 @@ const images = await Promise.all(screenshots.map(async (shot) => {
     image.src = touchLayout.matches ? thumbnail.currentSrc || thumbnail.src : thumbnail.src;
     image.alt = thumbnail.alt;
     caption.textContent = image.alt;
+    cancelAnimationFrame(dismissFrame);
+    dialog.removeAttribute('data-dismissing');
     // Safari can leave a tapped button unfocused. Give the dialog a return target.
     button.focus({ preventScroll: true });
     dialog.showModal();
   }));
-  dialog?.querySelector('.gallery-close')?.addEventListener('click', () => dialog.close());
-  dialog?.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  const dismiss = () => {
+    if (!dialog?.open || dialog.hasAttribute('data-dismissing')) return;
+    if (!document.body.hasAttribute('data-project-touch-focus')) {
+      dialog.close();
+      return;
+    }
+
+    // Give the preview and backdrop a frame to disappear before restoring focus and scroll.
+    dialog.setAttribute('data-dismissing', '');
+    dismissFrame = requestAnimationFrame(() => {
+      dismissFrame = requestAnimationFrame(() => {
+        if (dialog.open) dialog.close();
+      });
+    });
+  };
+  dialog?.querySelector('.gallery-close')?.addEventListener('click', dismiss);
+  dialog?.addEventListener('click', event => { if (event.target === dialog) dismiss(); });
   dialog?.addEventListener('close', () => {
     if (!dialog.open) image?.removeAttribute('src');
   });
