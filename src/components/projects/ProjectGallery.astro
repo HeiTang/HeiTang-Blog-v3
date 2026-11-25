@@ -23,7 +23,7 @@ const images = await Promise.all(screenshots.map(async (shot) => {
   </figure>)}
 </div>
 {images.length > 0 && <dialog class="image-dialog" aria-label="專案圖片預覽">
-  <form method="dialog"><button class="gallery-close" aria-label="關閉圖片預覽">關閉 ×</button></form>
+  <button class="gallery-close" type="button" aria-label="關閉圖片預覽">關閉 ×</button>
   <figure><img alt="" decoding="async" /><figcaption></figcaption></figure>
 </dialog>}
 <style>
@@ -46,6 +46,7 @@ const images = await Promise.all(screenshots.map(async (shot) => {
   const dialog = document.querySelector<HTMLDialogElement>('.image-dialog');
   const image = dialog?.querySelector('img');
   const caption = dialog?.querySelector('figcaption');
+  const touchLayout = window.matchMedia('(hover: none), (pointer: coarse)');
   document.querySelectorAll<HTMLButtonElement>('.gallery-open').forEach(button => button.addEventListener('click', () => {
     const thumbnail = button.querySelector('img');
     if (!dialog || dialog.open || !image || !caption || !thumbnail) return;
@@ -54,13 +55,14 @@ const images = await Promise.all(screenshots.map(async (shot) => {
       if (value) image.setAttribute(attribute, value);
       else image.removeAttribute(attribute);
     }
-    image.src = thumbnail.src;
+    image.src = touchLayout.matches ? thumbnail.currentSrc || thumbnail.src : thumbnail.src;
     image.alt = thumbnail.alt;
     caption.textContent = image.alt;
     // Safari can leave a tapped button unfocused. Give the dialog a return target.
     button.focus({ preventScroll: true });
     dialog.showModal();
   }));
+  dialog?.querySelector('.gallery-close')?.addEventListener('click', () => dialog.close());
   dialog?.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
   dialog?.addEventListener('close', () => {
     if (!dialog.open) image?.removeAttribute('src');
