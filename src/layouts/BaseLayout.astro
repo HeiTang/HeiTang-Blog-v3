@@ -102,6 +102,7 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
   <body
     class="flex flex-col min-h-screen bg-[rgb(var(--color-bg-dark))]"
     data-pointer-glow={hasPointerGlow ? undefined : 'off'}
+    data-project-page={currentPath === '/projects/' ? '' : undefined}
   >
     <a
       href="#main-content"
@@ -133,6 +134,9 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
       (function () {
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (reduceMotion) return;
+
+        const touchProjects = document.body.hasAttribute('data-project-page') &&
+          window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
         const canvas = document.querySelector('.cosmic-canvas');
         const shockwaveLayer = document.querySelector('.shockwave-layer');
@@ -276,7 +280,7 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
           follow();
         }
 
-        if (shockwaveLayer) {
+        if (shockwaveLayer && !touchProjects) {
           window.addEventListener('pointerdown', (event) => {
             const wave = document.createElement('span');
             wave.className = 'shockwave';

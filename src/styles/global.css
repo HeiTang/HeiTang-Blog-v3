@@ -272,6 +272,16 @@
     }
   }
 
+  @media (hover: none), (pointer: coarse) {
+    [data-project-page] {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    [data-project-page] :is(a, button, summary) {
+      touch-action: manipulation;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .cosmic-canvas,
     .shockwave-layer,

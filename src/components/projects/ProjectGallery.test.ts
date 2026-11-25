@@ -13,7 +13,7 @@ test('gallery keeps captions and URL assets, caps local images without upscaling
     screenshots: ['https://example.com/image.png', { src: { width: 2784 }, caption: '首頁' }, { src: { width: 800 } }],
     getImage: async (options: { width: number; format: string }) => {
       calls.push(options);
-      return { src: '/optimized.webp', attributes: { width: options.width, height: 500 } };
+      return { src: '/optimized.webp', srcSet: { attribute: '' }, attributes: { width: options.width, height: 500 } };
     },
   });
   assert.equal(images[0].src, 'https://example.com/image.png');
@@ -41,7 +41,7 @@ test('responsive gallery uses smaller widths while keeping the largest image for
       };
     },
   });
-  assert.deepEqual(widths, [[480, 850, 1600], [480, 800]]);
-  assert.match(images[0].srcset, /480w, .*850w, .*1600w/);
+  assert.deepEqual(widths, [[480, 850, 1200, 1600], [480, 800]]);
+  assert.match(images[0].srcset, /480w, .*850w, .*1200w, .*1600w/);
   assert.equal(images[0].src, '/image-1600.webp');
 });

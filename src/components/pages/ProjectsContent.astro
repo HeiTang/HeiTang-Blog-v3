@@ -36,7 +36,7 @@ const structuredData = {
           <a class:list={['feature', { 'feature-lead': index === 0 }]} href={`/projects/${project.name.toLowerCase()}/`}>
             <div class="feature-image">
               {project.image && (typeof project.image === 'string' ? <img src={project.image} alt={`${project.title} 的介面截圖`} loading="lazy" /> :
-                <Picture src={project.image} alt={`${project.title} 的介面截圖`} widths={[480, 800, 1280, 1600]} sizes={index === 0 ? '(max-width: 700px) calc(100vw - 40px), 1080px' : '(max-width: 700px) calc(100vw - 40px), 530px'} formats={['avif', 'webp']} loading={index === 0 ? 'eager' : 'lazy'} />)}
+                <Picture src={project.image} alt={`${project.title} 的介面截圖`} widths={[480, 800, 1280, 1600]} sizes={index === 0 ? '(max-width: 700px) calc(100vw - 40px), 1080px' : '(max-width: 700px) calc(100vw - 40px), 530px'} formats={['avif', 'webp']} loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />)}
               <span class="feature-number" aria-hidden="true">0{index + 1}</span>
             </div>
             <div class="feature-caption"><div><p class="feature-meta">{project.category} <span aria-hidden="true">·</span> {project.period}</p><h3>{project.title ?? project.name}</h3><p>{project.summary}</p></div><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg></div>
@@ -65,7 +65,7 @@ const structuredData = {
               </span>
               <span class="row-media">
                 {typeof project.image === 'string' ? <img src={project.image} data-fallback={defaultProjectImage.src} alt={`${project.title ?? project.name} 的專案畫面`} loading="lazy" decoding="async" onerror="this.onerror=null; this.src=this.dataset.fallback" /> :
-                  <Picture src={project.image ?? defaultProjectImage} alt={`${project.title ?? project.name} 的專案畫面`} widths={[160, 240, 320, 480, 800, 1280]} sizes={cardImageSizes} formats={['avif', 'webp']} loading="lazy" />}
+                  <Picture src={project.image ?? defaultProjectImage} alt={`${project.title ?? project.name} 的專案畫面`} widths={[160, 240, 320, 480, 800, 1280]} sizes={cardImageSizes} formats={['avif', 'webp']} loading="lazy" decoding="async" />}
               </span>
               <span class="row-copy">
                 <h3>{project.title ?? project.name}</h3>
@@ -99,7 +99,6 @@ const structuredData = {
   .feature-lead .feature-image { aspect-ratio: 1.6; }
   .feature-image :global(picture) { width: 100%; height: 100%; }
   .feature-image :global(img) { width: 100%; height: 100%; object-fit: contain; transition: transform .25s ease; }
-  .feature:hover .feature-image :global(img) { transform: scale(1.025); }
   .feature-number { position: absolute; left: 1rem; top: .8rem; font-size: .7rem; color: rgb(var(--color-text-secondary)); }
   .feature-caption { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1.2rem; }
   .feature-meta { margin: 0 0 .45rem; color: rgb(var(--color-primary)); font-size: .72rem; letter-spacing: .04em; }
@@ -121,7 +120,6 @@ const structuredData = {
   .project-list li { border-top: 1px solid rgba(255,255,255,.12); }
   .project-list li:last-child { border-bottom: 1px solid rgba(255,255,255,.12); }
   .project-list a { display: grid; grid-template-columns: 7rem 7rem minmax(0, 1fr); gap: 1.25rem; align-items: center; padding: 1rem .5rem; }
-  .project-list a:hover h3, .feature:hover h3 { color: rgb(var(--color-primary)); }
   .row-meta { display: flex; min-width: 0; flex-direction: column; gap: .25rem; text-align: center; }
   .row-category, .row-period { font-size: .75rem; }
   .row-category { color: rgb(var(--color-text-secondary)); }
@@ -129,7 +127,6 @@ const structuredData = {
   .row-media { position: relative; display: block; width: 7rem; aspect-ratio: 2 / 1; overflow: hidden; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; background: rgb(var(--color-primary) / .045); }
   .row-media :global(picture), .row-media :global(img) { display: block; width: 100%; height: 100%; }
   .row-media :global(img) { object-fit: cover; transition: transform .25s ease; }
-  .project-list a:hover .row-media :global(img) { transform: scale(1.04); }
   .row-copy { min-width: 0; }
   .row-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .35rem; padding: 0; margin: .7rem 0 0; list-style: none; }
   .row-tags li { max-width: 100%; padding: .18rem .45rem; border: 1px solid rgb(var(--color-primary) / .25); border-radius: 999px; color: rgb(var(--color-primary)); background: rgb(var(--color-primary) / .06); font-size: .65rem; line-height: 1.4; overflow-wrap: anywhere; }
@@ -145,6 +142,20 @@ const structuredData = {
   .directory[data-view="cards"] .row-copy { grid-column: 1; grid-row: 2; align-self: start; }
   .directory[data-view="cards"] .row-copy p { margin-bottom: 0; }
   a:focus-visible, button:focus-visible { outline: 2px solid rgb(var(--color-primary)); outline-offset: 5px; }
+  .directory[data-view="cards"] .project-list a:focus-visible { outline-offset: -3px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .project-awaiting:not(:focus-within) { opacity: 0; }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .project-list a:hover h3, .feature:hover h3 { color: rgb(var(--color-primary)); }
+  }
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .feature:hover .feature-image :global(img) { transform: scale(1.025); }
+    .project-list a:hover .row-media :global(img) { transform: scale(1.04); }
+  }
+  @media (hover: none), (pointer: coarse) {
+    .directory[data-view="cards"] :is(.row-category, .row-period) { background: rgb(var(--color-bg-dark) / .94); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
   @media (max-width: 700px) {
     .portfolio { padding-top: 6rem; }
     .intro-bottom { display: block; }
@@ -165,9 +176,31 @@ const structuredData = {
     .view-switch { display: none; }
     .directory[data-view="cards"] .row-copy p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   }
-  @media (prefers-reduced-motion: reduce) { .feature-image :global(img), .row-media :global(img) { transition: none; } .feature:hover .feature-image :global(img), .project-list a:hover .row-media :global(img) { transform: none; } }
 </style>
 <script>
+  const projectMotion = window.matchMedia('(prefers-reduced-motion: no-preference)');
+  if ('IntersectionObserver' in window && 'animate' in Element.prototype && projectMotion.matches) {
+    const offscreen = Array.from(document.querySelectorAll('.feature, .project-list > li'))
+      .filter(card => card.getBoundingClientRect().top >= window.innerHeight);
+    const reveal = new IntersectionObserver(entries => {
+      for (const { target, isIntersecting } of entries) {
+        if (!isIntersecting) continue;
+        reveal.unobserve(target);
+        target.classList.remove('project-awaiting');
+        if (projectMotion.matches && !target.matches(':focus-within')) {
+          target.animate([
+            { opacity: 0, transform: 'translateY(10px)', filter: 'blur(3px)' },
+            { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
+          ], { duration: 440, delay: 180, easing: 'ease-out', fill: 'backwards' });
+        }
+      }
+    }, { rootMargin: '0px 0px -36px' });
+    offscreen.forEach(card => {
+      card.classList.add('project-awaiting');
+      reveal.observe(card);
+    });
+  }
+
   const directory = document.querySelector<HTMLElement>('.directory');
   const filters = document.querySelector<HTMLElement>('.filters');
   const viewSwitch = document.querySelector<HTMLElement>('.view-switch');
