@@ -133,19 +133,19 @@ const uniquePreloadFonts = Array.from(new Set(preloadFonts));
       const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
       const targets = document.querySelectorAll('[data-scroll-reveal]');
       if (targets.length && motion.matches && 'IntersectionObserver' in window && 'animate' in Element.prototype) {
-        const visibleRatio = 0.18;
         const reveal = new IntersectionObserver(entries => {
-          for (const { target, intersectionRatio } of entries) {
-            if (intersectionRatio < visibleRatio) continue;
+          for (const { target, isIntersecting } of entries) {
+            if (!isIntersecting) continue;
             reveal.unobserve(target);
-            const shouldAnimate = motion.matches && !target.matches(':focus-within');
-            const opacity = shouldAnimate ? Number(getComputedStyle(target).opacity) : 1;
             target.removeAttribute('data-scroll-reveal-pending');
-            if (opacity < 1) {
-              target.animate([{ opacity }, { opacity: 1 }], { duration: 360, easing: 'ease-out' });
+            if (motion.matches && !target.matches(':focus-within')) {
+              target.animate([
+                { opacity: 0, transform: 'translateY(10px)', filter: 'blur(3px)' },
+                { opacity: 1, transform: 'translateY(0)', filter: 'blur(0)' },
+              ], { duration: 440, delay: 180, easing: 'ease-out', fill: 'backwards' });
             }
           }
-        }, { threshold: visibleRatio });
+        }, { rootMargin: '0px 0px -36px' });
         targets.forEach(target => {
           const { top, width, height } = target.getBoundingClientRect();
           if (top >= window.innerHeight || (!width && !height)) {
