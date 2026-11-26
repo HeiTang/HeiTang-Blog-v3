@@ -125,6 +125,12 @@
     outline-offset: 2px;
   }
 
+  @media (prefers-reduced-motion: no-preference) {
+    [data-scroll-reveal-pending]:not(:focus-within) {
+      opacity: 0.65;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
