@@ -127,7 +127,7 @@
 
   @media (prefers-reduced-motion: no-preference) {
     [data-scroll-reveal-pending]:not(:focus-within) {
-      opacity: 0.65;
+      opacity: 0;
     }
   }
 
